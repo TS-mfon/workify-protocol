@@ -1,0 +1,1 @@
+export default function Activity(){return <><h1 className="page-title">Protocol activity</h1><p className="muted">Base, GenLayer, and 1Shot transaction history with finality-aware status.</p><div className="glass card" style={{marginTop:28}}>No transactions indexed yet.</div></>}

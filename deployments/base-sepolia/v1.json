@@ -1,0 +1,9 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "status": "NOT_DEPLOYED",
+  "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "treasuryOwner": "0x5905c9Dea6Ae52AA0947D8F7F218263889eDfC4E",
+  "baseTreasury": null,
+  "workEscrow": null
+}

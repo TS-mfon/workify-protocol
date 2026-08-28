@@ -1,0 +1,8 @@
+{
+  "network": "testnet-bradbury",
+  "status": "NOT_DEPLOYED",
+  "runner": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6",
+  "treasuryOwner": "0x5905c9Dea6Ae52AA0947D8F7F218263889eDfC4E",
+  "treasury": null,
+  "verifiers": {}
+}

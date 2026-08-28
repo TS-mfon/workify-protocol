@@ -1,0 +1,7 @@
+{
+  "phase1": { "required": 17, "finalized": 0, "passed": false },
+  "phase2": { "required": 17, "finalized": 0, "passed": false },
+  "phase3": { "required": 17, "finalized": 0, "passed": false },
+  "phase4": { "required": 17, "finalized": 0, "passed": false },
+  "phase5": { "required": 17, "finalized": 0, "passed": false }
+}

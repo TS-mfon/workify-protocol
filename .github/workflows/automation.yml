@@ -1,0 +1,30 @@
+name: Workify Automation
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workify-automation
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger protected automation endpoint
+        env:
+          AUTOMATION_URL: ${{ secrets.WORKIFY_AUTOMATION_URL }}
+          AUTOMATION_HMAC: ${{ secrets.WORKIFY_AUTOMATION_HMAC }}
+        run: |
+          test -n "$AUTOMATION_URL"
+          test -n "$AUTOMATION_HMAC"
+          curl --fail-with-body --retry 3 --retry-all-errors \
+            -X POST "$AUTOMATION_URL/api/automation/run" \
+            -H "authorization: Bearer $AUTOMATION_HMAC" \
+            -H "content-type: application/json" \
+            --data '{"source":"github-actions"}'

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "1Shot API": {
+      "url": "https://mcp.1shotapi.com/mcp",
+      "transport": "streamableHttp",
+      "auth": {
+        "CLIENT_ID": "P5Jduw80vpVAINgW8lnNwgak9ALgfBIS",
+        "scopes": ["openid", "profile", "email", "offline_access"]
+      }
+    }
+  }
+}

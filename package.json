@@ -1,0 +1,23 @@
+{
+  "name": "workify-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @workify/web dev",
+    "build": "pnpm --filter @workify/web build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:contracts": "forge test --root contracts/base",
+    "test:genlayer": "genvm-lint check contracts/genlayer/v1/WorkVerifierV1.py && genvm-lint check contracts/genlayer/v1/GenTreasuryV1.py && uv run --offline --with genlayer-test pytest tests/direct -q",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:contracts && pnpm test:genlayer && pnpm build"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "5.4.0",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,21 @@
+[profile.default]
+src = "v1"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib", "../../node_modules"]
+solc_version = "0.8.30"
+optimizer = true
+optimizer_runs = 20_000
+via_ir = true
+fs_permissions = [{ access = "read-write", path = "./deployments" }]
+
+remappings = [
+  "@openzeppelin/contracts/=../../node_modules/@openzeppelin/contracts/",
+  "forge-std/=lib/forge-std/src/"
+]
+
+[fmt]
+line_length = 110
+tab_width = 4
+bracket_spacing = true

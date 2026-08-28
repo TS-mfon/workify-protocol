@@ -1,0 +1,1 @@
+export default function Jobs(){return <><h1 className="page-title">Jobs</h1><p className="muted">Funded work contracts and their complete verification lifecycle.</p><div className="glass card" style={{marginTop:28}}>No jobs indexed yet. Create the first funded Workify job.</div></>}
