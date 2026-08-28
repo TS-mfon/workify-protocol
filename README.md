@@ -9,9 +9,10 @@ controls deterministic escrow settlement. Workify is not an AI freelance marketp
 not ask a model whether work is vaguely “good.” It asks whether a pinned delivery satisfies a
 predefined, evidence-backed contract.
 
-> **Status — August 28, 2026:** v1 source and local validation are under active development.
-> Testnet deployment manifests intentionally say `NOT_DEPLOYED` until transactions are broadcast
-> and verified. No phase gate is claimed until 17 distinct live verdicts finalize successfully.
+> **Status — August 28, 2026:** The production web application and documentation are live at
+> `https://workify-protocol.vercel.app`. V1 source passes the complete local validation suite.
+> Contract deployment manifests intentionally say `NOT_DEPLOYED` until testnet transactions are
+> broadcast and verified. No phase gate is claimed until 17 distinct live verdicts finalize successfully.
 
 ## Why Workify
 
