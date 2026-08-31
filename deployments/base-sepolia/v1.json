@@ -1,9 +1,19 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "status": "NOT_DEPLOYED",
+  "status": "DEPLOYED",
   "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
   "treasuryOwner": "0x5905c9Dea6Ae52AA0947D8F7F218263889eDfC4E",
-  "baseTreasury": null,
-  "workEscrow": null
+  "deployer": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "verdictAttestor": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "automationOperator": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "baseTreasury": {
+    "address": "0xFD74C336792DD54862e6694bb76fF865aAC06CF0",
+    "transactionHash": "0x73ad006770aad91b9a9926e1a75a8bf2c77d33e3e953ba144a95d1cccb1c3c96"
+  },
+  "workEscrow": {
+    "address": "0xBF5163D30a914d907BE2fB9973940668e404127e",
+    "transactionHash": "0x699be41ee6a5bbabe1da939331bc4dba40a4ea03a850ac35edc1f021223ec0ec"
+  },
+  "deployedAt": "2026-08-28T00:00:00.000Z"
 }

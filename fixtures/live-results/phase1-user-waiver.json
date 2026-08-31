@@ -1,0 +1,9 @@
+{
+  "phase": "phase1",
+  "waivedAt": "2026-08-29T15:00:00.000Z",
+  "reason": "The user explicitly stated they were satisfied with the Phase 1 test and instructed the build to proceed to Phase 2.",
+  "originalRequiredFinalizedConsensusResults": 17,
+  "gateSatisfied": false,
+  "authorization": "USER_WAIVER",
+  "note": "This waiver permits sequencing only. It must never be represented as proof that the original 17-result Phase 1 gate passed. The actual receipts remain in phase1-v7.json."
+}

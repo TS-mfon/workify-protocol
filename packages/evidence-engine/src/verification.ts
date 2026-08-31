@@ -1,4 +1,4 @@
-import { createAccount, createClient } from "genlayer-js";
+import { chains, createAccount, createClient } from "genlayer-js";
 import type { Hex } from "viem";
 import { getDatabase } from "./mongodb";
 import { WorkifyError } from "./errors";
@@ -19,7 +19,7 @@ export async function submitVerification(input: {
   const endpoint = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
   if (!key || !endpoint) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer operator is not configured");
   if (input.attempt < 1 || input.attempt > 3) throw new WorkifyError("USER_INPUT", "Attempt must be 1-3");
-  const client = createClient({ endpoint, account: createAccount(key) });
+  const client = createClient({ chain: chains.testnetBradbury as never, endpoint, account: createAccount(key) });
   const hash = await client.writeContract({
     address: input.verifierAddress,
     functionName: "verify",

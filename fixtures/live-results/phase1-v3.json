@@ -1,0 +1,95 @@
+{
+  "phase": "phase1",
+  "verifier": "0x4688834aaA9C11590886D2B02A1d284273CAfEf6",
+  "required": 17,
+  "cases": [
+    {
+      "caseId": "01",
+      "jobId": "0xcbaa0c7ec60bdf3859a5048cc4b56271c49c3af1f9c43afe1b9e3f6fc33ffd39",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-01-specification.json",
+      "specificationHash": "6a924816c97cc621b580337a75e08a63ad6b2b51473bb0262091f8147b9dbb65",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-01-evidence.json",
+      "evidenceHash": "606186593e5ff43e439c696ef56228b59284a7fea5e9c93c45c670a9c194225c",
+      "expected": "PASS",
+      "transactionHash": "0x80193be0157231be8ebe7a1557624234befac4203fa392a1373bc598fd2f1b7e",
+      "submittedAt": "2026-08-28T15:19:08.523Z",
+      "consensus": "AGREE",
+      "execution": "FINISHED_WITH_RETURN",
+      "acceptedAt": "2026-08-28T15:20:13.567Z",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0x80193be0157231be8ebe7a1557624234befac4203fa392a1373bc598fd2f1b7e",
+          "consensus": "AGREE",
+          "execution": "FINISHED_WITH_RETURN"
+        }
+      ]
+    },
+    {
+      "caseId": "02",
+      "jobId": "0x1039f5f16c761c718f451a83083c27a1932cfd2c68d38b86fbeffed20dcf23b7",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-02-specification.json",
+      "specificationHash": "b409c7f7a95f0ad89adbdd4c83a38d12f0d2d5c895aef317483b85e15388d4e3",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-02-evidence.json",
+      "evidenceHash": "840bc760c1692e8fa45b6b5ae3560ace7781de6adaa97fe63be36a0cd897ce9f",
+      "expected": "PASS",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0x2853eb4d63531729802593292132622721b24a9d1b9007a885baf2b23d13a3d5",
+          "status": "FINALIZED",
+          "submittedAt": "2026-08-28T15:50:19.615Z",
+          "consensus": "TIMEOUT",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-28T16:23:52.208Z"
+        }
+      ]
+    },
+    {
+      "caseId": "03",
+      "jobId": "0x47266e10d92d2336d8c202974f7d5a43b605c20f34450652e414252e516917e2",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-03-specification.json",
+      "specificationHash": "c74d60e5003c62246d0b0f8678d0ccf13800e83e207a08dd9bb00bd8b9f8d92d",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-03-evidence.json",
+      "evidenceHash": "7d931103f0d8e72a3ebbced2896dce3ca3b48907c72326ae3fbb23799ae13857",
+      "expected": "PASS",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0x1470a0d16a212b751dea8d8e4ae8a82d72982e062c289f4813ae9890d8469b3d",
+          "status": "UNDETERMINED",
+          "submittedAt": "2026-08-28T16:23:59.739Z",
+          "consensus": "NO_MAJORITY",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-28T16:28:49.380Z"
+        },
+        {
+          "attempt": 2,
+          "transactionHash": "0x2266d39a673b24e626ccc6c4e43322f62aedc121854ddda67229b2c0c3744913",
+          "status": "FINALIZED",
+          "submittedAt": "2026-08-28T16:28:56.970Z",
+          "consensus": "TIMEOUT",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-28T17:03:23.529Z"
+        }
+      ]
+    },
+    {
+      "caseId": "04",
+      "jobId": "0x79649834345e39069b748dcf0cfaaf563a4f3ba5651b717764648d7a40e13a10",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-04-specification.json",
+      "specificationHash": "a5bd2eed744a3195b0e223a2c06a80a4ac4e4440b31e2b63264d994fea40a739",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-04-evidence.json",
+      "evidenceHash": "20b8207cc40497aab5b6f0bf72c0cf556d0dbc4b53c1b24e5e389351907e5486",
+      "expected": "FAIL_OR_PARTIAL",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0x40e8b7fdf8ea1cdfd82ae1030d39b83a4c02221c1369f54dd85cba5335b9317f",
+          "status": "SUBMITTED",
+          "submittedAt": "2026-08-28T17:03:25.696Z"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "phase": "phase1",
+  "verifier": "0xd493Cbc88418D159D72e3a6a421369d14d550739",
+  "required": 17,
+  "cases": [
+    {
+      "caseId": "01",
+      "jobId": "0xcbaa0c7ec60bdf3859a5048cc4b56271c49c3af1f9c43afe1b9e3f6fc33ffd39",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-01-specification.json",
+      "specificationHash": "6a924816c97cc621b580337a75e08a63ad6b2b51473bb0262091f8147b9dbb65",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-01-evidence.json",
+      "evidenceHash": "606186593e5ff43e439c696ef56228b59284a7fea5e9c93c45c670a9c194225c",
+      "expected": "PASS",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0x1f016078eec660c43c408f81d8c1a66de289420f7155bfc80914a1aa59665099",
+          "status": "UNDETERMINED",
+          "submittedAt": "2026-08-28T17:15:01.777Z",
+          "networkStatus": "LEADER_TIMEOUT",
+          "consensus": "IDLE",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-28T17:17:32.711Z"
+        },
+        {
+          "attempt": 2,
+          "transactionHash": "0x54d6c18536e172f9a94e49a7493564aca44270440dca89cae7ebff4ce4cd7814",
+          "status": "UNDETERMINED",
+          "submittedAt": "2026-08-28T17:19:21.149Z",
+          "networkStatus": "UNDETERMINED",
+          "consensus": "NO_MAJORITY",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-28T17:22:15.331Z"
+        },
+        {
+          "attempt": 3,
+          "transactionHash": "0xf85589dc757839be202da242a12f739c0f2e4e7ee9df5a02a2f49366edf0273a",
+          "status": "SUBMITTED",
+          "submittedAt": "2026-08-28T17:22:17.750Z"
+        }
+      ]
+    }
+  ],
+  "finalized": 0,
+  "passed": false
+}

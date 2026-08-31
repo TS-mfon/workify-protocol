@@ -1,0 +1,154 @@
+{
+  "phase": "phase2",
+  "verifier": "0x0B7375759F791D0d884608cfF1Ed55bd2F26d860",
+  "required": 5,
+  "cases": [
+    {
+      "caseId": "01",
+      "jobId": "0xb9efb13160289b84b8037f4f7715d6d2273c0728a2bcae838eb37165f5d1744a",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-01-specification.json",
+      "specificationHash": "f2223e0b17fe221b70c2df8d368c87a3c277fcdb1ebb8fd61eee192dfe54e071",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-01-evidence.json",
+      "evidenceHash": "b25394ee63abfae76316b12d05f219ca04dda82971a6254ba27016b6da8a7f7a",
+      "expected": "PASS",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0x6cce3e2633063b07ab4503fd1414e719f390d4073b8762c3f7c1fd93fc308829",
+          "status": "FINALIZED",
+          "submittedAt": "2026-08-29T14:17:12.582Z",
+          "networkStatus": "FINALIZED",
+          "consensus": "AGREE",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-29T14:18:07.012Z",
+          "verdict": "{\"attempt\":1,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PASS\",\"evidence_root\":\"b25394ee63abfae76316b12d05f219ca04dda82971a6254ba27016b6da8a7f7a\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":10000,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"4e535ed171302602e935e630563097817aedbf4e5591a9c8a3582d5b31a855f9\",\"score\":100,\"specification_hash\":\"f2223e0b17fe221b70c2df8d368c87a3c277fcdb1ebb8fd61eee192dfe54e071\"}",
+          "finalizedAt": "2026-08-29T14:48:09.827Z"
+        }
+      ],
+      "status": "FINALIZED",
+      "consensus": "AGREE",
+      "execution": "FINISHED_WITH_RETURN",
+      "verdict": "{\"attempt\":1,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PASS\",\"evidence_root\":\"b25394ee63abfae76316b12d05f219ca04dda82971a6254ba27016b6da8a7f7a\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":10000,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"4e535ed171302602e935e630563097817aedbf4e5591a9c8a3582d5b31a855f9\",\"score\":100,\"specification_hash\":\"f2223e0b17fe221b70c2df8d368c87a3c277fcdb1ebb8fd61eee192dfe54e071\"}"
+    },
+    {
+      "caseId": "02",
+      "jobId": "0x8237d1d52de2ad31d8a7dcfed01e1037e45090977672c240ae0003193b9cdd38",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-02-specification.json",
+      "specificationHash": "81d92a7ab49700f29211cc27575e2e10efa875761333e24a2aef041965f0451c",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-02-evidence.json",
+      "evidenceHash": "3ea3efb1f161dada6e494c0716079bccf2734091e6e49f54a04b66f2a461c608",
+      "expected": "PASS",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0xae33fe83019f359421f55f0013d04e9bcfad295e3aa505e256962adf9bb34f9c",
+          "status": "FINALIZED",
+          "submittedAt": "2026-08-29T14:18:09.383Z",
+          "networkStatus": "FINALIZED",
+          "consensus": "AGREE",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-29T14:19:41.495Z",
+          "verdict": "{\"attempt\":1,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PASS\",\"evidence_root\":\"3ea3efb1f161dada6e494c0716079bccf2734091e6e49f54a04b66f2a461c608\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":10000,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"f6982cf2c5543a18e0fab1287a37caedf2666740983a2ac9104a93d4aa4ce974\",\"score\":100,\"specification_hash\":\"81d92a7ab49700f29211cc27575e2e10efa875761333e24a2aef041965f0451c\"}",
+          "finalizedAt": "2026-08-29T14:48:54.314Z"
+        }
+      ],
+      "status": "FINALIZED",
+      "consensus": "AGREE",
+      "execution": "FINISHED_WITH_RETURN",
+      "verdict": "{\"attempt\":1,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PASS\",\"evidence_root\":\"3ea3efb1f161dada6e494c0716079bccf2734091e6e49f54a04b66f2a461c608\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":10000,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"f6982cf2c5543a18e0fab1287a37caedf2666740983a2ac9104a93d4aa4ce974\",\"score\":100,\"specification_hash\":\"81d92a7ab49700f29211cc27575e2e10efa875761333e24a2aef041965f0451c\"}"
+    },
+    {
+      "caseId": "03",
+      "jobId": "0x55450c9af0f280a5f94cb7a48b9e032af46b00d18e83ddc1e122cc5d97898023",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-03-specification.json",
+      "specificationHash": "418a26d000b3caab531e930e17321410822b53a8eb68eb7c512cdf6a88e8d198",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-03-evidence.json",
+      "evidenceHash": "332de7334d114af87592e48d55d4437358b9153dbb8d90af898f09f609fe5ed1",
+      "expected": "PASS",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0x4158a40b60ac0fc64e5e90558a6d2e5e4ef54bd7b42f0caf7a4575a77d3f4ca7",
+          "status": "FINALIZED",
+          "submittedAt": "2026-08-29T14:19:43.568Z",
+          "networkStatus": "FINALIZED",
+          "consensus": "AGREE",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-29T14:20:27.381Z",
+          "verdict": "{\"attempt\":1,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PASS\",\"evidence_root\":\"332de7334d114af87592e48d55d4437358b9153dbb8d90af898f09f609fe5ed1\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":10000,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"4b24c95db4e5f1631488c0936ee267a013927d7b06944cd714f4ac437a17573b\",\"score\":100,\"specification_hash\":\"418a26d000b3caab531e930e17321410822b53a8eb68eb7c512cdf6a88e8d198\"}",
+          "finalizedAt": "2026-08-29T14:50:32.137Z"
+        }
+      ],
+      "status": "FINALIZED",
+      "consensus": "AGREE",
+      "execution": "FINISHED_WITH_RETURN",
+      "verdict": "{\"attempt\":1,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PASS\",\"evidence_root\":\"332de7334d114af87592e48d55d4437358b9153dbb8d90af898f09f609fe5ed1\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":10000,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"4b24c95db4e5f1631488c0936ee267a013927d7b06944cd714f4ac437a17573b\",\"score\":100,\"specification_hash\":\"418a26d000b3caab531e930e17321410822b53a8eb68eb7c512cdf6a88e8d198\"}"
+    },
+    {
+      "caseId": "04",
+      "jobId": "0x5f9c61c41164af2a080938501a7be8c353854375e9f6e21c4a11830a4d9fed03",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-04-specification.json",
+      "specificationHash": "fbf88989ff37e07ff88873eaba8dc0b36a1bc7522848b905407294bb244b836a",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-04-evidence.json",
+      "evidenceHash": "def5d16f9a363c9d03938772a0f6bdde6b5bfdf0b484d565b6e1911ab12ff19b",
+      "expected": "PASS",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0xc77c2409ab6074d4f2c3b21904b38f7dbd57dea6e383f7d87226654bf353b3ca",
+          "status": "FINALIZED",
+          "submittedAt": "2026-08-29T14:20:29.539Z",
+          "networkStatus": "FINALIZED",
+          "consensus": "AGREE",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-29T14:21:01.827Z",
+          "verdict": "{\"attempt\":1,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PASS\",\"evidence_root\":\"def5d16f9a363c9d03938772a0f6bdde6b5bfdf0b484d565b6e1911ab12ff19b\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":10000,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"a2f7ea3bffcce1363993aab6767a71696080b36981191ad63cfa77ab1c02320a\",\"score\":100,\"specification_hash\":\"fbf88989ff37e07ff88873eaba8dc0b36a1bc7522848b905407294bb244b836a\"}",
+          "finalizedAt": "2026-08-29T14:51:05.698Z"
+        }
+      ],
+      "status": "FINALIZED",
+      "consensus": "AGREE",
+      "execution": "FINISHED_WITH_RETURN",
+      "verdict": "{\"attempt\":1,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PASS\",\"evidence_root\":\"def5d16f9a363c9d03938772a0f6bdde6b5bfdf0b484d565b6e1911ab12ff19b\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":10000,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"a2f7ea3bffcce1363993aab6767a71696080b36981191ad63cfa77ab1c02320a\",\"score\":100,\"specification_hash\":\"fbf88989ff37e07ff88873eaba8dc0b36a1bc7522848b905407294bb244b836a\"}"
+    },
+    {
+      "caseId": "05",
+      "jobId": "0x849cb3db2008b9345f27d0113484fbbc7ebc61cb594ed231418297b9754295a2",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-05-specification.json",
+      "specificationHash": "dce3007d72b0d1e02ced6374db3cb202f253caad4a41f362b1cbaf085f6d971a",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-05-evidence.json",
+      "evidenceHash": "39f387e6db2cf3c583428217c3f07f8433b11ed9cba3efeb44f8485da450f638",
+      "expected": "FAIL",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0x0eb2a84fa21ec5629a06b46c40667b4f5dc233c4f79a447d37dd5a8216850917",
+          "status": "UNDETERMINED",
+          "submittedAt": "2026-08-29T14:21:03.777Z",
+          "networkStatus": "UNDETERMINED",
+          "consensus": "NO_MAJORITY",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-29T14:23:13.257Z"
+        },
+        {
+          "attempt": 2,
+          "transactionHash": "0x3e682952a7b8b2f903b857a9236862665c3be39f33f3c9c18299a763d72bac3a",
+          "status": "FINALIZED",
+          "submittedAt": "2026-08-29T14:23:15.492Z",
+          "networkStatus": "FINALIZED",
+          "consensus": "AGREE",
+          "execution": "FINISHED_WITH_RETURN",
+          "acceptedAt": "2026-08-29T14:23:47.910Z",
+          "verdict": "{\"attempt\":2,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"FAIL\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PARTIAL\",\"evidence_root\":\"39f387e6db2cf3c583428217c3f07f8433b11ed9cba3efeb44f8485da450f638\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":7500,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"b50f18508e75c58c3462fdf24727257fc52426558b43efe65f7ee0b497216a83\",\"score\":75,\"specification_hash\":\"dce3007d72b0d1e02ced6374db3cb202f253caad4a41f362b1cbaf085f6d971a\"}",
+          "finalizedAt": "2026-08-29T14:53:47.928Z"
+        }
+      ],
+      "status": "FINALIZED",
+      "consensus": "AGREE",
+      "execution": "FINISHED_WITH_RETURN",
+      "verdict": "{\"attempt\":2,\"confidence\":0,\"criteria\":[{\"critical\":true,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-001\",\"reason\":\"\",\"severity\":\"CRITICAL\"},{\"critical\":false,\"decision\":\"PASS\",\"evidence\":[],\"id\":\"C-002\",\"reason\":\"\",\"severity\":\"HIGH\"},{\"critical\":false,\"decision\":\"FAIL\",\"evidence\":[],\"id\":\"C-003\",\"reason\":\"\",\"severity\":\"HIGH\"}],\"critical_failures\":[],\"decision\":\"PARTIAL\",\"evidence_root\":\"39f387e6db2cf3c583428217c3f07f8433b11ed9cba3efeb44f8485da450f638\",\"final_reasoning\":\"\",\"missing_evidence\":[],\"payout_bps\":7500,\"policy_version\":\"web-application-v7.0\",\"result_hash\":\"b50f18508e75c58c3462fdf24727257fc52426558b43efe65f7ee0b497216a83\",\"score\":75,\"specification_hash\":\"dce3007d72b0d1e02ced6374db3cb202f253caad4a41f362b1cbaf085f6d971a\"}"
+    }
+  ],
+  "finalized": 5,
+  "passed": true
+}

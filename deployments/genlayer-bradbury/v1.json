@@ -1,8 +1,41 @@
 {
   "network": "testnet-bradbury",
-  "status": "NOT_DEPLOYED",
+  "status": "DEPLOYED_AWAITING_FINALITY",
   "runner": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6",
   "treasuryOwner": "0x5905c9Dea6Ae52AA0947D8F7F218263889eDfC4E",
-  "treasury": null,
-  "verifiers": {}
+  "treasury": {
+    "address": "0xe11e888CD716b7fBd36442746Ea0C3A9f1d115B3",
+    "hash": "0x97eeb73fa02341beb85e3c39ef31888fe7f5049e62da73c66bdbbfc3f9210bad",
+    "status": "ACCEPTED"
+  },
+  "verifiers": {
+    "github": {
+      "address": "0xc2E18507A3E45045B61A566A1a2E96A42b60B845",
+      "hash": "0xc2c7130b84d51777c6abe696e652bd5e155515cc91136266738bd7ecb1db1dd1",
+      "status": "ACCEPTED"
+    },
+    "web": {
+      "address": "0x63dfDCea47ac3250aa883C6F84b85669bf364189",
+      "hash": "0x46bbc22360b71b79b449f8acdfd42895f1920860e7d5a232b48bec7374691225",
+      "status": "ACCEPTED"
+    },
+    "research": {
+      "address": "0x5FA7bdc62d17b9c7b90274f24D0cb37F7c11C193",
+      "hash": "0x0fda8f5fcf2c69b75667166911d0f6911e698b502f67e93c12fd4193ee07579d",
+      "status": "ACCEPTED"
+    },
+    "document": {
+      "address": "0x546c5cFF311736a2CeAcab19633a84F8c802C123",
+      "hash": "0x4e046bdad2b47bf4dee643ff3eb94dd87ab44b89626b3d4df617a85ec1b81c03",
+      "status": "ACCEPTED"
+    },
+    "design": {
+      "address": "0x508E3CD23Fb69C7C4A8165c2f0c3293ACCEC599F",
+      "hash": "0xb994b2992d7679f9ab18164aaf66d3499532f036166bf99f0504e33901e980ed",
+      "status": "ACCEPTED"
+    }
+  },
+  "endpoint": "https://rpc-bradbury.genlayer.com",
+  "operator": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "submittedAt": "2026-08-28T14:39:07.645Z"
 }

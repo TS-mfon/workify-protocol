@@ -1,0 +1,14 @@
+{
+  "network": "testnet-bradbury",
+  "version": 2,
+  "operator": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "verifiers": {
+    "github": {
+      "address": "0xa4fE81B288f82CA1D878c8B8bf5743A3e241EBE1",
+      "hash": "0x6dca00b95008b1d1c1e498b6f5412252e90813d9dd66b7aae8930538f5bb0b84",
+      "policyVersion": "github-software-v2.0"
+    }
+  },
+  "status": "DEPLOYED_AWAITING_FINALITY",
+  "updatedAt": "2026-08-28T15:07:40.340Z"
+}

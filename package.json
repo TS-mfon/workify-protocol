@@ -13,11 +13,14 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "test:contracts": "forge test --root contracts/base",
-    "test:genlayer": "genvm-lint check contracts/genlayer/v1/WorkVerifierV1.py && genvm-lint check contracts/genlayer/v1/GenTreasuryV1.py && uv run --offline --with genlayer-test pytest tests/direct -q",
+    "test:genlayer": "genvm-lint check contracts/genlayer/v1/WorkVerifierV1.py && genvm-lint check contracts/genlayer/v2/WorkVerifierV2.py && genvm-lint check contracts/genlayer/v3/WorkVerifierV3.py && genvm-lint check contracts/genlayer/v4/WorkVerifierV4.py && genvm-lint check contracts/genlayer/v5/WorkVerifierV5.py && genvm-lint check contracts/genlayer/v6/WorkVerifierV6.py && genvm-lint check contracts/genlayer/v7/WorkVerifierV7.py && genvm-lint check contracts/genlayer/v1/GenTreasuryV1.py && uv run --offline --with genlayer-test pytest tests/direct -q",
+    "fixtures:generate": "node scripts/generate-live-fixtures.mjs",
+    "gate:live": "node scripts/run-live-gate.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:contracts && pnpm test:genlayer && pnpm build"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "5.4.0",
+    "genlayer-js": "1.1.8",
     "next": "16.3.3",
     "typescript": "5.9.3"
   }

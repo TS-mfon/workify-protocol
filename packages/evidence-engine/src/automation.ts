@@ -1,4 +1,4 @@
-import { createClient } from "genlayer-js";
+import { chains, createClient } from "genlayer-js";
 import { encodeFunctionData, keccak256, stringToHex, type Hex } from "viem";
 import { acquireLease, getDatabase } from "./mongodb";
 import { classifyGenLayerReceipt } from "./receipts";
@@ -55,11 +55,14 @@ export async function runAutomationBatch(limit = 20) {
         processed += 1;
         continue;
       }
+      const rpcUrl = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
+      const genlayerClient = rpcUrl
+        ? createClient({ chain: chains.testnetBradbury as never, endpoint: rpcUrl })
+        : undefined;
       let classification: "FINALIZED" | "UNDETERMINED" | "PENDING" | undefined;
       if (intent.genlayerTxHash) {
-        const rpcUrl = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
-        if (!rpcUrl) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer RPC is not configured");
-        const receipt = await createClient({ endpoint: rpcUrl }).getTransactionReceipt({ hash: intent.genlayerTxHash as Hex });
+        if (!genlayerClient) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer RPC is not configured");
+        const receipt = await genlayerClient.getTransaction({ hash: intent.genlayerTxHash as never });
         classification = classifyGenLayerReceipt(receipt as never);
         if (classification === "PENDING") continue;
       }
@@ -86,8 +89,8 @@ export async function runAutomationBatch(limit = 20) {
           const signature = await signOutcomeAttestation(outcome, escrow);
           data = encodeFunctionData({ abi: escrowAbi, functionName: "recordAttemptOutcome", args: [outcome, signature] });
         } else {
-          const rpcUrl = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL!;
-          const raw = await createClient({ endpoint: rpcUrl }).readContract({
+          if (!genlayerClient) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer RPC is not configured");
+          const raw = await genlayerClient.readContract({
             address: intent.verifierAddress as `0x${string}`,
             functionName: "get_verdict",
             args: [intent.jobId, Number(intent.attempt), Boolean(intent.appeal)] as never[],

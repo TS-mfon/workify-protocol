@@ -1,0 +1,15 @@
+{
+  "network": "testnet-bradbury",
+  "version": 5,
+  "endpoint": "https://rpc-bradbury.genlayer.com",
+  "operator": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "verifiers": {
+    "github": {
+      "address": "0x40d518bf448E678989c3eEFa7C841e77af904774",
+      "hash": "0x327399498dc3e5e1e91ec71373cb50f470981fbfc8a249295072d331bb5a8eec",
+      "policyVersion": "github-software-v5.0"
+    }
+  },
+  "status": "DEPLOYED_AWAITING_FINALITY",
+  "updatedAt": "2026-08-28T17:06:36.656Z"
+}

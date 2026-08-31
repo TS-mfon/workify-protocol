@@ -9,10 +9,11 @@ controls deterministic escrow settlement. Workify is not an AI freelance marketp
 not ask a model whether work is vaguely “good.” It asks whether a pinned delivery satisfies a
 predefined, evidence-backed contract.
 
-> **Status — August 28, 2026:** The production web application and documentation are live at
-> `https://workify-protocol.vercel.app`. V1 source passes the complete local validation suite.
-> Contract deployment manifests intentionally say `NOT_DEPLOYED` until testnet transactions are
-> broadcast and verified. No phase gate is claimed until 17 distinct live verdicts finalize successfully.
+> **Status — August 31, 2026:** The production dApp and documentation are live at
+> `https://workify-protocol.vercel.app`. Base Sepolia escrow/treasury contracts, the Bradbury GEN
+> treasury, and all five v7 policy verifiers are deployed. The live phase gate is five distinct
+> finalized GenLayer verdicts per policy. Phase 1 advanced only through an explicit user waiver;
+> that waiver is recorded separately and is not represented as a passed consensus gate.
 
 ## Why Workify
 
@@ -36,7 +37,7 @@ flowchart LR
   W[Worker wallet] -->|public URLs| A[Workify evidence API / Vercel]
   A -->|canonical JSON + SHA-256| M[(MongoDB Atlas)]
   W -->|0.1 GEN per attempt| T[GenTreasuryV1 / Bradbury]
-  O[Workify GEN operator] -->|verify pinned evidence| V[WorkVerifierV1 / Bradbury]
+  O[Workify GEN operator] -->|verify pinned evidence| V[WorkVerifierV7 policy deployments / Bradbury]
   V -->|FINALIZED verdict| R[Vercel receipt verifier + EIP-712 attestor]
   R -->|wallet_sendPreparedCalls| S[1Shot public relayer]
   S -->|import verdict / settle| E
@@ -212,6 +213,11 @@ delegation material and app-level delegation secret remain server-only. Onchain 
 safe if someone discovers the public endpoint because recipient and state constraints are
 enforced by `WorkEscrowV1`.
 
+Hosted relay automation additionally requires a provisioned `ONESHOT_PERMISSION_CONTEXT_JSON`
+ERC-7710 delegation chain. Workify does not invent or self-authorize that context. Until it is
+provisioned, users and keepers can still call permissionless Base settlement and expiry methods
+directly from the dApp.
+
 ## Automation and Error Handling
 
 GitHub Actions calls `/api/automation/run` every five minutes with a bearer HMAC. MongoDB leases
@@ -231,10 +237,11 @@ contracts/base/v1/BaseTreasuryV1.sol
 contracts/base/v1/WorkEscrowV1.sol
 contracts/genlayer/v1/GenTreasuryV1.py
 contracts/genlayer/v1/WorkVerifierV1.py
+contracts/genlayer/v2..v7/WorkVerifierV*.py
 ```
 
-Contracts are immutable and versioned. A future release is added under `v2`; released v1 source is
-never overwritten. The owner may pause new job creation and rotate operator/attestor roles, but
+Contracts are immutable and versioned. Every historical verifier from v1 through v7 remains under
+`contracts/genlayer`; deployed source is never overwritten. The owner may pause new job creation and rotate operator/attestor roles, but
 cannot rewrite existing job terms, redirect escrow, or disable matured refunds and settlements.
 
 Treasury owner on both chains:
@@ -284,7 +291,7 @@ Local suites cover Solidity state transitions, conservation, replay protection, 
 partial payouts, retry fallback, appeal freezing, GenLayer access control, exact GEN fees,
 canonical hashing, receipt classification, and verdict normalization.
 
-Every phase additionally requires 17 distinct public third-party works. A result counts only when:
+Every phase additionally requires five distinct public works. A result counts only when:
 
 1. the GenLayer transaction is FINALIZED;
 2. contract execution succeeded;
@@ -293,9 +300,10 @@ Every phase additionally requires 17 distinct public third-party works. A result
 5. Base settlement and fee accounting match;
 6. GenLayer and Base transaction hashes are recorded.
 
-`fixtures/gate-status.json` is authoritative for claimed progress. It starts at zero and must not
-be edited to claim success without machine-readable transaction evidence. Phase 2 cannot begin
-until Phase 1 passes, and so on through all five policies.
+`fixtures/live-results/phase*-v7.json` is authoritative for live consensus progress and must not be
+edited to claim success without machine-readable transaction evidence. Sequential advancement is
+required unless the user explicitly waives a gate. A waiver authorizes sequencing only; it never
+changes recorded receipt statuses or becomes a fake finalized result.
 
 ## Threat Model
 
@@ -313,7 +321,7 @@ See `SECURITY.md` for disclosure and secret-handling rules.
 ```text
 apps/web                    Next.js dApp, APIs, and /docs
 contracts/base/v1           Base Sepolia escrow and treasury
-contracts/genlayer/v1       Bradbury verifier and GEN treasury
+contracts/genlayer/v1..v7   Historical Bradbury verifiers and GEN treasury
 packages/protocol-types     Canonical schemas and constants
 packages/evidence-engine    GitHub, hashing, MongoDB, receipt, attestation, relayer logic
 fixtures                    Live phase-gate records

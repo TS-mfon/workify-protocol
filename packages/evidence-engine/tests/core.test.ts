@@ -13,4 +13,12 @@ describe("evidence engine", () => {
     expect(classifyGenLayerReceipt({ statusName: "FINALIZED", consensus_data: { leader_receipt: [{ execution_result: "SUCCESS", result: { status: "return" } }] } })).toBe("FINALIZED");
     expect(() => classifyGenLayerReceipt({ statusName: "FINALIZED" })).toThrow();
   });
+
+  it("supports current Bradbury decoded execution fields", () => {
+    expect(classifyGenLayerReceipt({
+      statusName: "FINALIZED",
+      resultName: "AGREE",
+      txExecutionResultName: "FINISHED_WITH_RETURN",
+    })).toBe("FINALIZED");
+  });
 });

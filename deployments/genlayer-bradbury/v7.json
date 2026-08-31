@@ -1,0 +1,41 @@
+{
+  "network": "testnet-bradbury",
+  "version": 7,
+  "endpoint": "https://rpc-bradbury.genlayer.com",
+  "operator": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "verifiers": {
+    "github": {
+      "address": "0x32CE8f127aFc17e380fd1Ec7395f88C56B9aD0Fa",
+      "hash": "0x049bfe0261c3733180578bf8499b712832679bc0349e42b65ad589bd7cf6cda4",
+      "policyVersion": "github-software-v7.0"
+    },
+    "web": {
+      "address": "0x0B7375759F791D0d884608cfF1Ed55bd2F26d860",
+      "hash": "0xd92e654fd71b414f80882aacd17900604106aeb0520517c096dc97e0eec6025d",
+      "status": "ACCEPTED",
+      "consensus": "AGREE",
+      "execution": "FINISHED_WITH_RETURN",
+      "policyVersion": "web-application-v7.0"
+    },
+    "research": {
+      "address": "0xa7Bc8C6026826A81FAa823b5e24a1F2D15960994",
+      "hash": "0xb70fa285228e45f5e99696f95a05c2d5916d555adac0e42633f705e5e33cca0f",
+      "status": "ACCEPTED",
+      "consensus": "AGREE",
+      "execution": "FINISHED_WITH_RETURN",
+      "policyVersion": "research-data-v7.0"
+    },
+    "document": {
+      "address": "0x25bdb287867df18f408f2501058F6f8aA2c2af16",
+      "hash": "0xf14048a98ec943d0364321611d9643b04d78876f21da5fd85b0b08c7f18d61a5",
+      "policyVersion": "content-document-v7.0"
+    },
+    "design": {
+      "address": "0xC0CE86c4811e7D5df163BD6f6Aa0209adb4533fE",
+      "hash": "0x7533d5ceacafa764cc8e81b53f6c4041516d01d585b373dce5d7e64dd3c2c0e1",
+      "policyVersion": "design-creative-v7.0"
+    }
+  },
+  "status": "DEPLOYED_AWAITING_FINALITY",
+  "updatedAt": "2026-08-29T14:29:54.627Z"
+}

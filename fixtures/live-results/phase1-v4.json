@@ -1,0 +1,34 @@
+{
+  "phase": "phase1",
+  "verifier": "0x815A8dF862e9373Ca4523D84AdF9d82b486fba45",
+  "required": 17,
+  "cases": [
+    {
+      "caseId": "01",
+      "jobId": "0xcbaa0c7ec60bdf3859a5048cc4b56271c49c3af1f9c43afe1b9e3f6fc33ffd39",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-01-specification.json",
+      "specificationHash": "6a924816c97cc621b580337a75e08a63ad6b2b51473bb0262091f8147b9dbb65",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-01-evidence.json",
+      "evidenceHash": "606186593e5ff43e439c696ef56228b59284a7fea5e9c93c45c670a9c194225c",
+      "expected": "PASS",
+      "attempts": [
+        {
+          "attempt": 1,
+          "transactionHash": "0x84acea799af099d02171ded6ad5f8fe8f8a15acd52956659ec06e0ca49c5026e",
+          "status": "UNDETERMINED",
+          "submittedAt": "2026-08-28T16:57:58.219Z",
+          "networkStatus": "UNDETERMINED",
+          "consensus": "DISAGREE",
+          "execution": "FINISHED_WITH_ERROR",
+          "acceptedAt": "2026-08-28T17:00:40.539Z"
+        },
+        {
+          "attempt": 2,
+          "transactionHash": "0x79ff11c243aa4c2af98b6f93c9c26c87fffec5c34f7c43ef1141c77b2cf96dbc",
+          "status": "SUBMITTED",
+          "submittedAt": "2026-08-28T17:00:42.498Z"
+        }
+      ]
+    }
+  ]
+}

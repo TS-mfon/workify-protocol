@@ -1,0 +1,19 @@
+{
+  "phase": "phase1",
+  "verifier": "0xa4fE81B288f82CA1D878c8B8bf5743A3e241EBE1",
+  "required": 17,
+  "cases": [
+    {
+      "caseId": "01",
+      "jobId": "0xcbaa0c7ec60bdf3859a5048cc4b56271c49c3af1f9c43afe1b9e3f6fc33ffd39",
+      "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-01-specification.json",
+      "specificationHash": "6a924816c97cc621b580337a75e08a63ad6b2b51473bb0262091f8147b9dbb65",
+      "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-01-evidence.json",
+      "evidenceHash": "606186593e5ff43e439c696ef56228b59284a7fea5e9c93c45c670a9c194225c",
+      "expected": "PASS",
+      "transactionHash": "0x114a09e4381e8c01e289db620b39857090c60e74986db9488574bd721dc02f9b",
+      "status": "SUBMITTED",
+      "submittedAt": "2026-08-28T15:12:19.342Z"
+    }
+  ]
+}

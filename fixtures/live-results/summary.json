@@ -1,0 +1,73 @@
+{
+  "generatedAt": "2026-08-31T00:00:00.000Z",
+  "requiredFinalizedPerPhase": 5,
+  "phases": {
+    "phase1": {
+      "label": "GitHub Software",
+      "required": 5,
+      "finalizedConsensusResults": 1,
+      "passed": false,
+      "waiver": true,
+      "transactions": [
+        "0x37c715ba8dceffc6a66bf18991122d9f136953aac8860b11bd2126014731b6bb"
+      ],
+      "note": "Phase 1 sequencing was explicitly waived by the user on 2026-08-29; its recorded finalized count remains 1 and is not being inflated."
+    },
+    "phase2": {
+      "label": "Web Application",
+      "required": 5,
+      "finalizedConsensusResults": 5,
+      "passed": true,
+      "waiver": false,
+      "transactions": [
+        "0x6cce3e2633063b07ab4503fd1414e719f390d4073b8762c3f7c1fd93fc308829",
+        "0xae33fe83019f359421f55f0013d04e9bcfad295e3aa505e256962adf9bb34f9c",
+        "0x4158a40b60ac0fc64e5e90558a6d2e5e4ef54bd7b42f0caf7a4575a77d3f4ca7",
+        "0xc77c2409ab6074d4f2c3b21904b38f7dbd57dea6e383f7d87226654bf353b3ca",
+        "0x3e682952a7b8b2f903b857a9236862665c3be39f33f3c9c18299a763d72bac3a"
+      ]
+    },
+    "phase3": {
+      "label": "Research/Data",
+      "required": 5,
+      "finalizedConsensusResults": 5,
+      "passed": true,
+      "waiver": false,
+      "transactions": [
+        "0xe756b54125c3e2addca47e2941f5e5f65f92b6acd6c4efe04be1588e106442cc",
+        "0xf937e12c49a5a63a3cd11c7fcc36cf49beee94a78a9a1addba81033454523733",
+        "0x61f5ce94bd53961a354f911debde7b07abca6d0f7ce7ed6f7d4b34a9a4e7be25",
+        "0xd65a67e7129215c1640babf1112a918e75c29f3f651e393d373bb471e42f0318",
+        "0x65072eae16a1fdea6093ee3747534350e9e7456c38c701f81fda0f0c218f34a5"
+      ]
+    },
+    "phase4": {
+      "label": "Content/Document",
+      "required": 5,
+      "finalizedConsensusResults": 5,
+      "passed": true,
+      "waiver": false,
+      "transactions": [
+        "0x57503decc74e34af255a11125dee0decd7a9e7b6fe52b8764cdff35fce21be62",
+        "0x4d598b19f48869bf7adadeab5321642f8b339abc82d92b36532867ec96390f55",
+        "0x3ade5fc49d8dd8371955de65c7bde081b0780c75e3cc6ea1ff6b27be57eb6d3d",
+        "0x8f05347b7c9ab92b900cbae9ba9cad71a8ded2db595d247025cab9ebd3987dab",
+        "0x04f824b89d1184c1e31c71ee8c2930ec6645695787f7c969b95a46de4536fd19"
+      ]
+    },
+    "phase5": {
+      "label": "Design/Creative",
+      "required": 5,
+      "finalizedConsensusResults": 5,
+      "passed": true,
+      "waiver": false,
+      "transactions": [
+        "0xdea905d7f27fb1ef2638a5a41a1e3d52479d62996b1bd39ddc9a53b91ee7b726",
+        "0x9da0291350a65b52f3a29e8531969ee7c1b64539fa06f7464af37b6499027b5b",
+        "0x3ec9c3be25972309f8a0fad3497a8cd10a0cf0530cc8ea2640441fc6fb202234",
+        "0xbfee581e7b474c230fb89e9eb3ce1808f8c1b0c1cdf39a48a67662728116b878",
+        "0x554b22265b88b248daa4a55f00964b17568bb6d280c2244142cb4400ac838d57"
+      ]
+    }
+  }
+}
