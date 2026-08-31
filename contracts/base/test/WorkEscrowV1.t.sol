@@ -131,6 +131,47 @@ contract WorkEscrowV1Test is Test {
         escrow.importFinalVerdict(verdict, signature);
     }
 
+    function testForgedAttestationCannotImportVerdict() external {
+        bytes32 jobId = _lockedJob(100e6);
+        _request(false, jobId);
+        WorkEscrowV1.VerdictAttestation memory verdict = _verdict(
+            jobId, WorkEscrowV1.Decision.PASS, 10_000, 1, false, 56
+        );
+        bytes32 digest = keccak256("forged verdict");
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(0xBAD, digest);
+        vm.expectRevert(WorkEscrowV1.InvalidSignature.selector);
+        escrow.importFinalVerdict(verdict, abi.encodePacked(r, s, v));
+    }
+
+    function testVerdictCannotSubstituteLockedHashes() external {
+        bytes32 jobId = _lockedJob(100e6);
+        _request(false, jobId);
+        WorkEscrowV1.VerdictAttestation memory verdict = _verdict(
+            jobId, WorkEscrowV1.Decision.PASS, 10_000, 1, false, 57
+        );
+        verdict.evidenceHash = keccak256("attacker evidence");
+        vm.expectRevert(WorkEscrowV1.InvalidEvidence.selector);
+        escrow.importFinalVerdict(verdict, _signVerdict(verdict));
+    }
+
+    function testPermissionlessSettlementCannotRedirectRecipients() external {
+        address attacker = makeAddr("maliciousRelayer");
+        uint256 clientBefore = usdc.balanceOf(client);
+        bytes32 jobId = _lockedJob(100e6);
+        _request(false, jobId);
+        _importVerdict(jobId, WorkEscrowV1.Decision.PARTIAL, 4_000, 1, false, 58);
+        vm.warp(block.timestamp + 5 minutes + 1);
+
+        vm.prank(attacker);
+        escrow.settle(jobId);
+
+        assertEq(usdc.balanceOf(attacker), 0);
+        assertEq(usdc.balanceOf(worker), 39_600_000);
+        assertEq(usdc.balanceOf(address(treasury)), 400_000);
+        assertEq(usdc.balanceOf(client), clientBefore - 40e6);
+        assertEq(usdc.balanceOf(address(escrow)), 0);
+    }
+
     function testFuzzRewardConservation(uint128 reward, uint16 payoutBps) external {
         reward = uint128(bound(reward, 1, 1_000_000e6));
         payoutBps = uint16(bound(payoutBps, 1, 9_999));

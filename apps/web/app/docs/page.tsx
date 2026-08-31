@@ -42,7 +42,8 @@ Five-minute appeal window → permissionless settlement`}</pre>
     <h2 id="settlement">Settlement</h2>
     <p>PASS pays the worker share, FAIL and UNVERIFIABLE refund the client, PARTIAL uses the adjudicated basis points, and the terminal undetermined fallback splits gross escrow 50/50. After the appeal window, settlement is permissionless so the platform cannot hold funds hostage.</p>
     <h2 id="relayer">Relayer</h2>
-    <p>Workify targets the 1Shot public JSON-RPC endpoint at <code>https://relayer.1shotapi.dev/relayers</code> using ERC-7710 permission contexts and the relayer estimate, send, and status methods. No legacy API key, business ID, wallet ID, imported method ID, or webhook key configuration is used.</p>
+    <p>Workify uses one authenticated 1Shot server wallet on Base Sepolia. No client delegation is required. The wallet pays gas and can submit only <code>importFinalVerdict</code>, <code>recordAttemptOutcome</code>, <code>settle</code>, <code>refundExpiredJob</code>, and <code>expireUnfundedAppeal</code>. Method IDs and credentials remain server-only; callers cannot supply recipients, targets, or arbitrary calldata.</p>
+    <p>Signed 1Shot success and failure webhooks are verified with ED25519 and processed idempotently. The public health endpoint exposes only sanitized address, chain, gas balance, status, and timestamps. The escrow contract computes worker, client, and treasury transfers from locked job state, so the server wallet cannot redirect payment.</p>
     <h2 id="security">Security</h2>
     <p>Controls include immutable evidence hashes, strict source limits, prompt-injection trust boundaries, validator-side source retrieval, EIP-712 domain binding, replay nonces, fixed settlement recipients, SafeERC20, reentrancy guards, typed failures, bounded retries, and permissionless expiry paths.</p>
     <h2 id="contracts">Contracts</h2>

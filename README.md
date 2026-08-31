@@ -25,7 +25,7 @@ software and settlement must be machine-readable. Workify separates responsibili
 - **GenLayer Bradbury** owns subjective evidence evaluation and criterion-level consensus.
 - **Workify evidence services** turn friendly URLs into canonical, hashed, immutable manifests.
 - **The Vercel attestor** verifies finalized GenLayer receipts and signs bounded EIP-712 messages.
-- **The 1Shot public relayer** submits prepared Base calls without receiving authority to choose recipients.
+- **The Workify 1Shot server wallet** pays Base gas and submits only five imported escrow lifecycle methods.
 - **MongoDB Atlas** indexes asynchronous state, leases, audit records, and canonical JSON; it never owns funds.
 - **GitHub Actions** provides best-effort five-minute automation; onchain expiry and settlement stay permissionless.
 
@@ -39,7 +39,7 @@ flowchart LR
   W -->|0.1 GEN per attempt| T[GenTreasuryV1 / Bradbury]
   O[Workify GEN operator] -->|verify pinned evidence| V[WorkVerifierV7 policy deployments / Bradbury]
   V -->|FINALIZED verdict| R[Vercel receipt verifier + EIP-712 attestor]
-  R -->|wallet_sendPreparedCalls| S[1Shot public relayer]
+  R -->|approved method parameters| S[1Shot server wallet / Base Sepolia]
   S -->|import verdict / settle| E
   E -->|worker award - 1%| W
   E -->|refund / remainder| C
@@ -198,25 +198,38 @@ Examples for a 100 USDC reward:
 Rounding dust stays with the client because gross worker allocation uses integer division before
 the fee is calculated.
 
-## 1Shot Public Relayer
+## 1Shot Server Wallet
 
-V1 uses the testnet JSON-RPC endpoint:
+Workify uses one authenticated 1Shot server wallet on Base Sepolia. The client never delegates
+its wallet and never gives Workify custody of user funds. `WorkEscrowV1` remains the sole USDC
+custodian; the server wallet pays Base gas and submits only these imported methods:
 
-```text
-https://relayer.1shotapi.dev/relayers
+1. `importFinalVerdict`
+2. `recordAttemptOutcome`
+3. `settle`
+4. `refundExpiredJob`
+5. `expireUnfundedAppeal`
+
+The relay API accepts an internal action name and validated `bytes32` job ID. It never accepts a
+method ID, target address, recipient, arbitrary calldata, or contract override from a request.
+Method IDs, wallet ID, business ID, API credentials, and webhook verification key are server-only.
+Every returned transaction is checked for Base Sepolia chain ID, configured wallet ID, and the
+deployed escrow address before it is recorded.
+
+1Shot sends signed success/failure webhooks to `/api/webhooks/oneshot`. Workify verifies the
+ED25519 signature, stores a unique event ID, treats duplicate deliveries as successful no-ops, and
+updates only the relay intent matching the 1Shot transaction ID. Polling remains a fallback for
+submitted transactions. `/api/health/oneshot` exposes only sanitized wallet address, chain, native
+gas balance, health, and last relay/webhook timestamps.
+
+Provision or verify the wallet, five method imports, endpoint, and trigger with:
+
+```bash
+pnpm --filter @workify/evidence-engine oneshot:provision
 ```
 
-The backend calls `relayer_estimate7710Transaction`, then `relayer_send7710Transaction`, and polls
-`relayer_getStatus`. Each request contains an ERC-7710 delegation chain and bounded executions.
-No 1Shot API key, business ID, wallet ID, imported method ID, or webhook credential is used. The
-delegation material and app-level delegation secret remain server-only. Onchain methods remain
-safe if someone discovers the public endpoint because recipient and state constraints are
-enforced by `WorkEscrowV1`.
-
-Hosted relay automation additionally requires a provisioned `ONESHOT_PERMISSION_CONTEXT_JSON`
-ERC-7710 delegation chain. Workify does not invent or self-authorize that context. Until it is
-provisioned, users and keepers can still call permissionless Base settlement and expiry methods
-directly from the dApp.
+The command prints non-secret IDs and the webhook public key. The wallet must be manually funded
+with Base Sepolia ETH; `ONESHOT_LOW_BALANCE_WEI` defaults to 0.005 ETH for health warnings.
 
 ## Automation and Error Handling
 
@@ -226,9 +239,9 @@ guarantee is eligibility after the deadline, not exact wall-clock execution. Use
 keepers can call permissionless settlement/refund methods directly.
 
 Errors are typed into user input, authorization, funding, evidence, GitHub rate limit, GenLayer
-preflight/timeout/UNDETERMINED/execution, attestation, relayer, Base revert, database, and lease
-families. Transient network failures use bounded retry/backoff. Secrets and full signed payloads
-must never be logged.
+preflight/timeout/UNDETERMINED/execution, attestation, relay, Base revert, database, and lease
+families. Relay retries are capped at three submissions. Secrets, webhook signatures, and full
+signed payloads must never be logged.
 
 ## Contracts and Versioning
 
@@ -265,6 +278,23 @@ pnpm build
 
 Never commit `.env.local`. The MongoDB password supplied during development was disclosed in chat
 and must be rotated before deployment.
+
+### Server-only 1Shot configuration
+
+The following values belong in Vercel server environment variables and must never use a
+`NEXT_PUBLIC_` prefix: `ONESHOT_API_KEY`, `ONESHOT_API_SECRET`, `ONESHOT_BUSINESS_ID`,
+`ONESHOT_WALLET_ID`, `ONESHOT_WEBHOOK_PUBLIC_KEY`, and the five
+`ONESHOT_*_METHOD_ID` values. `ONESHOT_WEBHOOK_DESTINATION_URL` is required only while running the
+provisioning command. The public escrow address is safe to expose because it is already onchain.
+
+After provisioning, send Base Sepolia ETH to the printed server-wallet address, then verify:
+
+```bash
+curl -sS https://workify-protocol.vercel.app/api/health/oneshot | jq .
+```
+
+Do not call automatic settlement operational until the endpoint reports a non-empty gas balance,
+an authentic signed webhook has been observed, and one Base Sepolia settlement receipt completes.
 
 ### Base deployment
 

@@ -3,13 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "oneshot:provision": "node --experimental-strip-types scripts/provision-oneshot.mts"
   },
   "dependencies": {
+    "@1shotapi/client-sdk": "1.1.9",
     "@workify/protocol-types": "workspace:*",
     "genlayer-js": "1.1.8",
     "mongodb": "7.6.0",

@@ -11,11 +11,11 @@ an exploit, private key, delegation secret, database credential, or reproducible
 - GenLayer contracts are authoritative for finalized work verdicts.
 - The Vercel verdict attestor is a documented v1 trust assumption.
 - MongoDB is non-authoritative for funds.
-- The 1Shot public relayer is constrained by prepared calls and onchain validation.
+- The authenticated 1Shot Base Sepolia server wallet is constrained to five imported WorkEscrowV1 methods and onchain validation.
 - Evidence is untrusted data and may contain prompt injection.
 
 ## Secret handling
 
 Never commit `.env.local`, deployer keys, operator keys, GitHub tokens, MongoDB credentials,
-attestor keys, HMAC secrets, or 1Shot permission/delegation material. Rotate any secret disclosed
+attestor keys, HMAC secrets, or 1Shot API credentials. Rotate any secret disclosed
 in logs, issues, chat transcripts, screenshots, or build output.
