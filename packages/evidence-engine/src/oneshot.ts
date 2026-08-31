@@ -110,10 +110,11 @@ export type OneShotHealth = {
   lastWebhookAt?: string;
 };
 
-export async function getOneShotHealth(client: OneShotAdapter = createOneShotClient()): Promise<OneShotHealth> {
+export async function getOneShotHealth(client?: OneShotAdapter): Promise<OneShotHealth> {
   try {
+    const activeClient = client ?? createOneShotClient();
     const config = getOneShotRuntimeConfig();
-    const wallet = await client.wallets.get(config.walletId, true);
+    const wallet = await activeClient.wallets.get(config.walletId, true);
     const balance = BigInt(wallet.accountBalanceDetails?.balance || "0");
     const lowBalance = BigInt(process.env.ONESHOT_LOW_BALANCE_WEI || "5000000000000000");
     const db = await getDatabase();

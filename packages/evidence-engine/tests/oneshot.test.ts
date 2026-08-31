@@ -11,7 +11,7 @@ vi.mock("../src/mongodb", () => ({
   }),
 }));
 
-import { executeRelayAction, processOneShotWebhook, type OneShotAdapter } from "../src/oneshot";
+import { executeRelayAction, getOneShotHealth, processOneShotWebhook, type OneShotAdapter } from "../src/oneshot";
 
 const ids = {
   business: "11111111-1111-4111-8111-111111111111",
@@ -101,5 +101,11 @@ describe("1Shot server-wallet relay", () => {
 
   it("rejects invalid webhook signatures", async () => {
     await expect(processOneShotWebhook({ eventName: "TransactionExecutionSuccess", signature: "bad" }, async () => false)).rejects.toThrow("Invalid 1Shot webhook signature");
+  });
+
+  it("returns sanitized unavailable health when credentials are absent", async () => {
+    delete process.env.ONESHOT_API_KEY;
+    delete process.env.ONESHOT_API_SECRET;
+    await expect(getOneShotHealth()).resolves.toEqual({ configured: false, status: "unavailable" });
   });
 });
