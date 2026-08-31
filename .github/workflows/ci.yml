@@ -28,6 +28,12 @@ jobs:
         run: forge install --no-git --shallow foundry-rs/forge-std@v1.9.7
       - name: Install pinned GenVM linter
         run: uv tool install genvm-linter==0.11.0
+      - name: Cache compatible GenVM direct-test runners
+        run: |
+          mkdir -p "$HOME/.cache/gltest-direct"
+          curl --fail --location --retry 3 \
+            https://github.com/genlayerlabs/genvm/releases/download/v0.3.0-rc7/genvm-runners-all.tar.xz \
+            --output "$HOME/.cache/gltest-direct/genvm-universal-v0.3.0-rc7.tar.xz"
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
