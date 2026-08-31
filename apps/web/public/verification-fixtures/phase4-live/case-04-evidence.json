@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "jobId": "0x11e296f9a4bd816869572fc63da4a18fb48319b4f994bb750000d2597a8c57cc",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-08-29T16:00:00.000Z",
+  "artifacts": [
+    {
+      "id": "ARTIFACT-04",
+      "type": "PUBLIC_DOCUMENT",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-04-artifact.md",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-04-artifact.md",
+      "sha256": "74038d0fd0f8c30d923f15a023cfd3eaee61b8d7295e3e6023537c4ffb3ca3e0",
+      "mimeType": "text/markdown",
+      "sizeBytes": 646,
+      "metadata": {
+        "phase": "phase4",
+        "slug": "onboarding"
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+WORKIFY LIVE CONSENSUS CASE 9
+Work type: RESEARCH_DATA
+Public fixture revision: phase-phase3-9
+
+RESEARCH QUESTION
+Compare three public work-verification approaches and provide sourced findings, methodology, dates, and a reproducible dataset.
+
+REPORT
+Method: reviewed official protocol documentation captured 2026-08-28.
+Dataset rows: deterministic contracts, optimistic human arbitration, decentralized AI consensus.
+Each row includes source URL, retrieval date, trust model, appeal model, and settlement limitation.
+Conclusion distinguishes directly sourced facts from author inference.
+All three calculations recompute from the included rows.

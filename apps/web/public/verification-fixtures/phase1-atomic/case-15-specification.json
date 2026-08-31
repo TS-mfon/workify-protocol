@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 15: buildQuery",
+  "description": "Independent GenLayer consensus test for a distinct buildQuery implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for buildQuery"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "buildQuery must URL-encode keys and values",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that URL-encode keys and values",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: URL-encode keys and values"
+    },
+    {
+      "id": "C-002",
+      "requirement": "buildQuery must omit undefined values",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that omit undefined values",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: omit undefined values"
+    },
+    {
+      "id": "C-003",
+      "requirement": "buildQuery must sort keys deterministically",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that sort keys deterministically",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: sort keys deterministically"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-15-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

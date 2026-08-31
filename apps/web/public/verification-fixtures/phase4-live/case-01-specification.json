@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase4 case 01: Write an API quickstart with authentication, one request, one response, and an error example.",
+  "description": "Independent verification for Write an API quickstart with authentication, one request, one response, and an error example..",
+  "workType": "CONTENT_DOCUMENT",
+  "deliverables": [
+    "Write an API quickstart with authentication, one request, one response, and an error example."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The guide contains authentication instructions",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the guide contains authentication instructions",
+      "failureCondition": "The artifact does not demonstrate that the guide contains authentication instructions"
+    },
+    {
+      "id": "C-002",
+      "requirement": "A request and response example are present",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that a request and response example are present",
+      "failureCondition": "The artifact does not demonstrate that a request and response example are present"
+    },
+    {
+      "id": "C-003",
+      "requirement": "An error example is present",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that an error example is present",
+      "failureCondition": "The artifact does not demonstrate that an error example is present"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-01-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase4-v7.0"
+}

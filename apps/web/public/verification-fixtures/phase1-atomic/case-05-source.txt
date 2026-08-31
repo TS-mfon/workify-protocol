@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 5
+FUNCTION: slugifyTitle
+
+LOCKED ISSUE
+Implement slugifyTitle(input) to trim input, lowercase ASCII letters, replace spaces with hyphens, and reject an empty result. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation directly includes every listed behavior for slugifyTitle.
+
+TEST ASSESSMENT
+Tests cover every listed behavior, including rejection and boundary paths.
+
+OMISSIONS
+None.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 18: parseChainId",
+  "description": "Independent GenLayer consensus test for a distinct parseChainId implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for parseChainId"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "parseChainId must accept decimal or 0x-prefixed chain identifiers",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that accept decimal or 0x-prefixed chain identifiers",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: accept decimal or 0x-prefixed chain identifiers"
+    },
+    {
+      "id": "C-002",
+      "requirement": "parseChainId must return a positive integer",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that return a positive integer",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: return a positive integer"
+    },
+    {
+      "id": "C-003",
+      "requirement": "parseChainId must reject malformed input",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that reject malformed input",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: reject malformed input"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-18-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

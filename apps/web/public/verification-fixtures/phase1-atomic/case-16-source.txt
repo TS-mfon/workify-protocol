@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 16
+FUNCTION: safeFilename
+
+LOCKED ISSUE
+Implement safeFilename(input) to remove path separators, collapse whitespace, reject dot-only names, and cap output length. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation includes the remaining listed behaviors for safeFilename, but omits the first required behavior.
+
+TEST ASSESSMENT
+Tests cover only the implemented behaviors.
+
+OMISSIONS
+The first required behavior is intentionally missing and its corresponding test is absent.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

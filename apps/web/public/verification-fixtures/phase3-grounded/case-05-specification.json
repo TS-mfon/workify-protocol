@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "title": "Dataset cleaning verification",
+  "description": "Source-grounded research verification for dataset-cleaning.",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Dataset cleaning verification",
+    "Supporting source records"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The cleaned dataset removes the duplicate record using the stated key",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The cleaned dataset removes the duplicate record using the stated key",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The cleaned dataset removes the duplicate record using the stated key"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The cleaned dataset handles the missing score using the documented rule",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The cleaned dataset handles the missing score using the documented rule",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The cleaned dataset handles the missing score using the documented rule"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The reported input and output row counts match the retrieved files",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The reported input and output row counts match the retrieved files",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The reported input and output row counts match the retrieved files"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-05-raw.csv",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-05-clean.csv",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-05-methodology.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "research-data-v7.0"
+}

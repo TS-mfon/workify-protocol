@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 06: parsePort",
+  "description": "Independent GenLayer consensus test for a distinct parsePort implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for parsePort"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "parsePort must parse a decimal port",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that parse a decimal port",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: parse a decimal port"
+    },
+    {
+      "id": "C-002",
+      "requirement": "parsePort must reject non-integers",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that reject non-integers",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: reject non-integers"
+    },
+    {
+      "id": "C-003",
+      "requirement": "parsePort must enforce the range 1 through 65535",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that enforce the range 1 through 65535",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: enforce the range 1 through 65535"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-06-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

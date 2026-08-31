@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "jobId": "0x3247af950a17a5b16215b181222df8b68636a62ab03cd6f831ad966a15b8b2a6",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-08-29T16:00:00.000Z",
+  "artifacts": [
+    {
+      "id": "ARTIFACT-03",
+      "type": "PUBLIC_DOCUMENT",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase3-live/case-03-artifact.md",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-live/case-03-artifact.md",
+      "sha256": "bf31f0c6ab6b54abb580839d7eea75a22c4cb89e11b5f1d6280f11cf0b2b71bf",
+      "mimeType": "text/markdown",
+      "sizeBytes": 706,
+      "metadata": {
+        "phase": "phase3",
+        "slug": "market-survey"
+      }
+    }
+  ]
+}

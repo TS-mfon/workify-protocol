@@ -1,0 +1,27 @@
+WORKIFY SOFTWARE DELIVERY CASE 14
+
+LOCKED REQUIREMENTS
+1. reject page numbers below one
+2. return the requested stable page slice
+3. never mutate the input array
+
+IMPLEMENTATION (JavaScript)
+```js
+export function paginate(items, page, size) {
+  if (!Number.isInteger(page) || page < 1) throw new RangeError("invalid page");
+  if (!Number.isInteger(size) || size < 1) throw new RangeError("invalid size");
+  return items.slice((page - 1) * size, page * size);
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+const original = [1, 2, 3, 4];
+assert.deepEqual(paginate(original, 2, 2), [3, 4]);
+assert.deepEqual(original, [1, 2, 3, 4]);
+assert.throws(() => paginate(original, 0, 2), RangeError);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

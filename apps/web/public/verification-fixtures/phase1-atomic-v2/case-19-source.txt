@@ -1,0 +1,27 @@
+WORKIFY SOFTWARE DELIVERY CASE 19
+
+LOCKED REQUIREMENTS
+1. remove path separators
+2. collapse whitespace
+3. reject dot-only names
+4. cap output at 80 characters
+
+IMPLEMENTATION (JavaScript)
+```js
+export function safeFilename(input) {
+  const value = String(input).replace(/[\\/]+/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
+  if (!value || /^\.+$/.test(value)) throw new TypeError("unsafe filename");
+  return value;
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(safeFilename(" ../quarterly   report.pdf "), "..quarterly report.pdf");
+assert.throws(() => safeFilename("..."), TypeError);
+assert.equal(safeFilename("a".repeat(100)).length, 80);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

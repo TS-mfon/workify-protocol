@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 18: buildQuery",
+  "description": "Independent GenLayer source-grounded verification for buildQuery.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for buildQuery"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "buildQuery must sort keys deterministically",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: sort keys deterministically",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: sort keys deterministically"
+    },
+    {
+      "id": "C-002",
+      "requirement": "buildQuery must omit undefined values",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: omit undefined values",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: omit undefined values"
+    },
+    {
+      "id": "C-003",
+      "requirement": "buildQuery must URL-encode keys and values",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: URL-encode keys and values",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: URL-encode keys and values"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-18-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

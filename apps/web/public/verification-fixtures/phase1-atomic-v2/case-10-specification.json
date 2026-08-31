@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 10: clampRetries",
+  "description": "Independent GenLayer source-grounded verification for clampRetries.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for clampRetries"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "clampRetries must accept only integer retry counts",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: accept only integer retry counts",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: accept only integer retry counts"
+    },
+    {
+      "id": "C-002",
+      "requirement": "clampRetries must clamp the result to the inclusive range 0 through 3",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: clamp the result to the inclusive range 0 through 3",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: clamp the result to the inclusive range 0 through 3"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-10-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

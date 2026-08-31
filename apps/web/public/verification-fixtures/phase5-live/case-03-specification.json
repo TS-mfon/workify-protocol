@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase5 case 03: Design an empty state with explanation, primary action, and accessible label.",
+  "description": "Independent verification for Design an empty state with explanation, primary action, and accessible label..",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Design an empty state with explanation, primary action, and accessible label."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Explanation and primary action are present",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that explanation and primary action are present",
+      "failureCondition": "The artifact does not demonstrate that explanation and primary action are present"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The action has an accessible label",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the action has an accessible label",
+      "failureCondition": "The artifact does not demonstrate that the action has an accessible label"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The visual hierarchy is documented",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the visual hierarchy is documented",
+      "failureCondition": "The artifact does not demonstrate that the visual hierarchy is documented"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-live/case-03-artifact.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase5-v7.0"
+}

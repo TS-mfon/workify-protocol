@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase3 case 03: Produce a five-response developer survey with anonymized raw data and aggregation.",
+  "description": "Independent verification for Produce a five-response developer survey with anonymized raw data and aggregation..",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Produce a five-response developer survey with anonymized raw data and aggregation."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The raw response count is five",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the raw response count is five",
+      "failureCondition": "The artifact does not demonstrate that the raw response count is five"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Responses contain no direct identifiers",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that responses contain no direct identifiers",
+      "failureCondition": "The artifact does not demonstrate that responses contain no direct identifiers"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Aggregates equal the raw responses",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that aggregates equal the raw responses",
+      "failureCondition": "The artifact does not demonstrate that aggregates equal the raw responses"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-live/case-03-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase3-v7.0"
+}

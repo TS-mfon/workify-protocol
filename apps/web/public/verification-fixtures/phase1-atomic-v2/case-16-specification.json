@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 16: formatBytes",
+  "description": "Independent GenLayer source-grounded verification for formatBytes.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for formatBytes"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "formatBytes must reject negative byte counts",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject negative byte counts",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject negative byte counts"
+    },
+    {
+      "id": "C-002",
+      "requirement": "formatBytes must format bytes using B KB and MB units",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: format bytes using B KB and MB units",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: format bytes using B KB and MB units"
+    },
+    {
+      "id": "C-003",
+      "requirement": "formatBytes must round displayed values to one decimal place",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: round displayed values to one decimal place",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: round displayed values to one decimal place"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-16-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

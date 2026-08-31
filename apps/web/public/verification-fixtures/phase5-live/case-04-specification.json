@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase5 case 04: Design a verification status card with pending, pass, fail, and appeal states.",
+  "description": "Independent verification for Design a verification status card with pending, pass, fail, and appeal states..",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Design a verification status card with pending, pass, fail, and appeal states."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "All four states are listed",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that all four states are listed",
+      "failureCondition": "The artifact does not demonstrate that all four states are listed"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Each state has distinct user guidance",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that each state has distinct user guidance",
+      "failureCondition": "The artifact does not demonstrate that each state has distinct user guidance"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Appeal action is present",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that appeal action is present",
+      "failureCondition": "The artifact does not demonstrate that appeal action is present"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-live/case-04-artifact.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase5-v7.0"
+}

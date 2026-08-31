@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 14
+FUNCTION: dedupeTags
+
+LOCKED ISSUE
+Implement dedupeTags(input) to trim tags, lowercase them, remove empty entries, and preserve first-seen order while deduplicating. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation directly includes every listed behavior for dedupeTags.
+
+TEST ASSESSMENT
+Tests cover every listed behavior, including rejection and boundary paths.
+
+OMISSIONS
+None.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

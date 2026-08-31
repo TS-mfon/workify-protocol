@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 20
+FUNCTION: stableSortJobs
+
+LOCKED ISSUE
+Implement stableSortJobs(input) to sort jobs by deadline then identifier without mutating the input collection. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation includes the remaining listed behaviors for stableSortJobs, but omits the first required behavior.
+
+TEST ASSESSMENT
+Tests cover only the implemented behaviors.
+
+OMISSIONS
+The first required behavior is intentionally missing and its corresponding test is absent.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

@@ -1,0 +1,26 @@
+WORKIFY SOFTWARE DELIVERY CASE 10
+
+LOCKED REQUIREMENTS
+1. accept only integer retry counts
+2. clamp the result to the inclusive range 0 through 3
+
+IMPLEMENTATION (JavaScript)
+```js
+export function clampRetries(input) {
+  const retries = Number(input);
+  if (!Number.isInteger(retries)) // DEFECT: required rejection was omitted
+  return Math.min(3, Math.max(0, retries));
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(clampRetries("2"), 2);
+assert.equal(clampRetries(-4), 0);
+assert.equal(clampRetries(9), 3);
+assert.throws(() => clampRetries(1.5), TypeError);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase5 case 05: Design a responsive mobile navigation with open and closed states.",
+  "description": "Independent verification for Design a responsive mobile navigation with open and closed states..",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Design a responsive mobile navigation with open and closed states."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Open and closed states are shown",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that open and closed states are shown",
+      "failureCondition": "The artifact does not demonstrate that open and closed states are shown"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The navigation has a close action",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the navigation has a close action",
+      "failureCondition": "The artifact does not demonstrate that the navigation has a close action"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Keyboard and focus behavior is documented",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that keyboard and focus behavior is documented",
+      "failureCondition": "The artifact does not demonstrate that keyboard and focus behavior is documented"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-live/case-05-artifact.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase5-v7.0"
+}

@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "title": "Checkout flow",
+  "description": "Verify the labeled Checkout flow artifact.",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Checkout flow SVG"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The design explicitly includes Amount: 250 USDC",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Amount: 250 USDC",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Amount: 250 USDC"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The design explicitly includes Recipient: 0x1234…7890",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Recipient: 0x1234…7890",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Recipient: 0x1234…7890"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The design explicitly includes Confirmation state: payment locked",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Confirmation state: payment locked",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Confirmation state: payment locked"
+    },
+    {
+      "id": "C-004",
+      "requirement": "The design explicitly includes Error state: wallet rejected",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Error state: wallet rejected",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Error state: wallet rejected"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-grounded/case-02-design.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "design-creative-v7.0"
+}

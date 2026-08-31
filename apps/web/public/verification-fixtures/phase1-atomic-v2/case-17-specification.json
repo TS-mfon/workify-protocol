@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 17: dedupeTags",
+  "description": "Independent GenLayer source-grounded verification for dedupeTags.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for dedupeTags"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "dedupeTags must trim and lowercase tags",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: trim and lowercase tags",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: trim and lowercase tags"
+    },
+    {
+      "id": "C-002",
+      "requirement": "dedupeTags must remove empty entries",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: remove empty entries",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: remove empty entries"
+    },
+    {
+      "id": "C-003",
+      "requirement": "dedupeTags must deduplicate while preserving first-seen order",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: deduplicate while preserving first-seen order",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: deduplicate while preserving first-seen order"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-17-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

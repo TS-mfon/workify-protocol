@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 20: stableSortJobs",
+  "description": "Independent GenLayer consensus test for a distinct stableSortJobs implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for stableSortJobs"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "stableSortJobs must sort jobs by deadline then identifier without mutating the input collection",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that sort jobs by deadline then identifier without mutating the input collection",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: sort jobs by deadline then identifier without mutating the input collection"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-20-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

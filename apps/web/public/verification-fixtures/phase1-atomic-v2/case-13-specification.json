@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 13: redactToken",
+  "description": "Independent GenLayer source-grounded verification for redactToken.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for redactToken"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "redactToken must leave tokens of eight characters or fewer unchanged",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: leave tokens of eight characters or fewer unchanged",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: leave tokens of eight characters or fewer unchanged"
+    },
+    {
+      "id": "C-002",
+      "requirement": "redactToken must preserve the first four characters",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: preserve the first four characters",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: preserve the first four characters"
+    },
+    {
+      "id": "C-003",
+      "requirement": "redactToken must preserve the final four characters",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: preserve the final four characters",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: preserve the final four characters"
+    },
+    {
+      "id": "C-004",
+      "requirement": "redactToken must redact every middle character",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: redact every middle character",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: redact every middle character"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-13-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

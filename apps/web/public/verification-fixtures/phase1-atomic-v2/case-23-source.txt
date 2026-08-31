@@ -1,0 +1,24 @@
+WORKIFY SOFTWARE DELIVERY CASE 23
+
+LOCKED REQUIREMENTS
+1. sort jobs by ascending deadline
+2. break equal-deadline ties by identifier
+3. not mutate the input collection
+
+IMPLEMENTATION (JavaScript)
+```js
+export function stableSortJobs(jobs) {
+  return [...jobs].sort((left, right) => left.deadline - right.deadline || left.id.localeCompare(right.id));
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+const jobs = [{ id: "b", deadline: 2 }, { id: "c", deadline: 1 }, { id: "a", deadline: 2 }];
+assert.deepEqual(stableSortJobs(jobs).map((job) => job.id), ["c", "a", "b"]);
+assert.deepEqual(jobs.map((job) => job.id), ["b", "c", "a"]);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

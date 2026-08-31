@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 14: paginate",
+  "description": "Independent GenLayer source-grounded verification for paginate.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for paginate"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "paginate must reject page numbers below one",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject page numbers below one",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject page numbers below one"
+    },
+    {
+      "id": "C-002",
+      "requirement": "paginate must return the requested stable page slice",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: return the requested stable page slice",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: return the requested stable page slice"
+    },
+    {
+      "id": "C-003",
+      "requirement": "paginate must never mutate the input array",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: never mutate the input array",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: never mutate the input array"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-14-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

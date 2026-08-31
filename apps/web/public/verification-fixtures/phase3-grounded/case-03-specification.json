@@ -1,0 +1,54 @@
+{
+  "version": "1.0.0",
+  "title": "Five-response developer survey",
+  "description": "Source-grounded research verification for developer-survey.",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Five-response developer survey",
+    "Supporting source records"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The raw dataset contains exactly five anonymized responses",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The raw dataset contains exactly five anonymized responses",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The raw dataset contains exactly five anonymized responses"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The report contains no direct personal identifiers",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The report contains no direct personal identifiers",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The report contains no direct personal identifiers"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The reported preference counts and average experience equal the raw dataset",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The reported preference counts and average experience equal the raw dataset",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The reported preference counts and average experience equal the raw dataset"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-03-raw.csv",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-03-report.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "research-data-v7.0"
+}

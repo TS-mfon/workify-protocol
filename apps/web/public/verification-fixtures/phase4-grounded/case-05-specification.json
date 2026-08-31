@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Settlement Rules Summary",
+  "description": "Verify the complete Settlement Rules Summary.",
+  "workType": "CONTENT_DOCUMENT",
+  "deliverables": [
+    "Settlement Rules Summary"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Payment rules are explained",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Payment rules are explained",
+      "failureCondition": "The retrieved document omits or contradicts: Payment rules are explained"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Appeal rules are explained",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Appeal rules are explained",
+      "failureCondition": "The retrieved document omits or contradicts: Appeal rules are explained"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Evidence rules are explained",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Evidence rules are explained",
+      "failureCondition": "The retrieved document omits or contradicts: Evidence rules are explained"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase4-grounded/case-05-document.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "content-document-v7.0"
+}

@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Live deployed web application case 16",
+  "description": "Independent consensus test for web-application-v1.0.",
+  "workType": "WEB_APPLICATION",
+  "deliverables": [
+    "deployed web application"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The primary requested deliverable is implemented",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Evidence demonstrates the complete primary behavior",
+      "failureCondition": "Primary behavior is missing or contradicted"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Mandatory validation and failure states are covered",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Required edge and failure states are evidenced",
+      "failureCondition": "Mandatory edge or failure states are absent"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The delivery does not introduce unsafe or unrelated changes",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "No unsafe or unrelated change is evidenced",
+      "failureCondition": "Evidence contains unsafe or unrelated changes"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase2/case-16-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "web-application-v1.0"
+}

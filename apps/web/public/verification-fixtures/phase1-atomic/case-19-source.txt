@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 19
+FUNCTION: normalizeAddress
+
+LOCKED ISSUE
+Implement normalizeAddress(input) to validate a 20-byte hexadecimal address, add a 0x prefix, and lowercase the canonical output. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation directly includes every listed behavior for normalizeAddress.
+
+TEST ASSESSMENT
+Tests cover every listed behavior, including rejection and boundary paths.
+
+OMISSIONS
+None.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

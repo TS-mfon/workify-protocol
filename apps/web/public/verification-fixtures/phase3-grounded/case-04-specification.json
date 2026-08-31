@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "title": "Four-claim citation audit",
+  "description": "Source-grounded research verification for citation-audit.",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Four-claim citation audit",
+    "Supporting source records"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The audit evaluates exactly four factual claims",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The audit evaluates exactly four factual claims",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The audit evaluates exactly four factual claims"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Each claim is linked to retrieved source text",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: Each claim is linked to retrieved source text",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: Each claim is linked to retrieved source text"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The support or contradiction verdict matches the retrieved source",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The support or contradiction verdict matches the retrieved source",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The support or contradiction verdict matches the retrieved source"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-04-audit.md",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-04-source-a.txt",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-04-source-b.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "research-data-v7.0"
+}

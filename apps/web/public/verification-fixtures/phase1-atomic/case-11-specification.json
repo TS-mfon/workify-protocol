@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 11: paginate",
+  "description": "Independent GenLayer consensus test for a distinct paginate implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for paginate"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "paginate must return a stable page slice",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that return a stable page slice",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: return a stable page slice"
+    },
+    {
+      "id": "C-002",
+      "requirement": "paginate must reject page numbers below one",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that reject page numbers below one",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: reject page numbers below one"
+    },
+    {
+      "id": "C-003",
+      "requirement": "paginate must never mutate the input array",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that never mutate the input array",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: never mutate the input array"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-11-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

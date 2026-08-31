@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Live software pull request case 15",
+  "description": "Independent consensus test for github-software-v1.0.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "software pull request"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The primary requested deliverable is implemented",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Evidence demonstrates the complete primary behavior",
+      "failureCondition": "Primary behavior is missing or contradicted"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Mandatory validation and failure states are covered",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Required edge and failure states are evidenced",
+      "failureCondition": "Mandatory edge or failure states are absent"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The delivery does not introduce unsafe or unrelated changes",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "No unsafe or unrelated change is evidenced",
+      "failureCondition": "Evidence contains unsafe or unrelated changes"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-15-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v1.0"
+}

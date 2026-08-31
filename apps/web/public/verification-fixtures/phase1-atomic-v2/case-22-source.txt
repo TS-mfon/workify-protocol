@@ -1,0 +1,26 @@
+WORKIFY SOFTWARE DELIVERY CASE 22
+
+LOCKED REQUIREMENTS
+1. accept exactly 20 hexadecimal bytes
+2. accept an optional 0x prefix
+3. return a lowercase 0x-prefixed address
+4. reject malformed input
+
+IMPLEMENTATION (JavaScript)
+```js
+export function normalizeAddress(input) {
+  const value = String(input).replace(/^0x/i, "");
+  if (!/^[0-9a-fA-F]{40}$/.test(value)) throw new TypeError("invalid address");
+  return "0x" + value.toLowerCase();
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(normalizeAddress("A".repeat(40)), "0x" + "a".repeat(40));
+assert.throws(() => normalizeAddress("0x1234"), TypeError);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

@@ -1,0 +1,11 @@
+WORKIFY LIVE CONSENSUS CASE 4
+Work type: DESIGN_CREATIVE
+Public fixture revision: phase-phase5-4
+
+DESIGN BRIEF
+Create a dark Web3 dashboard with sidebar navigation, four metric cards, a verification timeline, mobile layout, focus states, and reduced-motion behavior.
+
+DESIGN TOKEN AND SCREEN MANIFEST
+Canvas: 1440x1024 only.
+Components: sidebar and three metric cards.
+No mobile screen, focus state, error state, appeal modal, contrast measurement, or reduced-motion specification.

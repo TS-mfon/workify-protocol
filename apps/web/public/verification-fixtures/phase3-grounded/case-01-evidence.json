@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "jobId": "0xbee85c71c23d625ba78fab7f0b68ccf68d1d1cf7551dcbcf97f0031440818ae0",
+  "deliveryVersion": 2,
+  "submittedAt": "2026-08-30T10:30:00.000Z",
+  "artifacts": [
+    {
+      "id": "SOURCE-01-1",
+      "type": "RESEARCH_REPORT",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-report.md",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-report.md",
+      "sha256": "6dace7b3327febbfd563fc354bd19510ef722f791a896c04ef416ac2714b3d3d",
+      "mimeType": "text/markdown",
+      "sizeBytes": 504,
+      "metadata": {
+        "groundedResearch": true,
+        "slug": "pricing-comparison"
+      }
+    },
+    {
+      "id": "SOURCE-01-2",
+      "type": "PRIMARY_SOURCE",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-atlas-source.json",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-atlas-source.json",
+      "sha256": "2f4ac5cc6089a8a4c20cae4ffcf4c695a514955371234e85025f9826e1f8da02",
+      "mimeType": "application/json",
+      "sizeBytes": 122,
+      "metadata": {
+        "groundedResearch": true,
+        "slug": "pricing-comparison"
+      }
+    },
+    {
+      "id": "SOURCE-01-3",
+      "type": "PRIMARY_SOURCE",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-boreal-source.json",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-boreal-source.json",
+      "sha256": "cac7230161840e69f056fa3261cb736c337ec0e99f8d04a0a6d1a2d7e8bbe43a",
+      "mimeType": "application/json",
+      "sizeBytes": 127,
+      "metadata": {
+        "groundedResearch": true,
+        "slug": "pricing-comparison"
+      }
+    },
+    {
+      "id": "SOURCE-01-4",
+      "type": "PRIMARY_SOURCE",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-cinder-source.json",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-cinder-source.json",
+      "sha256": "2502cde533d710c11c610daf3f666ee48b7b505e20970edcf59e048409385edf",
+      "mimeType": "application/json",
+      "sizeBytes": 125,
+      "metadata": {
+        "groundedResearch": true,
+        "slug": "pricing-comparison"
+      }
+    }
+  ]
+}

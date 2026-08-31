@@ -1,0 +1,11 @@
+WORKIFY LIVE CONSENSUS CASE 4
+Work type: WEB_APPLICATION
+Public fixture revision: phase-phase2-4
+
+REQUIREMENTS
+A public responsive status page must include a hero, live network badge, job table, accessible navigation, mobile layout, and a working documentation link.
+
+DELIVERY SNAPSHOT
+Route /status returns 200 and contains the hero and badge.
+The jobs table is static and the /docs link returns 404.
+No mobile breakpoint or navigation label is present.

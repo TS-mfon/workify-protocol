@@ -1,0 +1,9 @@
+WORKIFY LIVE CONSENSUS CASE 16
+Work type: RESEARCH_DATA
+Public fixture revision: phase-phase3-16
+
+RESEARCH QUESTION
+Compare three public work-verification approaches and provide sourced findings, methodology, dates, and a reproducible dataset.
+
+REPORT
+The report names three approaches but supplies one source, no retrieval dates, no dataset rows, and presents estimates as established facts.

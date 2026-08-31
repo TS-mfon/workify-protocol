@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 14: dedupeTags",
+  "description": "Independent GenLayer consensus test for a distinct dedupeTags implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for dedupeTags"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "dedupeTags must trim tags",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that trim tags",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: trim tags"
+    },
+    {
+      "id": "C-002",
+      "requirement": "dedupeTags must lowercase them",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that lowercase them",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: lowercase them"
+    },
+    {
+      "id": "C-003",
+      "requirement": "dedupeTags must remove empty entries",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that remove empty entries",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: remove empty entries"
+    },
+    {
+      "id": "C-004",
+      "requirement": "dedupeTags must preserve first-seen order while deduplicating",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that preserve first-seen order while deduplicating",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: preserve first-seen order while deduplicating"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-14-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

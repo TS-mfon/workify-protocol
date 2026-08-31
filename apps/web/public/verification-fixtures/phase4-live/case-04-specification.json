@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase4 case 04: Create an onboarding document with prerequisites and a first successful workflow.",
+  "description": "Independent verification for Create an onboarding document with prerequisites and a first successful workflow..",
+  "workType": "CONTENT_DOCUMENT",
+  "deliverables": [
+    "Create an onboarding document with prerequisites and a first successful workflow."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Prerequisites are listed",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that prerequisites are listed",
+      "failureCondition": "The artifact does not demonstrate that prerequisites are listed"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Steps are ordered",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that steps are ordered",
+      "failureCondition": "The artifact does not demonstrate that steps are ordered"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The success condition is explicit",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the success condition is explicit",
+      "failureCondition": "The artifact does not demonstrate that the success condition is explicit"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-04-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase4-v7.0"
+}

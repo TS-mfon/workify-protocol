@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 09: normalizeEmail",
+  "description": "Independent GenLayer consensus test for a distinct normalizeEmail implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for normalizeEmail"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "normalizeEmail must trim input",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that trim input",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: trim input"
+    },
+    {
+      "id": "C-002",
+      "requirement": "normalizeEmail must lowercase the domain",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that lowercase the domain",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: lowercase the domain"
+    },
+    {
+      "id": "C-003",
+      "requirement": "normalizeEmail must preserve the local part",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that preserve the local part",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: preserve the local part"
+    },
+    {
+      "id": "C-004",
+      "requirement": "normalizeEmail must reject malformed addresses",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that reject malformed addresses",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: reject malformed addresses"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-09-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

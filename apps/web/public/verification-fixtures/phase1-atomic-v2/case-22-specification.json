@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 22: normalizeAddress",
+  "description": "Independent GenLayer source-grounded verification for normalizeAddress.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for normalizeAddress"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "normalizeAddress must accept exactly 20 hexadecimal bytes",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: accept exactly 20 hexadecimal bytes",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: accept exactly 20 hexadecimal bytes"
+    },
+    {
+      "id": "C-002",
+      "requirement": "normalizeAddress must accept an optional 0x prefix",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: accept an optional 0x prefix",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: accept an optional 0x prefix"
+    },
+    {
+      "id": "C-003",
+      "requirement": "normalizeAddress must return a lowercase 0x-prefixed address",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: return a lowercase 0x-prefixed address",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: return a lowercase 0x-prefixed address"
+    },
+    {
+      "id": "C-004",
+      "requirement": "normalizeAddress must reject malformed input",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject malformed input",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject malformed input"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-22-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

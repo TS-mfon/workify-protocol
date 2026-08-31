@@ -1,0 +1,10 @@
+WORKIFY LIVE CONSENSUS CASE 8
+Work type: CONTENT_DOCUMENT
+Public fixture revision: phase-phase4-8
+
+DOCUMENT BRIEF
+Write an operator runbook covering prerequisites, deployment, verification, rollback, security, and troubleshooting for a testnet release.
+
+DELIVERABLE
+Sections: Deployment and Troubleshooting.
+The document embeds an example private key, has no rollback procedure, and does not identify expected transaction states.

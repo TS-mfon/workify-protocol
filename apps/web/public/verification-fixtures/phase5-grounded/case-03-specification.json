@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "title": "Empty state",
+  "description": "Verify the labeled Empty state artifact.",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Empty state SVG"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The design explicitly includes No jobs yet",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes No jobs yet",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes No jobs yet"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The design explicitly includes Primary action: Create job",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Primary action: Create job",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Primary action: Create job"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The design explicitly includes aria-label: Create your first job",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes aria-label: Create your first job",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes aria-label: Create your first job"
+    },
+    {
+      "id": "C-004",
+      "requirement": "The design explicitly includes Hierarchy: title, explanation, action",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Hierarchy: title, explanation, action",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Hierarchy: title, explanation, action"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-grounded/case-03-design.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "design-creative-v7.0"
+}

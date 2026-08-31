@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 21: parseChainId",
+  "description": "Independent GenLayer source-grounded verification for parseChainId.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for parseChainId"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "parseChainId must accept decimal chain identifiers",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: accept decimal chain identifiers",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: accept decimal chain identifiers"
+    },
+    {
+      "id": "C-002",
+      "requirement": "parseChainId must accept 0x-prefixed hexadecimal identifiers",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: accept 0x-prefixed hexadecimal identifiers",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: accept 0x-prefixed hexadecimal identifiers"
+    },
+    {
+      "id": "C-003",
+      "requirement": "parseChainId must return a positive safe integer",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: return a positive safe integer",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: return a positive safe integer"
+    },
+    {
+      "id": "C-004",
+      "requirement": "parseChainId must reject malformed input",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject malformed input",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject malformed input"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-21-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

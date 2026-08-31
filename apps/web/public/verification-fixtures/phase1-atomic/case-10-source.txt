@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 10
+FUNCTION: redactToken
+
+LOCKED ISSUE
+Implement redactToken(input) to preserve the first four and final four characters while redacting the middle of tokens longer than eight characters. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation directly includes every listed behavior for redactToken.
+
+TEST ASSESSMENT
+Tests cover every listed behavior, including rejection and boundary paths.
+
+OMISSIONS
+None.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

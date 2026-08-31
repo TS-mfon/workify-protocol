@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "title": "Web application verification 07",
+  "description": "Verify the deployed Wallet monitor implementation.",
+  "workType": "WEB_APPLICATION",
+  "deliverables": [
+    "Public production URL",
+    "Responsive implementation",
+    "Functional request form"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The deployed page must contain a visible page title, primary navigation with two links, and a three-card metrics section",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "production_html"
+      ],
+      "passCondition": "Retrieved HTML contains the title, two primary navigation links, and three metric cards",
+      "failureCondition": "Any required structural element is absent"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The deployed page must provide a mobile layout at 720px or below",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "production_css"
+      ],
+      "passCondition": "Retrieved CSS includes a max-width 720px media query that changes the hero and metrics to one column",
+      "failureCondition": "Responsive CSS is missing or does not change the layout"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The request form must have associated name and email labels, required controls, a submit button, and accessible success feedback",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "production_html",
+        "production_javascript"
+      ],
+      "passCondition": "Retrieved implementation contains associated labels, required inputs, submit handling, and an aria-live status updated after submission",
+      "failureCondition": "The form, labels, validation, submit behavior, or accessible feedback is absent"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-07.html",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-07-manifest.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "web-application-v7.0"
+}

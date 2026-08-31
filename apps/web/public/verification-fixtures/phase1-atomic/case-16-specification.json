@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 16: safeFilename",
+  "description": "Independent GenLayer consensus test for a distinct safeFilename implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for safeFilename"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "safeFilename must remove path separators",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that remove path separators",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: remove path separators"
+    },
+    {
+      "id": "C-002",
+      "requirement": "safeFilename must collapse whitespace",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that collapse whitespace",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: collapse whitespace"
+    },
+    {
+      "id": "C-003",
+      "requirement": "safeFilename must reject dot-only names",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that reject dot-only names",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: reject dot-only names"
+    },
+    {
+      "id": "C-004",
+      "requirement": "safeFilename must cap output length",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that cap output length",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: cap output length"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-16-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

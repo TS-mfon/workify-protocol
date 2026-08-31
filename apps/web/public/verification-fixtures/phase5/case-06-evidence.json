@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "jobId": "0xace1453396a5dd71f65c50bdc2185cdd042d22ea429b4a62dbfb23b28d029524",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-08-28T12:00:00.000Z",
+  "artifacts": [
+    {
+      "id": "SOURCE-06",
+      "type": "IMAGE",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase5/case-06-source.txt",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase5/case-06-source.txt",
+      "sha256": "216d12b537dc0d427b21bd08bdda1ed01782cfb0c6a01a8265629f1abd51bbc6",
+      "mimeType": "text/plain",
+      "sizeBytes": 680,
+      "metadata": {
+        "liveConsensusCase": "06"
+      }
+    }
+  ]
+}

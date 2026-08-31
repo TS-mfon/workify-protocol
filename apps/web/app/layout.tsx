@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: ["/twitter-image.png"] },
 };
 
-export const viewport: Viewport = { themeColor: "#070b14", colorScheme: "dark" };
+export const viewport: Viewport = { themeColor: "#111318", colorScheme: "dark" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en"><body>{children}</body></html>;

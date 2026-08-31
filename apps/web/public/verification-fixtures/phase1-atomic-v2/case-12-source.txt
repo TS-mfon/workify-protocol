@@ -1,0 +1,27 @@
+WORKIFY SOFTWARE DELIVERY CASE 12
+
+LOCKED REQUIREMENTS
+1. trim surrounding whitespace
+2. lowercase only the domain
+3. preserve the local part
+4. reject malformed addresses
+
+IMPLEMENTATION (JavaScript)
+```js
+export function normalizeEmail(input) {
+  const value = String(input).trim();
+  const match = /^([^@\s]+)@([^@\s]+\.[^@\s]+)$/.exec(value);
+  if (!match) throw new TypeError("invalid email");
+  return match[1] + "@" + match[2].toLowerCase();
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(normalizeEmail("  User.Name@EXAMPLE.COM "), "User.Name@example.com");
+assert.throws(() => normalizeEmail("missing-at.example.com"), TypeError);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

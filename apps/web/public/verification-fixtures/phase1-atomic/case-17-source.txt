@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 17
+FUNCTION: retryDelay
+
+LOCKED ISSUE
+Implement retryDelay(input) to compute exponential backoff from an attempt number, cap the delay, and reject negative attempts. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation directly includes every listed behavior for retryDelay.
+
+TEST ASSESSMENT
+Tests cover every listed behavior, including rejection and boundary paths.
+
+OMISSIONS
+None.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "jobId": "0xadf8b660a76f38708de6d3356fd907e17ce644244e44c6b8227495f46229c17a",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-08-29T16:00:00.000Z",
+  "artifacts": [
+    {
+      "id": "ARTIFACT-02",
+      "type": "PUBLIC_DOCUMENT",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-02-artifact.md",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-02-artifact.md",
+      "sha256": "d0ca8f3e85b61f06171c767e1e68310cbb646296cc6c0afe9e621dc7ead9b8d0",
+      "mimeType": "text/markdown",
+      "sizeBytes": 650,
+      "metadata": {
+        "phase": "phase4",
+        "slug": "release-notes"
+      }
+    }
+  ]
+}

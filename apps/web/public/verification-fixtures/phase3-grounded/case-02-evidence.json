@@ -1,0 +1,34 @@
+{
+  "version": "1.0.0",
+  "jobId": "0x94ff5f4032d9be3c90f536d9acba290638ce339f7ec016a7c16426af34b25b0f",
+  "deliveryVersion": 2,
+  "submittedAt": "2026-08-30T10:30:00.000Z",
+  "artifacts": [
+    {
+      "id": "SOURCE-02-1",
+      "type": "RESEARCH_REPORT",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-02-report.md",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-02-report.md",
+      "sha256": "db66315ed1754d9105329737b504e3f48394e3d1da71bfacf707359100231bb6",
+      "mimeType": "text/markdown",
+      "sizeBytes": 399,
+      "metadata": {
+        "groundedResearch": true,
+        "slug": "tvl-snapshot"
+      }
+    },
+    {
+      "id": "SOURCE-02-2",
+      "type": "PRIMARY_SOURCE",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-02-pool-snapshot.json",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-02-pool-snapshot.json",
+      "sha256": "c31bb4c2586ae5c02689f69e95ba4764999f19d61af7592c7f8621b9ef7dd670",
+      "mimeType": "application/json",
+      "sizeBytes": 261,
+      "metadata": {
+        "groundedResearch": true,
+        "slug": "tvl-snapshot"
+      }
+    }
+  ]
+}

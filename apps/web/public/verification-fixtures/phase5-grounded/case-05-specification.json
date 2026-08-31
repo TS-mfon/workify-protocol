@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "title": "Mobile navigation",
+  "description": "Verify the labeled Mobile navigation artifact.",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Mobile navigation SVG"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The design explicitly includes CLOSED state: menu button",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes CLOSED state: menu button",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes CLOSED state: menu button"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The design explicitly includes OPEN state: route list",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes OPEN state: route list",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes OPEN state: route list"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The design explicitly includes Close action: X button",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Close action: X button",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Close action: X button"
+    },
+    {
+      "id": "C-004",
+      "requirement": "The design explicitly includes Keyboard: focus moves into menu and returns",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Keyboard: focus moves into menu and returns",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Keyboard: focus moves into menu and returns"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-grounded/case-05-design.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "design-creative-v7.0"
+}

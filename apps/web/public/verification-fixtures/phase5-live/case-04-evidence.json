@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "jobId": "0xbc5b75abb75a2c0034aeba85ff284d84d16230c2762901b4587b5cbab5bec2e1",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-08-29T16:00:00.000Z",
+  "artifacts": [
+    {
+      "id": "ARTIFACT-04",
+      "type": "DESIGN_SVG",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase5-live/case-04-artifact.svg",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase5-live/case-04-artifact.svg",
+      "sha256": "077d3f77fdff49542e4aad2bd878ff82838433d6aa8a6d87777102272d42a11e",
+      "mimeType": "image/svg+xml",
+      "sizeBytes": 650,
+      "metadata": {
+        "phase": "phase5",
+        "slug": "status-card"
+      }
+    }
+  ]
+}

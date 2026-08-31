@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 13: formatBytes",
+  "description": "Independent GenLayer consensus test for a distinct formatBytes implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for formatBytes"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "formatBytes must format non-negative byte counts using B",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that format non-negative byte counts using B",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: format non-negative byte counts using B"
+    },
+    {
+      "id": "C-002",
+      "requirement": "formatBytes must KB",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that KB",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: KB"
+    },
+    {
+      "id": "C-003",
+      "requirement": "formatBytes must MB units with deterministic rounding",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that MB units with deterministic rounding",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: MB units with deterministic rounding"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-13-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

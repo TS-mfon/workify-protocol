@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "jobId": "0xb30e4cb0188a9691ecbfa0ce4e918c42509c8e721e0dce5148d8c7e2c8af067e",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-08-28T12:00:00.000Z",
+  "artifacts": [
+    {
+      "id": "SOURCE-10",
+      "type": "GITHUB_PR",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-10-source.txt",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1/case-10-source.txt",
+      "sha256": "2d2bdd124d809461aec7bde5c6d273d7ff587a892a851ee87de8987e4f43a964",
+      "mimeType": "text/plain",
+      "sizeBytes": 709,
+      "metadata": {
+        "liveConsensusCase": "10"
+      }
+    }
+  ]
+}

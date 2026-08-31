@@ -1,0 +1,22 @@
+WORKIFY SOFTWARE DELIVERY CASE 18
+
+LOCKED REQUIREMENTS
+1. sort keys deterministically
+2. omit undefined values
+3. URL-encode keys and values
+
+IMPLEMENTATION (JavaScript)
+```js
+export function buildQuery(values) {
+  return Object.keys(values).sort().filter((key) => values[key] !== undefined).map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(String(values[key]))).join("&");
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(buildQuery({ z: "a b", skip: undefined, a: "x&y" }), "a=x%26y&z=a%20b");
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

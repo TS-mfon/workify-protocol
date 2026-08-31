@@ -1,0 +1,12 @@
+WORKIFY WEB DELIVERY CASE 03
+PUBLIC APPLICATION: https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-03.html
+LOCKED REVISION SHA-256: 1d021525c085a24de3364a5aafe20d785c88370ac54d3d9003bbee0498ebf2c0
+
+VALIDATOR PROCEDURE
+1. Retrieve the public application URL.
+2. Inspect the returned HTML, CSS, semantic elements, and JavaScript.
+3. Decide each criterion only from retrieved implementation evidence.
+4. Do not trust this manifest as proof of completion.
+
+EXPECTED DEFECT DISCLOSURE
+No intentional defect. Validators must still inspect the page.

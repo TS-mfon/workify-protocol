@@ -1,0 +1,56 @@
+[
+  {
+    "caseId": "01",
+    "jobId": "0xbee85c71c23d625ba78fab7f0b68ccf68d1d1cf7551dcbcf97f0031440818ae0",
+    "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-specification.json",
+    "specificationHash": "f930e10ee93972239a70cd7addf1cdbabb7de18d9cfdeddba9bbd5a4be4e29ec",
+    "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-evidence.json",
+    "evidenceHash": "105373853ab4d6920b30fd6663d945cab4870f9ebf8797ec879a070b4dc76e22",
+    "expected": "PASS"
+  },
+  {
+    "caseId": "02",
+    "jobId": "0x94ff5f4032d9be3c90f536d9acba290638ce339f7ec016a7c16426af34b25b0f",
+    "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-02-specification.json",
+    "specificationHash": "20c3664d5acd40f83a27363c4c0b364b6a4098b3959e552b12f7c162d0cfb187",
+    "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-02-evidence.json",
+    "evidenceHash": "ddf4de48f376b5bfc027a1ea92a15ac60813486cefcf97339db0aec1c93043d5",
+    "expected": "PASS"
+  },
+  {
+    "caseId": "03",
+    "jobId": "0xf2362ce80157e763e03525cfbcb678921d57a3ede7b6f146ed9f2bf1c30b5fb8",
+    "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-03-specification.json",
+    "specificationHash": "03336e863900be430de6b5a6e7d0f86abdc4c871efb9ec9fcfb9f257f817ac43",
+    "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-03-evidence.json",
+    "evidenceHash": "0f2663281fa4d9cc4d3c3a24e446e3409e606b15a4f94b2fd736079ec6f2e076",
+    "expected": "PASS"
+  },
+  {
+    "caseId": "04",
+    "jobId": "0x09e8138f69bc9dbcec4dc0db8e235434497b8144e160a96f9e4b414c1ed114f9",
+    "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-04-specification.json",
+    "specificationHash": "20854e9033134019b1be19a7c2ef1a92138ec9729072827ba8f29d8e046b31d7",
+    "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-04-evidence.json",
+    "evidenceHash": "b2768fa09b703714bb8ded1c560282267cce077662f2c02d70e6f5b8ea0536ae",
+    "expected": "PASS"
+  },
+  {
+    "caseId": "05",
+    "jobId": "0x25f8378b8fb8932117697bf4ebf6798f3857bc6f367ace7f0cb6731728068101",
+    "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-05-specification.json",
+    "specificationHash": "9075d1c846b0d727396b1e9a6429ffe8f34638e404e9d47ea552d3cac68d89f1",
+    "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-05-evidence.json",
+    "evidenceHash": "e80426024dcf9ace137b225985aef6b011f4e36a18651aee71ce316d0654af0b",
+    "expected": "PASS"
+  },
+  {
+    "caseId": "06",
+    "jobId": "0xb7d8cad4cec82bc2e530d528c7b4b2139a451c7de9ff70f405e234f88950926e",
+    "specificationUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-06-specification.json",
+    "specificationHash": "5e4c3ede3e41d57d4fcb81429432a48294b7af3b5955b9f7ce80e3cf8d4a839b",
+    "evidenceUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-06-evidence.json",
+    "evidenceHash": "35ab28b36bc44b28da58f950ffcb7470831adf7ea212106e5e355bfc4b22526e",
+    "expected": "PASS"
+  }
+]

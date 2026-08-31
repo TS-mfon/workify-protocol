@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 17: retryDelay",
+  "description": "Independent GenLayer consensus test for a distinct retryDelay implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for retryDelay"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "retryDelay must compute exponential backoff from an attempt number",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that compute exponential backoff from an attempt number",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: compute exponential backoff from an attempt number"
+    },
+    {
+      "id": "C-002",
+      "requirement": "retryDelay must cap the delay",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that cap the delay",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: cap the delay"
+    },
+    {
+      "id": "C-003",
+      "requirement": "retryDelay must reject negative attempts",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that reject negative attempts",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: reject negative attempts"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-17-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

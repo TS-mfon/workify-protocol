@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 10: redactToken",
+  "description": "Independent GenLayer consensus test for a distinct redactToken implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for redactToken"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "redactToken must preserve the first four and final four characters while redacting the middle of tokens longer than eight characters",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that preserve the first four and final four characters while redacting the middle of tokens longer than eight characters",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: preserve the first four and final four characters while redacting the middle of tokens longer than eight characters"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-10-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

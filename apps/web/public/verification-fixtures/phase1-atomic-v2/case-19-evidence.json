@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "jobId": "0x1326b9ce4da9f7645a23f0925321491d6f59496af478f9d47976e7f90b40c230",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-08-29T14:30:00.000Z",
+  "artifacts": [
+    {
+      "id": "SOURCE-19",
+      "type": "GITHUB_SOURCE_AND_TESTS",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-19-source.txt",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-19-source.txt",
+      "sha256": "509de825dee02409b17e374ca79ebeb947bcb13b4cc1f76d7fe06dd7347534d8",
+      "mimeType": "text/plain",
+      "sizeBytes": 881,
+      "metadata": {
+        "distinctWork": "safeFilename",
+        "containsImplementation": true,
+        "containsTests": true
+      }
+    }
+  ]
+}

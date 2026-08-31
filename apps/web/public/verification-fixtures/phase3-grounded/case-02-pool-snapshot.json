@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-08-30T10:00:00Z",
+  "denomination": "USD",
+  "pools": [
+    {
+      "id": "alpha",
+      "valueUsd": 1250000
+    },
+    {
+      "id": "beta",
+      "valueUsd": 750000
+    }
+  ],
+  "excluded": [
+    "treasury",
+    "borrowed assets"
+  ]
+}

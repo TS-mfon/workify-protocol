@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase3 case 04: Audit four factual claims against their cited primary sources.",
+  "description": "Independent verification for Audit four factual claims against their cited primary sources..",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Audit four factual claims against their cited primary sources."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Four claims are listed",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that four claims are listed",
+      "failureCondition": "The artifact does not demonstrate that four claims are listed"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Each claim has a retrievable citation",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that each claim has a retrievable citation",
+      "failureCondition": "The artifact does not demonstrate that each claim has a retrievable citation"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The audit marks support or contradiction",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the audit marks support or contradiction",
+      "failureCondition": "The artifact does not demonstrate that the audit marks support or contradiction"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-live/case-04-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase3-v7.0"
+}

@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase4 case 05: Produce a plain-language summary of payment, appeal, and evidence rules.",
+  "description": "Independent verification for Produce a plain-language summary of payment, appeal, and evidence rules..",
+  "workType": "CONTENT_DOCUMENT",
+  "deliverables": [
+    "Produce a plain-language summary of payment, appeal, and evidence rules."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Payment rules are explained",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that payment rules are explained",
+      "failureCondition": "The artifact does not demonstrate that payment rules are explained"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Appeal rules are explained",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that appeal rules are explained",
+      "failureCondition": "The artifact does not demonstrate that appeal rules are explained"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Evidence rules are explained",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that evidence rules are explained",
+      "failureCondition": "The artifact does not demonstrate that evidence rules are explained"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-05-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase4-v7.0"
+}

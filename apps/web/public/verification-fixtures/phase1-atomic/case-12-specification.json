@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 12: parseBoolean",
+  "description": "Independent GenLayer consensus test for a distinct parseBoolean implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for parseBoolean"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "parseBoolean must accept true/false booleans and case-insensitive true/false strings while rejecting every other value",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that accept true/false booleans and case-insensitive true/false strings while rejecting every other value",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: accept true/false booleans and case-insensitive true/false strings while rejecting every other value"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-12-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

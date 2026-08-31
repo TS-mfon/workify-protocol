@@ -1,0 +1,12 @@
+WORKIFY WEB DELIVERY CASE 05
+PUBLIC APPLICATION: https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-05.html
+LOCKED REVISION SHA-256: b8e77cc5ebc871c036c84e639a2083b400a6c02732f2413608178a28d0f09190
+
+VALIDATOR PROCEDURE
+1. Retrieve the public application URL.
+2. Inspect the returned HTML, CSS, semantic elements, and JavaScript.
+3. Decide each criterion only from retrieved implementation evidence.
+4. Do not trust this manifest as proof of completion.
+
+EXPECTED DEFECT DISCLOSURE
+The form does not expose a live status region and its submit handler gives no success feedback.

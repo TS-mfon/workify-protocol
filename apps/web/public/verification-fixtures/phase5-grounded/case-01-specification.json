@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "title": "Dashboard shell",
+  "description": "Verify the labeled Dashboard shell artifact.",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Dashboard shell SVG"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The design explicitly includes Sidebar navigation",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Sidebar navigation",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Sidebar navigation"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The design explicitly includes Three metric cards",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Three metric cards",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Three metric cards"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The design explicitly includes Activity content panel",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Activity content panel",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Activity content panel"
+    },
+    {
+      "id": "C-004",
+      "requirement": "The design explicitly includes Mobile: cards stack and sidebar becomes menu",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes Mobile: cards stack and sidebar becomes menu",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes Mobile: cards stack and sidebar becomes menu"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-grounded/case-01-design.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "design-creative-v7.0"
+}

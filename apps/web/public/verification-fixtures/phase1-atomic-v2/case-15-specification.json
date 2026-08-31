@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 15: parseBoolean",
+  "description": "Independent GenLayer source-grounded verification for parseBoolean.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for parseBoolean"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "parseBoolean must accept boolean values",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: accept boolean values",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: accept boolean values"
+    },
+    {
+      "id": "C-002",
+      "requirement": "parseBoolean must accept case-insensitive true and false strings",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: accept case-insensitive true and false strings",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: accept case-insensitive true and false strings"
+    },
+    {
+      "id": "C-003",
+      "requirement": "parseBoolean must reject every other value",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject every other value",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject every other value"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-15-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

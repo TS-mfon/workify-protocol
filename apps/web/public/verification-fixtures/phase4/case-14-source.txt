@@ -1,0 +1,12 @@
+WORKIFY LIVE CONSENSUS CASE 14
+Work type: CONTENT_DOCUMENT
+Public fixture revision: phase-phase4-14
+
+DOCUMENT BRIEF
+Write an operator runbook covering prerequisites, deployment, verification, rollback, security, and troubleshooting for a testnet release.
+
+DELIVERABLE
+Sections: Scope, Prerequisites, Environment Variables, Deployment, Onchain Verification, Rollback, Security Controls, Troubleshooting, Incident Escalation.
+Every command identifies its network and expected success condition.
+Secrets are referenced by variable name and never embedded.
+Rollback states which operations are impossible for immutable contracts.

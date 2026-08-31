@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 7
+FUNCTION: clampRetries
+
+LOCKED ISSUE
+Implement clampRetries(input) to coerce an integer retry count and clamp it to the inclusive range 0 through 3. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation directly includes every listed behavior for clampRetries.
+
+TEST ASSESSMENT
+Tests cover every listed behavior, including rejection and boundary paths.
+
+OMISSIONS
+None.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

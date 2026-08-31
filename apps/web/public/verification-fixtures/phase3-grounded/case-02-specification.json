@@ -1,0 +1,54 @@
+{
+  "version": "1.0.0",
+  "title": "Protocol TVL snapshot",
+  "description": "Source-grounded research verification for tvl-snapshot.",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Protocol TVL snapshot",
+    "Supporting source records"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The report states a UTC snapshot timestamp",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The report states a UTC snapshot timestamp",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The report states a UTC snapshot timestamp"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The reported total value locked equals the sum of the retrieved pool values",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The reported total value locked equals the sum of the retrieved pool values",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The reported total value locked equals the sum of the retrieved pool values"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The methodology explains which assets are included and how USD value is calculated",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The methodology explains which assets are included and how USD value is calculated",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The methodology explains which assets are included and how USD value is calculated"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-02-report.md",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-02-pool-snapshot.json"
+  ],
+  "exclusions": [],
+  "policyVersion": "research-data-v7.0"
+}

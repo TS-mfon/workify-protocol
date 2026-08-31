@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 19: normalizeAddress",
+  "description": "Independent GenLayer consensus test for a distinct normalizeAddress implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for normalizeAddress"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "normalizeAddress must validate a 20-byte hexadecimal address",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that validate a 20-byte hexadecimal address",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: validate a 20-byte hexadecimal address"
+    },
+    {
+      "id": "C-002",
+      "requirement": "normalizeAddress must add a 0x prefix",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that add a 0x prefix",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: add a 0x prefix"
+    },
+    {
+      "id": "C-003",
+      "requirement": "normalizeAddress must lowercase the canonical output",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that lowercase the canonical output",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: lowercase the canonical output"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-19-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

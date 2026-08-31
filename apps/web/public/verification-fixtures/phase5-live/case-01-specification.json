@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase5 case 01: Design a dashboard shell with navigation, metrics, content panel, and mobile layout notes.",
+  "description": "Independent verification for Design a dashboard shell with navigation, metrics, content panel, and mobile layout notes..",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Design a dashboard shell with navigation, metrics, content panel, and mobile layout notes."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Navigation and metrics are present",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that navigation and metrics are present",
+      "failureCondition": "The artifact does not demonstrate that navigation and metrics are present"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The content panel is present",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the content panel is present",
+      "failureCondition": "The artifact does not demonstrate that the content panel is present"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Mobile behavior is specified",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that mobile behavior is specified",
+      "failureCondition": "The artifact does not demonstrate that mobile behavior is specified"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-live/case-01-artifact.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase5-v7.0"
+}

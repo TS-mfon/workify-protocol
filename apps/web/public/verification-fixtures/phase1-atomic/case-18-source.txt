@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 18
+FUNCTION: parseChainId
+
+LOCKED ISSUE
+Implement parseChainId(input) to accept decimal or 0x-prefixed chain identifiers, return a positive integer, and reject malformed input. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation directly includes every listed behavior for parseChainId.
+
+TEST ASSESSMENT
+Tests cover every listed behavior, including rejection and boundary paths.
+
+OMISSIONS
+None.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

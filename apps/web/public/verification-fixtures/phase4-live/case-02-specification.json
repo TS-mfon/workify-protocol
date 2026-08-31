@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase4 case 02: Publish release notes with version, date, changes, and known limitations.",
+  "description": "Independent verification for Publish release notes with version, date, changes, and known limitations..",
+  "workType": "CONTENT_DOCUMENT",
+  "deliverables": [
+    "Publish release notes with version, date, changes, and known limitations."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Version and date are explicit",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that version and date are explicit",
+      "failureCondition": "The artifact does not demonstrate that version and date are explicit"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Changes are grouped by type",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that changes are grouped by type",
+      "failureCondition": "The artifact does not demonstrate that changes are grouped by type"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Known limitations are listed",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that known limitations are listed",
+      "failureCondition": "The artifact does not demonstrate that known limitations are listed"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-02-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase4-v7.0"
+}

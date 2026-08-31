@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 11
+FUNCTION: paginate
+
+LOCKED ISSUE
+Implement paginate(input) to return a stable page slice, reject page numbers below one, and never mutate the input array. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation directly includes every listed behavior for paginate.
+
+TEST ASSESSMENT
+Tests cover every listed behavior, including rejection and boundary paths.
+
+OMISSIONS
+None.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

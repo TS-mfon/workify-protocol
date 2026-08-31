@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 08: isValidHex",
+  "description": "Independent GenLayer consensus test for a distinct isValidHex implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for isValidHex"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "isValidHex must accept only an optional 0x prefix followed by an even number of hexadecimal characters",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that accept only an optional 0x prefix followed by an even number of hexadecimal characters",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: accept only an optional 0x prefix followed by an even number of hexadecimal characters"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-08-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

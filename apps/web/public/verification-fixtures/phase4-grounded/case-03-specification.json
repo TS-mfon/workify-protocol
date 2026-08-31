@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Security Disclosure Policy",
+  "description": "Verify the complete Security Disclosure Policy.",
+  "workType": "CONTENT_DOCUMENT",
+  "deliverables": [
+    "Security Disclosure Policy"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Scope is defined",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Scope is defined",
+      "failureCondition": "The retrieved document omits or contradicts: Scope is defined"
+    },
+    {
+      "id": "C-002",
+      "requirement": "A reporting channel is provided",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: A reporting channel is provided",
+      "failureCondition": "The retrieved document omits or contradicts: A reporting channel is provided"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Response targets are stated",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Response targets are stated",
+      "failureCondition": "The retrieved document omits or contradicts: Response targets are stated"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase4-grounded/case-03-document.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "content-document-v7.0"
+}

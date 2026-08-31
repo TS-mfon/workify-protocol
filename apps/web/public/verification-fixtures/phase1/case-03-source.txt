@@ -1,0 +1,22 @@
+WORKIFY LIVE CONSENSUS CASE 3
+Work type: GITHUB_SOFTWARE
+Public fixture revision: phase-phase1-3
+
+ORIGINAL ISSUE
+Implement normalizeUsername(input) so it trims surrounding whitespace, lowercases ASCII letters, rejects empty results, and includes meaningful tests.
+
+DELIVERY
+export function normalizeUsername(input) {
+  const normalized = String(input).trim().toLowerCase();
+  if (!normalized) throw new Error("username required");
+  return normalized;
+}
+
+TESTS
+- " Alice " becomes "alice"
+- empty and whitespace-only input throws
+- existing lowercase input remains unchanged
+CI: lint PASS, unit tests PASS, typecheck PASS
+
+SECURITY
+No secrets, dependencies, authorization paths, or unrelated files changed.

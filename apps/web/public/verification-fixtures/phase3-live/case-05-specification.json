@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase3 case 05: Clean a small dataset and document duplicate and missing-value handling.",
+  "description": "Independent verification for Clean a small dataset and document duplicate and missing-value handling..",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Clean a small dataset and document duplicate and missing-value handling."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The cleaned row count is stated",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the cleaned row count is stated",
+      "failureCondition": "The artifact does not demonstrate that the cleaned row count is stated"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Duplicate handling is stated",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that duplicate handling is stated",
+      "failureCondition": "The artifact does not demonstrate that duplicate handling is stated"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Missing-value handling is stated",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that missing-value handling is stated",
+      "failureCondition": "The artifact does not demonstrate that missing-value handling is stated"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-live/case-05-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase3-v7.0"
+}

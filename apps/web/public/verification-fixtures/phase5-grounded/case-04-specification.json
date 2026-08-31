@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "title": "Verification status card",
+  "description": "Verify the labeled Verification status card artifact.",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Verification status card SVG"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The design explicitly includes PENDING: validators reviewing",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes PENDING: validators reviewing",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes PENDING: validators reviewing"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The design explicitly includes PASS: payment eligible",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes PASS: payment eligible",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes PASS: payment eligible"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The design explicitly includes FAIL: client refund eligible",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes FAIL: client refund eligible",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes FAIL: client refund eligible"
+    },
+    {
+      "id": "C-004",
+      "requirement": "The design explicitly includes APPEAL: Open appeal",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_svg"
+      ],
+      "passCondition": "Retrieved SVG title, description, and visible labels directly demonstrate: The design explicitly includes APPEAL: Open appeal",
+      "failureCondition": "The SVG does not contain the required labeled design state: The design explicitly includes APPEAL: Open appeal"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-grounded/case-04-design.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "design-creative-v7.0"
+}

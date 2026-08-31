@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 24: isSafeRedirect",
+  "description": "Independent GenLayer source-grounded verification for isSafeRedirect.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for isSafeRedirect"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "isSafeRedirect must accept only same-origin absolute paths",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: accept only same-origin absolute paths",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: accept only same-origin absolute paths"
+    },
+    {
+      "id": "C-002",
+      "requirement": "isSafeRedirect must reject protocol-relative URLs",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject protocol-relative URLs",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject protocol-relative URLs"
+    },
+    {
+      "id": "C-003",
+      "requirement": "isSafeRedirect must reject paths containing backslashes",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject paths containing backslashes",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject paths containing backslashes"
+    },
+    {
+      "id": "C-004",
+      "requirement": "isSafeRedirect must reject non-string values",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject non-string values",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject non-string values"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-24-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

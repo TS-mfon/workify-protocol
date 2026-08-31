@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "title": "AI API pricing comparison",
+  "description": "Source-grounded research verification for pricing-comparison.",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "AI API pricing comparison",
+    "Supporting source records"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The report compares exactly three providers",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The report compares exactly three providers",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The report compares exactly three providers"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Every listed input and output price matches a retrieved provider source",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: Every listed input and output price matches a retrieved provider source",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: Every listed input and output price matches a retrieved provider source"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The report identifies the lowest input-token and output-token prices",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "supporting_sources"
+      ],
+      "passCondition": "Retrieved report and sources directly demonstrate: The report identifies the lowest input-token and output-token prices",
+      "failureCondition": "Retrieved report or sources contradict or do not demonstrate: The report identifies the lowest input-token and output-token prices"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-report.md",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-atlas-source.json",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-boreal-source.json",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-01-cinder-source.json"
+  ],
+  "exclusions": [],
+  "policyVersion": "research-data-v7.0"
+}

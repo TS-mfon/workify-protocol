@@ -1,0 +1,28 @@
+WORKIFY SOFTWARE DELIVERY CASE 16
+
+LOCKED REQUIREMENTS
+1. reject negative byte counts
+2. format bytes using B KB and MB units
+3. round displayed values to one decimal place
+
+IMPLEMENTATION (JavaScript)
+```js
+export function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) throw new RangeError("invalid bytes");
+  if (bytes < 1024) return bytes.toFixed(1) + " B";
+  if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1024 ** 2).toFixed(1) + " MB";
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(formatBytes(12), "12.0 B");
+assert.equal(formatBytes(1536), "1.5 KB");
+assert.equal(formatBytes(1048576), "1.0 MB");
+assert.throws(() => formatBytes(-1), RangeError);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

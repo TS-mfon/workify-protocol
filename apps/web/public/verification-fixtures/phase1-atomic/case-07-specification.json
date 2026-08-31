@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 07: clampRetries",
+  "description": "Independent GenLayer consensus test for a distinct clampRetries implementation.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for clampRetries"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "clampRetries must coerce an integer retry count and clamp it to the inclusive range 0 through 3",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source"
+      ],
+      "passCondition": "Retrieved implementation and tests directly demonstrate that coerce an integer retry count and clamp it to the inclusive range 0 through 3",
+      "failureCondition": "The behavior is missing, contradicted, or not evidenced: coerce an integer retry count and clamp it to the inclusive range 0 through 3"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic/case-07-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

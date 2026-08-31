@@ -1,0 +1,25 @@
+WORKIFY SOFTWARE DELIVERY CASE 20
+
+LOCKED REQUIREMENTS
+1. reject negative or non-integer attempts
+2. compute exponential backoff from the attempt
+3. cap the delay at the supplied maximum
+
+IMPLEMENTATION (JavaScript)
+```js
+export function retryDelay(attempt, base, maximum) {
+  if (!Number.isInteger(attempt) || attempt < 0) // DEFECT: required rejection was omitted
+  return Math.min(maximum, base * (2 ** attempt));
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(retryDelay(0, 100, 1000), 100);
+assert.equal(retryDelay(3, 100, 500), 500);
+assert.throws(() => retryDelay(-1, 100, 500), RangeError);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

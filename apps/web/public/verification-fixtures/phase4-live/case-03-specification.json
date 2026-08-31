@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase4 case 03: Create a security disclosure policy with scope, reporting channel, and response targets.",
+  "description": "Independent verification for Create a security disclosure policy with scope, reporting channel, and response targets..",
+  "workType": "CONTENT_DOCUMENT",
+  "deliverables": [
+    "Create a security disclosure policy with scope, reporting channel, and response targets."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Scope is defined",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that scope is defined",
+      "failureCondition": "The artifact does not demonstrate that scope is defined"
+    },
+    {
+      "id": "C-002",
+      "requirement": "A reporting channel is provided",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that a reporting channel is provided",
+      "failureCondition": "The artifact does not demonstrate that a reporting channel is provided"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Response targets are stated",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that response targets are stated",
+      "failureCondition": "The artifact does not demonstrate that response targets are stated"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-03-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase4-v7.0"
+}

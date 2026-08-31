@@ -1,0 +1,25 @@
+WORKIFY SOFTWARE DELIVERY CASE 11
+
+LOCKED REQUIREMENTS
+1. accept an optional 0x prefix
+2. require an even positive number of hexadecimal characters
+3. reject non-hexadecimal characters
+
+IMPLEMENTATION (JavaScript)
+```js
+export function isValidHex(input) {
+  return /^(?:0x)?(?:[0-9a-fA-F]{2})+$/.test(String(input));
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(isValidHex("0x00ff"), true);
+assert.equal(isValidHex("CAFE"), true);
+assert.equal(isValidHex("abc"), false);
+assert.equal(isValidHex("0xzz"), false);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

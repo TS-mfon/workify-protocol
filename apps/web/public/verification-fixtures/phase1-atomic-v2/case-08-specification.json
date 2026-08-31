@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 08: slugifyTitle",
+  "description": "Independent GenLayer source-grounded verification for slugifyTitle.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for slugifyTitle"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "slugifyTitle must trim input",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: trim input",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: trim input"
+    },
+    {
+      "id": "C-002",
+      "requirement": "slugifyTitle must lowercase ASCII letters",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: lowercase ASCII letters",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: lowercase ASCII letters"
+    },
+    {
+      "id": "C-003",
+      "requirement": "slugifyTitle must replace runs of non-alphanumeric characters with one hyphen",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: replace runs of non-alphanumeric characters with one hyphen",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: replace runs of non-alphanumeric characters with one hyphen"
+    },
+    {
+      "id": "C-004",
+      "requirement": "slugifyTitle must reject an empty result",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject an empty result",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject an empty result"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-08-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

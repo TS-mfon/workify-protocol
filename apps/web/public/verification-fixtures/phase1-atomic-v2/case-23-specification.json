@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 23: stableSortJobs",
+  "description": "Independent GenLayer source-grounded verification for stableSortJobs.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for stableSortJobs"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "stableSortJobs must sort jobs by ascending deadline",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: sort jobs by ascending deadline",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: sort jobs by ascending deadline"
+    },
+    {
+      "id": "C-002",
+      "requirement": "stableSortJobs must break equal-deadline ties by identifier",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: break equal-deadline ties by identifier",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: break equal-deadline ties by identifier"
+    },
+    {
+      "id": "C-003",
+      "requirement": "stableSortJobs must not mutate the input collection",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: not mutate the input collection",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: not mutate the input collection"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-23-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

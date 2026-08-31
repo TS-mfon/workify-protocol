@@ -1,0 +1,19 @@
+WORKIFY LIVE CONSENSUS CASE 16
+Work type: GITHUB_SOFTWARE
+Public fixture revision: phase-phase1-16
+
+ORIGINAL ISSUE
+Implement normalizeUsername(input) so it trims surrounding whitespace, lowercases ASCII letters, rejects empty results, and includes meaningful tests.
+
+DELIVERY
+export function normalizeUsername(input) {
+  return String(input).toLowerCase();
+}
+
+TESTS
+- "Alice" becomes "alice"
+CI: unit tests PASS
+Missing: trimming and empty-input rejection tests.
+
+SECURITY
+No secrets, dependencies, authorization paths, or unrelated files changed.

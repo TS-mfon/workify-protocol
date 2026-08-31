@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Release Notes",
+  "description": "Verify the complete Release Notes.",
+  "workType": "CONTENT_DOCUMENT",
+  "deliverables": [
+    "Release Notes"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Version and date are explicit",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Version and date are explicit",
+      "failureCondition": "The retrieved document omits or contradicts: Version and date are explicit"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Changes are grouped by type",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Changes are grouped by type",
+      "failureCondition": "The retrieved document omits or contradicts: Changes are grouped by type"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Known limitations are listed",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Known limitations are listed",
+      "failureCondition": "The retrieved document omits or contradicts: Known limitations are listed"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase4-grounded/case-02-document.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "content-document-v7.0"
+}

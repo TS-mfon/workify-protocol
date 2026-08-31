@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase5 case 02: Design a checkout flow with amount, recipient, confirmation, and error states.",
+  "description": "Independent verification for Design a checkout flow with amount, recipient, confirmation, and error states..",
+  "workType": "DESIGN_CREATIVE",
+  "deliverables": [
+    "Design a checkout flow with amount, recipient, confirmation, and error states."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Amount and recipient are present",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that amount and recipient are present",
+      "failureCondition": "The artifact does not demonstrate that amount and recipient are present"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Confirmation state is specified",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that confirmation state is specified",
+      "failureCondition": "The artifact does not demonstrate that confirmation state is specified"
+    },
+    {
+      "id": "C-003",
+      "requirement": "Error state is specified",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that error state is specified",
+      "failureCondition": "The artifact does not demonstrate that error state is specified"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase5-live/case-02-artifact.svg"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase5-v7.0"
+}

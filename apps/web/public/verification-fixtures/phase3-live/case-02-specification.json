@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase3 case 02: Summarize a public protocol TVL snapshot with timestamp and source methodology.",
+  "description": "Independent verification for Summarize a public protocol TVL snapshot with timestamp and source methodology..",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Summarize a public protocol TVL snapshot with timestamp and source methodology."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The snapshot includes a UTC timestamp",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the snapshot includes a utc timestamp",
+      "failureCondition": "The artifact does not demonstrate that the snapshot includes a utc timestamp"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The TVL value has an authoritative source",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the tvl value has an authoritative source",
+      "failureCondition": "The artifact does not demonstrate that the tvl value has an authoritative source"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The methodology explains the measurement",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the methodology explains the measurement",
+      "failureCondition": "The artifact does not demonstrate that the methodology explains the measurement"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-live/case-02-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase3-v7.0"
+}

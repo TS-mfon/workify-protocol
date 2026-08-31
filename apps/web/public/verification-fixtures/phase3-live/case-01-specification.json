@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "phase3 case 01: Compare three public AI infrastructure providers using official pricing pages and record plan limits.",
+  "description": "Independent verification for Compare three public AI infrastructure providers using official pricing pages and record plan limits..",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Compare three public AI infrastructure providers using official pricing pages and record plan limits."
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The report names exactly three providers",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the report names exactly three providers",
+      "failureCondition": "The artifact does not demonstrate that the report names exactly three providers"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Every price claim has a source URL",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that every price claim has a source url",
+      "failureCondition": "The artifact does not demonstrate that every price claim has a source url"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The table includes plan limits",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_artifact"
+      ],
+      "passCondition": "The retrieved public artifact directly demonstrates that the table includes plan limits",
+      "failureCondition": "The artifact does not demonstrate that the table includes plan limits"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-live/case-01-artifact.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "phase3-v7.0"
+}

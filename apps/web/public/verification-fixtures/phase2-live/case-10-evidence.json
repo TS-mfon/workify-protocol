@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "jobId": "0xac63cc00247cd9587b258ff88d7f3201d9a2c0d3bc6fc54b4572f052f693068c",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-08-29T15:30:00.000Z",
+  "artifacts": [
+    {
+      "id": "APP-10",
+      "type": "PRODUCTION_URL",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-10.html",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-10.html",
+      "sha256": "9e004e9d5a55d58b0e4f43f0bf62b690ac7c7082488d73959884f3440a079ef6",
+      "mimeType": "text/html",
+      "sizeBytes": 2807,
+      "metadata": {
+        "deployedApplication": true
+      }
+    },
+    {
+      "id": "MANIFEST-10",
+      "type": "DEPLOYMENT_MANIFEST",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-10-manifest.txt",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase2-live/case-10-manifest.txt",
+      "sha256": "28253bdcf27364d1112af04b472046398bf3557a38a671cc97ff00c7e9e8a036",
+      "mimeType": "text/plain",
+      "sizeBytes": 601,
+      "metadata": {
+        "advisoryOnly": true
+      }
+    }
+  ]
+}

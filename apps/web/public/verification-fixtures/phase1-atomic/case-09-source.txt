@@ -1,0 +1,20 @@
+WORKIFY ATOMIC SOFTWARE CASE 9
+FUNCTION: normalizeEmail
+
+LOCKED ISSUE
+Implement normalizeEmail(input) to trim input, lowercase the domain, preserve the local part, and reject malformed addresses. Add meaningful tests for every required behavior.
+
+DELIVERY ASSESSMENT
+The implementation directly includes every listed behavior for normalizeEmail.
+
+TEST ASSESSMENT
+Tests cover every listed behavior, including rejection and boundary paths.
+
+OMISSIONS
+None.
+
+CI
+lint PASS; unit tests PASS; typecheck PASS.
+
+CHANGE SCOPE
+Only the requested function and its focused tests changed. No secrets, dependencies, authorization logic, or unrelated files changed.

@@ -1,0 +1,29 @@
+WORKIFY SOFTWARE DELIVERY CASE 21
+
+LOCKED REQUIREMENTS
+1. accept decimal chain identifiers
+2. accept 0x-prefixed hexadecimal identifiers
+3. return a positive safe integer
+4. reject malformed input
+
+IMPLEMENTATION (JavaScript)
+```js
+export function parseChainId(input) {
+  const value = String(input);
+  if (!/^(?:[1-9][0-9]*|0x[0-9a-fA-F]+)$/.test(value)) throw new TypeError("invalid chain id");
+  const chainId = Number(value);
+  if (!Number.isSafeInteger(chainId) || chainId <= 0) throw new RangeError("invalid chain id");
+  return chainId;
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(parseChainId("8453"), 8453);
+assert.equal(parseChainId("0x2105"), 8453);
+assert.throws(() => parseChainId("0"), TypeError);
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

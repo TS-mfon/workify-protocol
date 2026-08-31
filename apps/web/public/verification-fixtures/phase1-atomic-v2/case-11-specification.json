@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "title": "Atomic software work 11: isValidHex",
+  "description": "Independent GenLayer source-grounded verification for isValidHex.",
+  "workType": "GITHUB_SOFTWARE",
+  "deliverables": [
+    "Implementation and focused tests for isValidHex"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "isValidHex must accept an optional 0x prefix",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: accept an optional 0x prefix",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: accept an optional 0x prefix"
+    },
+    {
+      "id": "C-002",
+      "requirement": "isValidHex must require an even positive number of hexadecimal characters",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: require an even positive number of hexadecimal characters",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: require an even positive number of hexadecimal characters"
+    },
+    {
+      "id": "C-003",
+      "requirement": "isValidHex must reject non-hexadecimal characters",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_source_code",
+        "focused_tests"
+      ],
+      "passCondition": "The retrieved implementation and tests directly demonstrate: reject non-hexadecimal characters",
+      "failureCondition": "The retrieved implementation contradicts or does not demonstrate: reject non-hexadecimal characters"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase1-atomic-v2/case-11-source.txt"
+  ],
+  "exclusions": [],
+  "policyVersion": "github-software-v7.0"
+}

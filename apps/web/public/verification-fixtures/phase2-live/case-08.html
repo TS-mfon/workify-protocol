@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Research library — Workify verification case 08</title>
+<style>
+:root{color-scheme:dark;--bg:#070b14;--panel:#111827;--line:#334155;--text:#f8fafc;--muted:#94a3b8;--accent:#8b5cf6}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#312e81 0,transparent 35%),var(--bg);color:var(--text);font:16px system-ui,sans-serif}header{display:flex;justify-content:space-between;align-items:center;padding:20px 6vw;border-bottom:1px solid var(--line)}nav{display:flex;gap:20px}a{color:var(--text)}main{max-width:1100px;margin:auto;padding:64px 6vw}.hero{display:grid;grid-template-columns:1.4fr 1fr;gap:32px;align-items:center}.card{background:#111827cc;border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 18px 60px #0008}h1{font-size:clamp(2.3rem,7vw,5rem);line-height:1;margin:0 0 20px}.muted{color:var(--muted)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px}.metric strong{display:block;font-size:1.8rem}label{display:block;margin:12px 0 6px}input,button{width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);background:#0f172a;color:var(--text)}button{margin-top:16px;background:linear-gradient(90deg,var(--accent),#2563eb);font-weight:700;cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #c4b5fd;outline-offset:3px}@media(max-width:720px){header{align-items:flex-start;gap:16px}nav{flex-direction:column;gap:8px}.hero{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-workify-case="08" data-app="research-library">
+<header><strong>Research library</strong><nav aria-label="Primary"><a href="#collections">Collections</a><a href="#sources">Sources</a></nav></header>
+<main><section class="hero"><div><p class="muted">LIVE TESTNET APPLICATION</p><h1>Research library</h1><p>Responsive public application fixture used for independent GenLayer requirement verification.</p><div class="metrics"><div class="card metric"><strong>24</strong><span class="muted">Active items</span></div><div class="card metric"><strong>99.9%</strong><span class="muted">Availability</span></div><div class="card metric"><strong>8m</strong><span class="muted">Median response</span></div></div></div><form class="card" aria-label="Create request"><h2>Create request</h2><label for="name">Name</label><input id="name" name="name" required><label for="email">Email</label><input id="email" name="email" type="email" required><button type="submit">Submit request</button><p id="status" role="status" aria-live="polite">Ready</p></form></section></main>
+<script>document.querySelector("form").addEventListener("submit",(event)=>{event.preventDefault();document.querySelector("#status").textContent="Request submitted";});</script>
+</body></html>

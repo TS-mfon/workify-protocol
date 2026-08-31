@@ -1,0 +1,54 @@
+{
+  "version": "1.0.0",
+  "title": "Reliability dataset calculation",
+  "description": "Verify calculations against a retrieved daily metrics dataset.",
+  "workType": "RESEARCH_DATA",
+  "deliverables": [
+    "Reliability report",
+    "Daily metrics dataset"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "The report total request and error counts equal the retrieved daily dataset",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "dataset"
+      ],
+      "passCondition": "The report totals are 3,000 requests and 30 errors, matching the dataset",
+      "failureCondition": "The totals do not match the dataset"
+    },
+    {
+      "id": "C-002",
+      "requirement": "The reported success rate is calculated correctly from the retrieved totals",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "dataset"
+      ],
+      "passCondition": "The report calculates 2,970 successful requests divided by 3,000 as 99.0%",
+      "failureCondition": "The calculation is missing or incorrect"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The report correctly evaluates every daily error rate against the 1.5 percent threshold",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "report",
+        "dataset"
+      ],
+      "passCondition": "Each day has a 1.0% error rate and is correctly classified below threshold",
+      "failureCondition": "A daily rate or threshold conclusion is incorrect"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-06-report.md",
+    "https://workify-protocol.vercel.app/verification-fixtures/phase3-grounded/case-06-metrics.csv"
+  ],
+  "exclusions": [],
+  "policyVersion": "research-data-v7.0"
+}

@@ -1,0 +1,26 @@
+WORKIFY SOFTWARE DELIVERY CASE 13
+
+LOCKED REQUIREMENTS
+1. leave tokens of eight characters or fewer unchanged
+2. preserve the first four characters
+3. preserve the final four characters
+4. redact every middle character
+
+IMPLEMENTATION (JavaScript)
+```js
+export function redactToken(input) {
+  const token = String(input);
+  if (token.length <= 8) return token;
+  return token.slice(0, 4) + "*".repeat(token.length - 8) + token.slice(-4);
+}
+```
+
+FOCUSED TESTS (Node assert)
+```js
+import assert from "node:assert/strict";
+assert.equal(redactToken("abcdefgh"), "abcdefgh");
+assert.equal(redactToken("abcdefghijkl"), "abcd****ijkl");
+```
+
+CI RECEIPT
+The submitted revision reports lint, unit tests, and typecheck completed. Validators must judge the visible implementation and tests rather than trusting this receipt.

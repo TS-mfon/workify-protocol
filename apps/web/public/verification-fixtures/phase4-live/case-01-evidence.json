@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "jobId": "0x3d379ab47e2c21456acd92b49f00731efe719c3ea02b32b5707cb81c8c0803bb",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-08-29T16:00:00.000Z",
+  "artifacts": [
+    {
+      "id": "ARTIFACT-01",
+      "type": "PUBLIC_DOCUMENT",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-01-artifact.md",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase4-live/case-01-artifact.md",
+      "sha256": "ccc6f63969411cd98b8aa71e6aac8745cde8bb14dcee9832deec669b8a92bbf6",
+      "mimeType": "text/markdown",
+      "sizeBytes": 752,
+      "metadata": {
+        "phase": "phase4",
+        "slug": "api-guide"
+      }
+    }
+  ]
+}

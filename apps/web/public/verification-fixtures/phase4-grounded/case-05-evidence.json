@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "jobId": "0x469e35ecba375f9ccb74debb39e2b7928ab7e1fcdcc0dc3c9eccf17a335f3ad2",
+  "deliveryVersion": 2,
+  "submittedAt": "2026-08-30T12:00:00.000Z",
+  "artifacts": [
+    {
+      "id": "DOCUMENT-05",
+      "type": "DOCUMENT",
+      "url": "https://workify-protocol.vercel.app/verification-fixtures/phase4-grounded/case-05-document.md",
+      "canonicalUrl": "https://workify-protocol.vercel.app/verification-fixtures/phase4-grounded/case-05-document.md",
+      "sha256": "68cbf49a2019f851677f49e96e8d444062fa9cbdc05e3f6c818449fcdf472af9",
+      "mimeType": "text/markdown",
+      "sizeBytes": 745,
+      "metadata": {
+        "completeDocument": true,
+        "slug": "rules-summary"
+      }
+    }
+  ]
+}

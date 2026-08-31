@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "title": "Operator Onboarding",
+  "description": "Verify the complete Operator Onboarding.",
+  "workType": "CONTENT_DOCUMENT",
+  "deliverables": [
+    "Operator Onboarding"
+  ],
+  "criteria": [
+    {
+      "id": "C-001",
+      "requirement": "Prerequisites are listed",
+      "severity": "CRITICAL",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Prerequisites are listed",
+      "failureCondition": "The retrieved document omits or contradicts: Prerequisites are listed"
+    },
+    {
+      "id": "C-002",
+      "requirement": "Steps are ordered",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: Steps are ordered",
+      "failureCondition": "The retrieved document omits or contradicts: Steps are ordered"
+    },
+    {
+      "id": "C-003",
+      "requirement": "The success condition is explicit",
+      "severity": "HIGH",
+      "verificationMethod": "source-grounded",
+      "evidenceRequired": [
+        "public_document"
+      ],
+      "passCondition": "The retrieved document directly contains: The success condition is explicit",
+      "failureCondition": "The retrieved document omits or contradicts: The success condition is explicit"
+    }
+  ],
+  "authorizedSources": [
+    "https://workify-protocol.vercel.app/verification-fixtures/phase4-grounded/case-04-document.md"
+  ],
+  "exclusions": [],
+  "policyVersion": "content-document-v7.0"
+}
