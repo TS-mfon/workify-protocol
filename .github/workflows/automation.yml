@@ -16,13 +16,24 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger protected automation endpoint
+      - name: Check automation configuration
+        id: config
         env:
           AUTOMATION_URL: ${{ secrets.WORKIFY_AUTOMATION_URL }}
           AUTOMATION_HMAC: ${{ secrets.WORKIFY_AUTOMATION_HMAC }}
         run: |
-          test -n "$AUTOMATION_URL"
-          test -n "$AUTOMATION_HMAC"
+          if [ -n "$AUTOMATION_URL" ] && [ -n "$AUTOMATION_HMAC" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Workify automation is not provisioned; skipping scheduled relay run."
+          fi
+      - name: Trigger protected automation endpoint
+        if: steps.config.outputs.configured == 'true'
+        env:
+          AUTOMATION_URL: ${{ secrets.WORKIFY_AUTOMATION_URL }}
+          AUTOMATION_HMAC: ${{ secrets.WORKIFY_AUTOMATION_HMAC }}
+        run: |
           curl --fail-with-body --retry 3 --retry-all-errors \
             -X POST "$AUTOMATION_URL/api/automation/run" \
             -H "authorization: Bearer $AUTOMATION_HMAC" \
