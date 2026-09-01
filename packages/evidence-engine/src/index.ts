@@ -3,7 +3,7 @@ export * from "./errors";
 export * from "./github";
 export * from "./jobs";
 export * from "./mongodb";
-export * from "./oneshot";
+export * from "./base-relay";
 export * from "./receipts";
 export * from "./attestation";
 export * from "./automation";

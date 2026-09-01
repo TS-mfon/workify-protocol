@@ -9,7 +9,7 @@ controls deterministic escrow settlement. Workify is not an AI freelance marketp
 not ask a model whether work is vaguely “good.” It asks whether a pinned delivery satisfies a
 predefined, evidence-backed contract.
 
-> **Status — August 31, 2026:** The production dApp and documentation are live at
+> **Status — September 1, 2026:** The production dApp and documentation are live at
 > `https://workify-protocol.vercel.app`. Base Sepolia escrow/treasury contracts, the Bradbury GEN
 > treasury, and all five v7 policy verifiers are deployed. The live phase gate is five distinct
 > finalized GenLayer verdicts per policy. Phase 1 advanced only through an explicit user waiver;
@@ -25,7 +25,7 @@ software and settlement must be machine-readable. Workify separates responsibili
 - **GenLayer Bradbury** owns subjective evidence evaluation and criterion-level consensus.
 - **Workify evidence services** turn friendly URLs into canonical, hashed, immutable manifests.
 - **The Vercel attestor** verifies finalized GenLayer receipts and signs bounded EIP-712 messages.
-- **The Workify 1Shot server wallet** pays Base gas and submits only five imported escrow lifecycle methods.
+- **The Vercel Base automation signer** pays Base gas and submits only six allowlisted escrow lifecycle methods.
 - **MongoDB Atlas** indexes asynchronous state, leases, audit records, and canonical JSON; it never owns funds.
 - **GitHub Actions** provides best-effort five-minute automation; onchain expiry and settlement stay permissionless.
 
@@ -39,7 +39,7 @@ flowchart LR
   W -->|0.1 GEN per attempt| T[GenTreasuryV1 / Bradbury]
   O[Workify GEN operator] -->|verify pinned evidence| V[WorkVerifierV7 policy deployments / Bradbury]
   V -->|FINALIZED verdict| R[Vercel receipt verifier + EIP-712 attestor]
-  R -->|approved method parameters| S[1Shot server wallet / Base Sepolia]
+  R -->|validated lifecycle parameters| S[Vercel automation signer / Base Sepolia]
   S -->|import verdict / settle| E
   E -->|worker award - 1%| W
   E -->|refund / remainder| C
@@ -198,38 +198,31 @@ Examples for a 100 USDC reward:
 Rounding dust stays with the client because gross worker allocation uses integer division before
 the fee is calculated.
 
-## 1Shot Server Wallet
+## Vercel Base Automation Signer
 
-Workify uses one authenticated 1Shot server wallet on Base Sepolia. The client never delegates
-its wallet and never gives Workify custody of user funds. `WorkEscrowV1` remains the sole USDC
-custodian; the server wallet pays Base gas and submits only these imported methods:
+Workify stores one Base Sepolia automation private key only as a Vercel server environment secret.
+The client never delegates its wallet and never gives Workify custody of user funds.
+`WorkEscrowV1` remains the sole USDC custodian; the automation signer pays Base gas and submits only
+these six lifecycle methods:
 
-1. `importFinalVerdict`
-2. `recordAttemptOutcome`
-3. `settle`
-4. `refundExpiredJob`
-5. `expireUnfundedAppeal`
+1. `requestVerification`
+2. `importFinalVerdict`
+3. `recordAttemptOutcome`
+4. `settle`
+5. `refundExpiredJob`
+6. `expireUnfundedAppeal`
 
-The relay API accepts an internal action name and validated `bytes32` job ID. It never accepts a
-method ID, target address, recipient, arbitrary calldata, or contract override from a request.
-Method IDs, wallet ID, business ID, API credentials, and webhook verification key are server-only.
-Every returned transaction is checked for Base Sepolia chain ID, configured wallet ID, and the
-deployed escrow address before it is recorded.
+The automation API accepts an internal action name, a validated `bytes32` job ID, and only the
+bounded arguments required by that action. It never accepts a target address, recipient, arbitrary
+calldata, ETH value, or contract override from a request. Before broadcast, Workify verifies chain
+ID 84532, encodes the fixed escrow ABI internally, simulates the zero-value call, submits it to the
+configured `WorkEscrowV1`, waits for the Base receipt, and rejects reverted transactions.
 
-1Shot sends signed success/failure webhooks to `/api/webhooks/oneshot`. Workify verifies the
-ED25519 signature, stores a unique event ID, treats duplicate deliveries as successful no-ops, and
-updates only the relay intent matching the 1Shot transaction ID. Polling remains a fallback for
-submitted transactions. `/api/health/oneshot` exposes only sanitized wallet address, chain, native
-gas balance, health, and last relay/webhook timestamps.
-
-Provision or verify the wallet, five method imports, endpoint, and trigger with:
-
-```bash
-pnpm --filter @workify/evidence-engine oneshot:provision
-```
-
-The command prints non-secret IDs and the webhook public key. The wallet must be manually funded
-with Base Sepolia ETH; `ONESHOT_LOW_BALANCE_WEI` defaults to 0.005 ETH for health warnings.
+The signer cannot redirect payment because the client, worker, treasury, reward, verdict nonce,
+appeal deadline, and payout calculation are controlled by escrow state and attested verdict data.
+The signer key must hold Base Sepolia ETH for gas and must be monitored and refilled by Workify.
+`/api/health/base-signer` exposes only sanitized signer address, chain ID, gas balance, status, and
+last successful relay time; it never exposes the private key.
 
 ## Automation and Error Handling
 
@@ -279,22 +272,22 @@ pnpm build
 Never commit `.env.local`. The MongoDB password supplied during development was disclosed in chat
 and must be rotated before deployment.
 
-### Server-only 1Shot configuration
+### Server-only Base automation configuration
 
-The following values belong in Vercel server environment variables and must never use a
-`NEXT_PUBLIC_` prefix: `ONESHOT_API_KEY`, `ONESHOT_API_SECRET`, `ONESHOT_BUSINESS_ID`,
-`ONESHOT_WALLET_ID`, `ONESHOT_WEBHOOK_PUBLIC_KEY`, and the five
-`ONESHOT_*_METHOD_ID` values. `ONESHOT_WEBHOOK_DESTINATION_URL` is required only while running the
-provisioning command. The public escrow address is safe to expose because it is already onchain.
+`BASE_AUTOMATION_PRIVATE_KEY` belongs only in Vercel server environment variables and must never
+use a `NEXT_PUBLIC_` prefix. `BASE_SEPOLIA_RPC_URL` selects the server RPC, while
+`BASE_AUTOMATION_LOW_BALANCE_WEI` defines the health warning threshold. The public escrow address
+is safe to expose because it is already onchain.
 
-After provisioning, send Base Sepolia ETH to the printed server-wallet address, then verify:
+Fund the derived signer address with Base Sepolia ETH, then verify:
 
 ```bash
-curl -sS https://workify-protocol.vercel.app/api/health/oneshot | jq .
+curl -sS https://workify-protocol.vercel.app/api/health/base-signer | jq .
 ```
 
 Do not call automatic settlement operational until the endpoint reports a non-empty gas balance,
-an authentic signed webhook has been observed, and one Base Sepolia settlement receipt completes.
+one real allowlisted Base Sepolia transaction completes, and the scheduled GitHub automation run
+records the confirmed receipt.
 
 ### Base deployment
 
@@ -338,7 +331,7 @@ changes recorded receipt statuses or becomes a fake finalized result.
 ## Threat Model
 
 Primary threats include malicious evidence prompt injection, dynamic web drift, inaccessible
-sources, GitHub rate limiting, attestor compromise, signature replay, relayer misuse, operator key
+sources, GitHub rate limiting, attestor compromise, signature replay, automation signer misuse, operator key
 loss, duplicate automation, token reentrancy, rounding error, griefing appeals, and false release
 gate claims. Defenses include immutable hashes, source re-fetching, strict URL and size bounds,
 substantive validator reruns, EIP-712 domain binding, nonce consumption, fixed recipients,
@@ -353,7 +346,7 @@ apps/web                    Next.js dApp, APIs, and /docs
 contracts/base/v1           Base Sepolia escrow and treasury
 contracts/genlayer/v1..v7   Historical Bradbury verifiers and GEN treasury
 packages/protocol-types     Canonical schemas and constants
-packages/evidence-engine    GitHub, hashing, MongoDB, receipt, attestation, relayer logic
+packages/evidence-engine    GitHub, hashing, MongoDB, receipt, attestation, Base signer logic
 fixtures                    Live phase-gate records
 scripts                     Deployment and operational scripts
 deployments                 Versioned network manifests

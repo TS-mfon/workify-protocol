@@ -78,9 +78,6 @@ importers:
 
   packages/evidence-engine:
     dependencies:
-      '@1shotapi/client-sdk':
-        specifier: 1.1.9
-        version: 1.1.9
       '@workify/protocol-types':
         specifier: workspace:*
         version: link:../protocol-types
@@ -124,9 +121,6 @@ importers:
         version: 3.2.7(@types/node@24.5.2)
 
 packages:
-
-  '@1shotapi/client-sdk@1.1.9':
-    resolution: {integrity: sha512-Mtc2vWl1tU4BaOVtzaZ3W4uwXnGKBav/vjH2bVqmW89zgy2BYJCXZV8GB2LoDjAfCbztrWEeamSk3cN0wNqAzw==}
 
   '@adraffy/ens-normalize@1.11.1':
     resolution: {integrity: sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ==}
@@ -684,9 +678,6 @@ packages:
   '@noble/curves@1.9.1':
     resolution: {integrity: sha512-k11yZxZg+t+gWvBbIswW0yoJlu8cHOC7dhunwOzoWH/mXGBiYyR4YY6hAEK/3EUs4UpB8la1RfdRpeGsFHkWsA==}
     engines: {node: ^14.21.3 || >=16}
-
-  '@noble/ed25519@2.3.0':
-    resolution: {integrity: sha512-M7dvXL2B92/M7dw9+gzuydL8qn/jiqNHaoR3Q+cb1q1GHV7uwE17WCyFMG+Y+TZb5izcaXk5TdJRrDUxHXL78A==}
 
   '@noble/hashes@1.8.0':
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
@@ -2579,12 +2570,6 @@ packages:
 
 snapshots:
 
-  '@1shotapi/client-sdk@1.1.9':
-    dependencies:
-      '@noble/ed25519': 2.3.0
-      '@noble/hashes': 1.8.0
-      zod: 4.4.3
-
   '@adraffy/ens-normalize@1.11.1': {}
 
   '@babel/code-frame@7.29.7':
@@ -3023,8 +3008,6 @@ snapshots:
   '@noble/curves@1.9.1':
     dependencies:
       '@noble/hashes': 1.8.0
-
-  '@noble/ed25519@2.3.0': {}
 
   '@noble/hashes@1.8.0': {}
 

@@ -9,13 +9,28 @@ describe("app protocol presentation", () => {
     expect(PLATFORM_FEE_BPS).toBe(100);
   });
 
-  it("ships the four-step funded-job workflow and emerald design system", () => {
+  it("ships the funded-job workflow, persistent wallet, and curved emerald design system", () => {
     const form = readFileSync(new URL("../components/NewJobForm.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
+    const nav = readFileSync(new URL("../components/Nav.tsx", import.meta.url), "utf8");
+    const shell = readFileSync(new URL("../components/AppShell.tsx", import.meta.url), "utf8");
+    const provider = readFileSync(new URL("../components/WalletProvider.tsx", import.meta.url), "utf8");
     expect(form).toContain("Work details");
     expect(form).toContain("Review & fund");
     expect(form).toContain("Approve USDC & fund job");
-    expect(css).toContain("--green: #2ee67b");
+    expect(css).toContain("--green: #35f184");
+    expect(css).toContain("--radius-control: 999px");
+    expect(css).toContain("border-radius: 42px 42px 14px 42px");
+    expect(nav).toContain("<WalletButton compact />");
+    expect(shell).toContain("<WalletButton />");
+    expect(provider).toContain("wallet_switchEthereumChain");
     expect(css).not.toContain("--purple:");
+  });
+
+  it("uses the Vercel signer instead of a third-party relayer runtime", () => {
+    const docs = readFileSync(new URL("./docs/page.tsx", import.meta.url), "utf8");
+    expect(docs).toContain("Vercel Base Automation Signer");
+    expect(docs).toContain("/api/health/base-signer");
+    expect(docs).not.toContain("server wallet");
   });
 });

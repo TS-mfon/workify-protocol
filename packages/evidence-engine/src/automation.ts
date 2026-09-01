@@ -2,7 +2,7 @@ import { chains, createClient } from "genlayer-js";
 import { keccak256, stringToHex, type Hex } from "viem";
 import { acquireLease, getDatabase } from "./mongodb";
 import { classifyGenLayerReceipt } from "./receipts";
-import { executeRelayAction, getOneShotTransaction, type RelayAction, type RelayParameters } from "./oneshot";
+import { executeBaseRelayAction, type BaseRelayAction, type BaseRelayParameters } from "./base-relay";
 import { WorkifyError } from "./errors";
 import { signOutcomeAttestation, signVerdictAttestation } from "./attestation";
 
@@ -12,24 +12,10 @@ const bytes32 = (value: string) => (value.startsWith("0x") ? value : `0x${value}
 export async function runAutomationBatch(limit = 20) {
   if (!(await acquireLease("automation:global"))) return { skipped: "lease-held", processed: 0 };
   const db = await getDatabase();
-  const intents = await db.collection("relay_intents").find({ status: { $in: ["PENDING", "SUBMITTED"] } }).sort({ createdAt: 1 }).limit(limit).toArray();
+  const intents = await db.collection("relay_intents").find({ status: "PENDING" }).sort({ createdAt: 1 }).limit(limit).toArray();
   let processed = 0;
   for (const intent of intents) {
     try {
-      if (intent.status === "SUBMITTED" && intent.oneShotTransactionId) {
-        const transaction = await getOneShotTransaction(intent.oneShotTransactionId);
-        const status = transaction.status === "Completed" ? "CONFIRMED" : transaction.status === "Failed" ? "FAILED" : "SUBMITTED";
-        await db.collection("relay_intents").updateOne({ _id: intent._id }, { $set: {
-          status,
-          oneShotStatus: transaction.status,
-          ...(transaction.transactionHash ? { transactionHash: transaction.transactionHash } : {}),
-          ...(transaction.failureReason ? { failureReason: transaction.failureReason } : {}),
-          ...(status === "CONFIRMED" ? { confirmedAt: new Date() } : {}),
-          updatedAt: new Date(),
-        } });
-        processed += 1;
-        continue;
-      }
       const rpcUrl = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
       const genlayerClient = rpcUrl
         ? createClient({ chain: chains.testnetBradbury as never, endpoint: rpcUrl })
@@ -43,8 +29,8 @@ export async function runAutomationBatch(limit = 20) {
       }
       const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
       if (!escrow) throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Base escrow address is not configured");
-      let action = String(intent.action) as RelayAction;
-      let params: RelayParameters;
+      let action = String(intent.action) as BaseRelayAction;
+      let params: BaseRelayParameters;
       if (action === "importVerdict") {
         if (classification === "UNDETERMINED") {
           const outcome = {
@@ -94,19 +80,20 @@ export async function runAutomationBatch(limit = 20) {
           params = { verdict: message, signature };
         }
       } else if ((["settle", "refundExpiredJob", "expireUnfundedAppeal"] as string[]).includes(action)) {
-        params = { jobId: intent.jobId as Hex };
+        params = {};
       } else {
         throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Unsupported automation action");
       }
-      const transaction = await executeRelayAction(action, String(intent.jobId), params);
+      const transaction = await executeBaseRelayAction(action, String(intent.jobId), params);
       await db.collection("relay_intents").updateOne(
         { _id: intent._id },
         { $set: {
-          status: transaction.status === "Completed" ? "CONFIRMED" : transaction.status === "Failed" ? "FAILED" : "SUBMITTED",
-          oneShotTransactionId: transaction.id,
-          oneShotStatus: transaction.status,
-          ...(transaction.transactionHash ? { transactionHash: transaction.transactionHash } : {}),
+          status: "CONFIRMED",
+          transactionHash: transaction.transactionHash,
+          signerAddress: transaction.signerAddress,
+          blockNumber: transaction.blockNumber.toString(),
           submittedAt: new Date(),
+          confirmedAt: new Date(),
           updatedAt: new Date(),
         }, $inc: { attempts: 1 } },
       );

@@ -9,11 +9,9 @@
   "scripts": {
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "oneshot:provision": "node --experimental-strip-types scripts/provision-oneshot.mts"
+    "test": "vitest run"
   },
   "dependencies": {
-    "@1shotapi/client-sdk": "1.1.9",
     "@workify/protocol-types": "workspace:*",
     "genlayer-js": "1.1.8",
     "mongodb": "7.6.0",

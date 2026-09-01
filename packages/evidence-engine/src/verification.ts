@@ -2,6 +2,7 @@ import { chains, createAccount, createClient } from "genlayer-js";
 import type { Hex } from "viem";
 import { getDatabase } from "./mongodb";
 import { WorkifyError } from "./errors";
+import { executeBaseRelayAction } from "./base-relay";
 
 export async function submitVerification(input: {
   jobId: Hex;
@@ -19,6 +20,7 @@ export async function submitVerification(input: {
   const endpoint = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
   if (!key || !endpoint) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer operator is not configured");
   if (input.attempt < 1 || input.attempt > 3) throw new WorkifyError("USER_INPUT", "Attempt must be 1-3");
+  const baseRequest = await executeBaseRelayAction("requestVerification", input.jobId, { appeal: input.appeal });
   const client = createClient({ chain: chains.testnetBradbury as never, endpoint, account: createAccount(key) });
   const hash = await client.writeContract({
     address: input.verifierAddress,
@@ -44,6 +46,7 @@ export async function submitVerification(input: {
     verifierAddress: input.verifierAddress,
     genlayerTxHash: hash,
     status: "SUBMITTED",
+    baseRequestTransactionHash: baseRequest.transactionHash,
     createdAt: new Date(),
   });
   await db.collection("relay_intents").updateOne(
@@ -64,5 +67,5 @@ export async function submitVerification(input: {
     } },
     { upsert: true },
   );
-  return { transactionHash: hash };
+  return { transactionHash: hash, baseRequestTransactionHash: baseRequest.transactionHash };
 }
