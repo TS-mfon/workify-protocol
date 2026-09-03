@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createPublicClient, http, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
+import { publicNetworkConfig } from "@/lib/network";
 
 const inputSchema = z.object({
   jobId: z.string().regex(/^0x[a-fA-F0-9]{64}$/u),
@@ -25,9 +26,9 @@ const jobAbi = [{ type: "function", name: "getJob", stateMutability: "view", inp
 export async function POST(request: Request) {
   try {
     const input = inputSchema.parse(await request.json());
-    const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
-    if (!escrow) throw new Error("Base escrow is not configured");
-    const base = createPublicClient({ chain: baseSepolia, transport: http(process.env.BASE_SEPOLIA_RPC_URL || process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org") });
+    const network = publicNetworkConfig();
+    const escrow = network.escrow;
+    const base = createPublicClient({ chain: baseSepolia, transport: http(network.baseRpc) });
     const job = await base.readContract({ address: escrow, abi: jobAbi, functionName: "getJob", args: [input.jobId as Hex] });
     if (Number(job.status) !== 6) throw new Error("The job is not awaiting appeal funding");
     if (job.appellant.toLowerCase() !== input.appellant.toLowerCase()) throw new Error("Appellant does not match the onchain appeal intent");

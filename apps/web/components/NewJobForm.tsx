@@ -6,6 +6,7 @@ import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, LoaderCircle, 
 import { encodeFunctionData, keccak256, parseUnits, stringToHex } from "viem";
 import { BASE_SEPOLIA_USDC, MAX_JOB_TERM_SECONDS, MIN_JOB_TERM_SECONDS } from "@workify/protocol-types";
 import { WalletButton } from "./WalletButton";
+import { publicNetworkConfig } from "@/lib/network";
 
 const erc20Abi = [{ type: "function", name: "approve", stateMutability: "nonpayable", inputs: [{ name: "spender", type: "address" }, { name: "amount", type: "uint256" }], outputs: [{ type: "bool" }] }] as const;
 const escrowAbi = [{ type: "function", name: "createFundedJob", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }, { name: "worker", type: "address" }, { name: "reward", type: "uint128" }, { name: "deliveryDeadline", type: "uint64" }, { name: "specificationHash", type: "bytes32" }, { name: "policyHash", type: "bytes32" }], outputs: [] }] as const;
@@ -65,7 +66,7 @@ export function NewJobForm() {
   async function submit() {
     try {
       if (!account || !window.ethereum) throw new Error("Connect a wallet before funding the job");
-      const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
+      const { escrow } = publicNetworkConfig();
       if (!escrow) throw new Error("WorkEscrowV3 is not configured");
       const reward = parseUnits(draft.reward, 6);
       const deadline = Math.floor(new Date(draft.deadline).getTime() / 1000);

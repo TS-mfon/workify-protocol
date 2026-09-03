@@ -5,12 +5,14 @@ import { encodeFunctionData, parseEther } from "viem";
 import { chains, createClient } from "genlayer-js";
 import { TransactionStatus } from "genlayer-js/types";
 import { WalletButton } from "./WalletButton";
+import { publicNetworkConfig } from "@/lib/network";
 
 type Provider = { request(args: { method: string; params?: unknown[] }): Promise<unknown> };
 declare global { interface Window { ethereum?: Provider } }
 
-const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
-const treasury = (process.env.NEXT_PUBLIC_GENLAYER_TREASURY_ADDRESS || process.env.NEXT_PUBLIC_GEN_TREASURY_ADDRESS || "0xe11e888CD716b7fBd36442746Ea0C3A9f1d115B3") as `0x${string}`;
+const network = publicNetworkConfig();
+const escrow = network.escrow;
+const treasury = network.genTreasury;
 const base = [{ type: "function", name: "submitOrReplaceDelivery", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }, { name: "evidenceHash", type: "bytes32" }], outputs: [] }, { type: "function", name: "lockDelivery", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [] }, { type: "function", name: "openAppealIntent", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [] }, { type: "function", name: "settle", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [] }] as const;
 
 async function switchChain(provider: Provider, chainId: string, params: Record<string, unknown>) {

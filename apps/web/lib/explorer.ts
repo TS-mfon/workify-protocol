@@ -4,6 +4,7 @@ import { chains, createClient as createGenLayerClient } from "genlayer-js";
 import { createPublicClient, http, keccak256, parseAbiItem, stringToHex, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
 import { getDatabase } from "@workify/evidence-engine";
+import { publicNetworkConfig } from "./network";
 
 export type ExplorerDecision = "PASS" | "FAIL" | "PARTIAL" | "UNVERIFIABLE";
 export type ExplorerCriterion = {
@@ -60,19 +61,15 @@ const policyLabels: Record<string, string> = {
 };
 
 function config() {
-  const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
-  const fromBlock = process.env.WORK_ESCROW_DEPLOYMENT_BLOCK;
-  const baseRpc = process.env.BASE_SEPOLIA_RPC_URL || process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org";
-  const genlayerRpc = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
-  if (!escrow || !fromBlock || !genlayerRpc) return null;
+  const network = publicNetworkConfig();
   const verifiers = [
-    ["GITHUB_SOFTWARE", process.env.NEXT_PUBLIC_GITHUB_VERIFIER_ADDRESS],
-    ["WEB_APPLICATION", process.env.NEXT_PUBLIC_WEB_VERIFIER_ADDRESS],
-    ["RESEARCH_DATA", process.env.NEXT_PUBLIC_RESEARCH_VERIFIER_ADDRESS],
-    ["CONTENT_DOCUMENT", process.env.NEXT_PUBLIC_DOCUMENT_VERIFIER_ADDRESS],
-    ["DESIGN_CREATIVE", process.env.NEXT_PUBLIC_DESIGN_VERIFIER_ADDRESS],
-  ].filter((entry): entry is [string, string] => Boolean(entry[1]));
-  return { escrow, fromBlock: BigInt(fromBlock), baseRpc, genlayerRpc, verifiers };
+    ["GITHUB_SOFTWARE", network.verifiers.GITHUB_SOFTWARE],
+    ["WEB_APPLICATION", network.verifiers.WEB_APPLICATION],
+    ["RESEARCH_DATA", network.verifiers.RESEARCH_DATA],
+    ["CONTENT_DOCUMENT", network.verifiers.CONTENT_DOCUMENT],
+    ["DESIGN_CREATIVE", network.verifiers.DESIGN_CREATIVE],
+  ] as Array<[string, string]>;
+  return { escrow: network.escrow, fromBlock: network.fromBlock, baseRpc: network.baseRpc, genlayerRpc: network.genlayerRpc, verifiers };
 }
 
 function verifierForId(verifiers: Array<[string, string]>, verifierId: Hex) {

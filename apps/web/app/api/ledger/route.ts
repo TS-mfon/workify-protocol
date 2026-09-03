@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createPublicClient, http, parseAbiItem, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
+import { publicNetworkConfig } from "@/lib/network";
 
 export const dynamic = "force-dynamic";
 
@@ -33,13 +34,11 @@ const escrowAbi = [{ type: "function", name: "getJob", stateMutability: "view", 
 const statuses = ["NONE", "AWAITING_DELIVERY", "DELIVERY_LOCKED", "VERIFYING", "RETRY_WINDOW", "APPEAL_WINDOW", "APPEAL_FUNDING", "APPEAL_VERIFYING", "SETTLEABLE", "SETTLED", "REFUNDED"] as const;
 
 function settings() {
-  const address = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS;
-  const fromBlock = process.env.WORK_ESCROW_DEPLOYMENT_BLOCK;
-  if (!addressPattern.test(address ?? "") || !/^\d+$/u.test(fromBlock ?? "")) return null;
+  const network = publicNetworkConfig();
   return {
-    address: address as `0x${string}`,
-    fromBlock: BigInt(fromBlock!),
-    rpc: process.env.BASE_SEPOLIA_RPC_URL || process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org",
+    address: network.escrow,
+    fromBlock: network.fromBlock,
+    rpc: network.baseRpc,
   };
 }
 
@@ -49,7 +48,6 @@ function json(value: unknown) {
 
 export async function GET(request: Request) {
   const config = settings();
-  if (!config) return NextResponse.json({ error: "Base ledger is not configured" }, { status: 503 });
   const query = new URL(request.url).searchParams;
   const account = query.get("address");
   const jobId = query.get("jobId");
