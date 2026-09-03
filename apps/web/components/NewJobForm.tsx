@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, LoaderCircle, Plus, Trash2, Wallet } from "lucide-react";
 import { encodeFunctionData, keccak256, parseUnits, stringToHex } from "viem";
 import { BASE_SEPOLIA_USDC, MAX_JOB_TERM_SECONDS, MIN_JOB_TERM_SECONDS } from "@workify/protocol-types";
@@ -31,6 +32,7 @@ async function waitForReceipt(hash: string) {
 }
 
 export function NewJobForm() {
+  const router = useRouter();
   const [account, setAccount] = useState<`0x${string}`>();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(initialDraft);
@@ -64,7 +66,7 @@ export function NewJobForm() {
     try {
       if (!account || !window.ethereum) throw new Error("Connect a wallet before funding the job");
       const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
-      if (!escrow) throw new Error("WorkEscrowV1 is not configured");
+      if (!escrow) throw new Error("WorkEscrowV3 is not configured");
       const reward = parseUnits(draft.reward, 6);
       const deadline = Math.floor(new Date(draft.deadline).getTime() / 1000);
       const now = Math.floor(Date.now() / 1000);
@@ -82,8 +84,9 @@ export function NewJobForm() {
       const jobHash = await window.ethereum.request({ method: "eth_sendTransaction", params: [{ from: account, to: escrow, data: encodeFunctionData({ abi: escrowAbi, functionName: "createFundedJob", args: [prepared.jobId, draft.worker as `0x${string}`, reward, BigInt(deadline), prepared.specificationHash, keccak256(stringToHex(policy))] }) }] }) as string;
       setTxState("job-submitted"); setMessage("Funded job submitted. Waiting for final Base confirmation…");
       await waitForReceipt(jobHash);
-      setTxState("confirmed"); setMessage(`Job ${prepared.jobId} is funded and active.`);
+      setTxState("confirmed"); setMessage(`Job ${prepared.jobId} is funded and active. Opening dashboard…`);
       sessionStorage.removeItem("workify:new-job");
+      window.setTimeout(() => router.push(`/app/jobs/${prepared.jobId}`), 500);
     } catch (error: unknown) {
       const walletError = error as { code?: number; message?: string };
       setTxState("failed");

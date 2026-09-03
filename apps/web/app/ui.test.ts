@@ -22,7 +22,7 @@ describe("app protocol presentation", () => {
     expect(css).toContain("--radius-control: 999px");
     expect(css).toContain("border-radius: 42px 42px 14px 42px");
     expect(nav).toContain("<WalletButton compact />");
-    expect(shell).toContain("<WalletButton />");
+    expect(shell).toContain("<WalletButton compact />");
     expect(provider).toContain("wallet_switchEthereumChain");
     expect(css).not.toContain("--purple:");
   });
