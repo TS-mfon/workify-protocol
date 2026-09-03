@@ -1,9 +1,10 @@
+import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { privateKeyToAccount } from "viem/accounts";
-import { createPublicClient, createWalletClient, encodeFunctionData, http, keccak256, parseAbi, parseUnits, stringToHex } from "viem";
+import { createPublicClient, createWalletClient, http, keccak256, parseAbi, parseUnits, stringToHex } from "viem";
 import { baseSepolia } from "viem/chains";
 import { chains, createAccount, createClient } from "genlayer-js";
-import { TransactionStatus } from "genlayer-js/types";
 
 const root = new URL("../../..", import.meta.url);
 const envFile = await readFile(new URL(".env.local", root), "utf8");
@@ -38,10 +39,11 @@ const escrowAbi = parseAbi([
   "function settle(bytes32)",
   "function getJob(bytes32) view returns ((address client,address worker,uint128 reward,uint64 createdAt,uint64 deliveryDeadline,uint64 retryDeadline,uint64 verdictAt,uint64 appealDeadline,uint64 appealFundingDeadline,uint32 deliveryVersion,uint8 attempts,uint8 appealAttempts,uint16 payoutBps,uint8 status,uint8 decision,bytes32 specificationHash,bytes32 evidenceHash,bytes32 policyHash,bytes32 resultHash,bytes32 verifierId,bytes32 genlayerTxHash,bytes32 appealPaymentTxHash,address appellant,uint8 verdictAttempt,bool verdictAppeal,bool appealFunded))",
 ]);
-const treasuryAbi = parseAbi(["function fund_verification(string job_id,uint32 attempt) payable returns (string)"]);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const receipt = async (hash) => base.waitForTransactionReceipt({ hash });
-const canonical = (value) => JSON.stringify(value, Object.keys(value).sort());
+const sortValue = (value) => Array.isArray(value) ? value.map(sortValue) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, sortValue(child)])) : value;
+const canonical = (value) => JSON.stringify(sortValue(value));
+const canonicalHash = (value) => createHash("sha256").update(canonical(value)).digest("hex");
 const sha256 = async (text) => Buffer.from(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text))).toString("hex");
 const rawBase = "https://raw.githubusercontent.com/TS-mfon/workify-protocol/main/apps/web/public/verification-fixtures/showcase";
 
@@ -58,8 +60,8 @@ async function preparePlan() {
     const artifact = { id: `SOURCE-${id}`, type: "DOCUMENT", url: `${rawBase}/${sourcePath}`, canonicalUrl: `${rawBase}/${sourcePath}`, sha256: await sha256(source), mimeType: "text/plain", sizeBytes: Buffer.byteLength(source), metadata: { liveShowcase: true, case: index } };
     const evidence = { version: "1.0.0", jobId, deliveryVersion: 1, submittedAt: new Date().toISOString(), artifacts: [artifact] };
     await writeFile(new URL(sourcePath, directory), source);
-    await writeFile(new URL(`case-${id}-specification.json`, directory), `${JSON.stringify(specification, null, 2)}\n`);
-    await writeFile(new URL(`case-${id}-evidence.json`, directory), `${JSON.stringify(evidence, null, 2)}\n`);
+    await writeFile(new URL(`case-${id}-specification.json`, directory), canonical(specification));
+    await writeFile(new URL(`case-${id}-evidence.json`, directory), canonical(evidence));
     plan.push({ index, jobId, specification, evidence });
   }
   await writeFile(new URL("../../../fixtures/live-results/showcase-plan.json", import.meta.url), JSON.stringify(plan, null, 2) + "\n");
@@ -79,9 +81,10 @@ async function waitGen(hash, terminal = ["FINALIZED"]) {
 async function main() {
   if (process.argv.includes("--prepare")) return preparePlan();
   if (!process.env.GENLAYER_OPERATOR_PRIVATE_KEY || !process.env.VERDICT_ATTESTOR_PRIVATE_KEY || !process.env.MONGODB_URI) throw new Error("Missing real GenLayer attestor/operator or MongoDB configuration");
-  const db = (await import("@workify/evidence-engine")).getDatabase;
-  const { canonicalHash, signVerdictAttestation } = await import("@workify/evidence-engine");
-  const database = await db();
+  const require = createRequire(new URL("../../../packages/evidence-engine/package.json", import.meta.url));
+  const { MongoClient } = require("mongodb");
+  const mongo = await new MongoClient(process.env.MONGODB_URI).connect();
+  const database = mongo.db(process.env.MONGODB_DATABASE || "workify");
   const reward = parseUnits("0.25", 6);
   const approval = reward * 5n;
   const usdcBalance = await base.readContract({ address: usdc, abi: erc20, functionName: "balanceOf", args: [clientAccount.address] });
@@ -93,7 +96,6 @@ async function main() {
   for (const item of plan) {
     const { index, jobId, specification, evidence } = item;
     const id = String(index).padStart(2, "0");
-    const specText = `${JSON.stringify(specification, null, 2)}\n`;
     const evidenceHash = canonicalHash(evidence);
     const specHash = canonicalHash(specification);
     await database.collection("specifications").updateOne({ _id: specHash }, { $set: { document: specification, canonical: canonical(specification), createdAt: new Date() } }, { upsert: true });
@@ -117,7 +119,12 @@ async function main() {
     const verdict = JSON.parse(String(raw));
     const nonce = BigInt(`0x${Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("hex")}`);
     const attestation = { jobId, chainId: 84532n, escrow, verifierId: keccak256(stringToHex(verifier.toLowerCase())), genlayerTxHash: verifyHash, attempt: 1, specificationHash: `0x${verdict.specification_hash}`, evidenceHash: `0x${verdict.evidence_root}`, policyHash: keccak256(stringToHex(verdict.policy_version)), decision: { PASS: 1, FAIL: 2, PARTIAL: 3, UNVERIFIABLE: 4 }[verdict.decision], payoutBps: Number(verdict.payout_bps), resultHash: `0x${verdict.result_hash}`, nonce, appeal: false };
-    const signature = await signVerdictAttestation(attestation, escrow);
+    const signature = await privateKeyToAccount(process.env.VERDICT_ATTESTOR_PRIVATE_KEY).signTypedData({
+      domain: { name: "Workify", version: process.env.WORKIFY_EIP712_VERSION, chainId: 84532, verifyingContract: escrow },
+      primaryType: "Verdict",
+      types: { Verdict: [{ name: "jobId", type: "bytes32" }, { name: "chainId", type: "uint256" }, { name: "escrow", type: "address" }, { name: "verifierId", type: "bytes32" }, { name: "genlayerTxHash", type: "bytes32" }, { name: "attempt", type: "uint8" }, { name: "specificationHash", type: "bytes32" }, { name: "evidenceHash", type: "bytes32" }, { name: "policyHash", type: "bytes32" }, { name: "decision", type: "uint8" }, { name: "payoutBps", type: "uint16" }, { name: "resultHash", type: "bytes32" }, { name: "nonce", type: "uint256" }, { name: "appeal", type: "bool" }] },
+      message: attestation,
+    });
     const importHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "importFinalVerdict", args: [attestation, signature] });
     await receipt(importHash);
     await sleep(5 * 60 * 1000);
@@ -128,6 +135,7 @@ async function main() {
     console.log(JSON.stringify(records.at(-1)));
   }
   await writeFile(new URL("../../../fixtures/live-results/showcase-summary.json", import.meta.url), JSON.stringify({ network: "base-sepolia", escrow, verifier, records }, null, 2) + "\n");
+  await mongo.close();
 }
 
 await main();
