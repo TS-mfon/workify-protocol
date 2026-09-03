@@ -32,3 +32,19 @@ export function publicNetworkConfig() {
     },
   };
 }
+
+export async function getLogsInChunks<T>(
+  fromBlock: bigint,
+  getLogs: (fromBlock: bigint, toBlock: bigint) => Promise<readonly T[]>,
+  getLatestBlock: () => Promise<bigint>,
+) {
+  const latest = await getLatestBlock();
+  if (latest < fromBlock) return [];
+  const chunkSize = 9_000n;
+  const logs: T[] = [];
+  for (let start = fromBlock; start <= latest; start += chunkSize) {
+    const end = start + chunkSize - 1n > latest ? latest : start + chunkSize - 1n;
+    logs.push(...await getLogs(start, end));
+  }
+  return logs;
+}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createPublicClient, http, parseAbiItem, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
-import { publicNetworkConfig } from "@/lib/network";
+import { getLogsInChunks, publicNetworkConfig } from "@/lib/network";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +55,9 @@ export async function GET(request: Request) {
   if (jobId && !jobPattern.test(jobId)) return NextResponse.json({ error: "Invalid job ID" }, { status: 400 });
   try {
     const base = createPublicClient({ chain: baseSepolia, transport: http(config.rpc) });
-    const created = await base.getLogs({ address: config.address, event: jobCreated, fromBlock: config.fromBlock, toBlock: "latest" });
+    const created = await getLogsInChunks(config.fromBlock,
+      (fromBlock, toBlock) => base.getLogs({ address: config.address, event: jobCreated, fromBlock, toBlock }),
+      () => base.getBlockNumber());
     const selected = created.filter((log) => {
       if (jobId && log.args.jobId?.toLowerCase() !== jobId.toLowerCase()) return false;
       if (!account) return true;
@@ -67,7 +69,9 @@ export async function GET(request: Request) {
     }));
     if (jobId) return jobs[0] ? NextResponse.json(json(jobs[0])) : NextResponse.json({ error: "Job not found" }, { status: 404 });
     const activity = account ? [] : await Promise.all(events.slice(1).map(async ([name, event]) => {
-      const logs = await base.getLogs({ address: config.address, event, fromBlock: config.fromBlock, toBlock: "latest" });
+      const logs = await getLogsInChunks(config.fromBlock,
+        (fromBlock, toBlock) => base.getLogs({ address: config.address, event, fromBlock, toBlock }),
+        () => base.getBlockNumber());
       return logs.map((log) => ({ name, transactionHash: log.transactionHash, blockNumber: log.blockNumber, args: log.args }));
     }));
     return NextResponse.json(json({ jobs, activity: activity.flat().sort((left, right) => Number(right.blockNumber - left.blockNumber)).slice(0, 100), escrow: config.address }));

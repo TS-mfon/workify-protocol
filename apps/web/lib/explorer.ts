@@ -4,7 +4,7 @@ import { chains, createClient as createGenLayerClient } from "genlayer-js";
 import { createPublicClient, http, keccak256, parseAbiItem, stringToHex, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
 import { getDatabase } from "@workify/evidence-engine";
-import { publicNetworkConfig } from "./network";
+import { getLogsInChunks, publicNetworkConfig } from "./network";
 
 export type ExplorerDecision = "PASS" | "FAIL" | "PARTIAL" | "UNVERIFIABLE";
 export type ExplorerCriterion = {
@@ -93,11 +93,11 @@ async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumb
   const [specificationRecord, evidenceRecord, settlementLogs, verdictLogs, appealLogs, appealFundingLogs, requestLogs] = await Promise.all([
     db.collection("specifications").findOne({ _id: normalizeHash(job.specificationHash) as never }),
     db.collection("evidence_manifests").findOne({ _id: normalizeHash(job.evidenceHash) as never }),
-    base.getLogs({ address: settings.escrow, event: jobSettledEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
-    base.getLogs({ address: settings.escrow, event: verdictImportedEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
-    base.getLogs({ address: settings.escrow, event: appealOpenedEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
-    base.getLogs({ address: settings.escrow, event: appealFundedEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
-    base.getLogs({ address: settings.escrow, event: verificationRequestedEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
+    getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobSettledEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
+    getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: verdictImportedEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
+    getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: appealOpenedEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
+    getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: appealFundedEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
+    getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: verificationRequestedEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
   ]);
   if (!specificationRecord?.document || !evidenceRecord?.document) return null;
 
@@ -169,7 +169,9 @@ export async function getResolvedCases() {
   const settings = config();
   if (!settings) return [];
   const base = createPublicClient({ chain: baseSepolia, transport: http(settings.baseRpc) });
-  const logs = await base.getLogs({ address: settings.escrow, event: jobCreatedEvent, fromBlock: settings.fromBlock, toBlock: "latest" });
+  const logs = await getLogsInChunks(settings.fromBlock,
+    (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobCreatedEvent, fromBlock, toBlock }),
+    () => base.getBlockNumber());
   const cases = await Promise.all(logs.map((log) => loadCase(log.args.jobId!, { transactionHash: log.transactionHash, blockNumber: log.blockNumber })));
   return cases.filter((item): item is NonNullable<typeof item> => Boolean(item)).sort((left, right) => right.base.createdAt - left.base.createdAt);
 }
@@ -179,7 +181,9 @@ export async function getResolvedCase(jobId: string) {
   const settings = config();
   if (!settings) return null;
   const base = createPublicClient({ chain: baseSepolia, transport: http(settings.baseRpc) });
-  const logs = await base.getLogs({ address: settings.escrow, event: jobCreatedEvent, args: { jobId: jobId as Hex }, fromBlock: settings.fromBlock, toBlock: "latest" });
+  const logs = await getLogsInChunks(settings.fromBlock,
+    (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobCreatedEvent, args: { jobId: jobId as Hex }, fromBlock, toBlock }),
+    () => base.getBlockNumber());
   const creation = logs.at(-1);
   if (!creation) return null;
   return loadCase(jobId as Hex, { transactionHash: creation.transactionHash, blockNumber: creation.blockNumber });
