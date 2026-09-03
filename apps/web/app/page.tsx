@@ -1,54 +1,56 @@
 import Link from "next/link";
-import { ArrowRight, Bot, CheckCircle2, CircleDollarSign, FileCheck2, GitPullRequest, Gavel, LockKeyhole, Radar, ShieldCheck, Sparkles, WalletCards } from "lucide-react";
+import { ArrowRight, Check, CircleDollarSign, FileCheck2, Fingerprint, Gavel, GitPullRequest, Scale, ShieldCheck } from "lucide-react";
 import { HeroMotion } from "@/components/HeroMotion";
 import { Nav } from "@/components/Nav";
+import { getResolvedCases } from "@/lib/explorer";
 
-const features = [
-  { icon: LockKeyhole, title: "Fund before creation", text: "A job exists only after its full Base Sepolia USDC reward is atomically locked." },
-  { icon: Radar, title: "Verify against evidence", text: "Public artifacts are canonicalized, hashed, and independently evaluated on GenLayer." },
-  { icon: Gavel, title: "Appeal without custody", text: "A five-minute challenge window protects both parties before deterministic settlement." },
-];
+export const dynamic = "force-dynamic";
+const stages = ["Specification", "Escrow", "Evidence", "Validators", "Verdict", "Settlement"];
 
-const flow = [
-  { icon: FileCheck2, title: "Specify", text: "Lock atomic acceptance criteria." },
-  { icon: WalletCards, title: "Fund", text: "Escrow USDC before the job exists." },
-  { icon: GitPullRequest, title: "Deliver", text: "Submit a reproducible evidence manifest." },
-  { icon: Bot, title: "Adjudicate", text: "Validators independently reach consensus." },
-  { icon: CircleDollarSign, title: "Settle", text: "Release, refund, split, or appeal." },
-];
+export default async function Home() {
+  let resolved = 0;
+  let adjudicated = 0n;
+  try {
+    const cases = await getResolvedCases();
+    resolved = cases.length;
+    adjudicated = cases.reduce((total, item) => total + BigInt(item.base.reward), 0n);
+  } catch {}
+  return <><Nav /><main>
+    <section className="landing-hero shell">
+      <div className="landing-copy">
+        <span className="network-line"><span/> Base Sepolia escrow. GenLayer adjudication.</span>
+        <h1>Work gets paid when evidence proves it.</h1>
+        <p>Lock USDC, submit public evidence, let independent GenLayer validators adjudicate the contract, and settle without trusting either party.</p>
+        <div className="landing-actions"><Link className="button" href="/app/jobs/new">Create funded job <ArrowRight size={16}/></Link><Link className="text-link" href="/explorer">Inspect resolved cases <ArrowRight size={14}/></Link></div>
+        <div className="landing-assurances"><span><Check size={13}/> Funds locked before creation</span><span><Check size={13}/> Five-minute appeal window</span><span><Check size={13}/> Fixed settlement recipients</span></div>
+      </div>
+      <HeroMotion />
+    </section>
 
-export default function Home() {
-  return <>
-    <HeroMotion />
-    <Nav />
-    <main>
-      <section className="hero">
-        <div className="grid-bg" />
-        <div className="hero-glow hero-glow-one" />
-        <div className="hero-glow hero-glow-two" />
-        <div className="shell hero-layout">
-          <div className="hero-copy">
-            <span className="eyebrow"><span className="pulse" /> Base Sepolia · GenLayer Bradbury</span>
-            <h1>Settlement for work that can <span className="gradient">prove itself.</span></h1>
-            <p>Workify locks USDC, pins public evidence, asks independent GenLayer validators to adjudicate exact acceptance criteria, then settles without trusting either party.</p>
-            <div className="actions"><Link className="button" href="/app/jobs/new">Create a funded job <ArrowRight size={16} /></Link><Link className="button secondary" href="/explorer">Explore verdicts</Link></div>
-            <div className="trust-row"><span><CheckCircle2 size={15}/> Fund-first escrow</span><span><CheckCircle2 size={15}/> Three-attempt cap</span><span><CheckCircle2 size={15}/> Five-minute appeals</span></div>
-          </div>
-          <div className="hero-console glass">
-            <div className="console-head"><div><span className="console-dot"/><span className="console-dot"/><span className="console-dot"/></div><span>WORK CONTRACT · LIVE PREVIEW</span></div>
-            <div className="console-job"><span className="page-icon"><GitPullRequest size={21}/></span><div><small>GITHUB SOFTWARE</small><strong>Fix session expiry handling</strong><p>4 atomic criteria · 250 USDC escrow</p></div><span className="status review"><Radar size={13}/> Under review</span></div>
-            <div className="console-criteria"><div><span>C-001</span><p>Expired sessions are rejected</p><b>PASS</b></div><div><span>C-002</span><p>Timeout remains 15 minutes</p><b>PASS</b></div><div><span>C-003</span><p>Regression tests cover expiry</p><b className="pending">VERIFYING</b></div></div>
-            <div className="console-footer"><span><ShieldCheck size={16}/> Evidence root locked</span><strong>Attempt 1 / 3</strong></div>
-          </div>
-        </div>
-      </section>
-      <section className="proof-strip shell"><div><strong>5</strong><span>verification policies</span></div><div><strong>3</strong><span>maximum attempts</span></div><div><strong>5m</strong><span>appeal window</span></div><div><strong>1%</strong><span>worker-award fee</span></div></section>
-      <section className="section shell" id="protocol">
-        <div className="section-intro"><span className="eyebrow"><GitPullRequest size={14} /> Protocol flow</span><h2>One curved path from <span className="gradient">brief to settlement.</span></h2><p>No vague approvals and no worker self-attestation. Each transition is backed by escrow state, pinned evidence, or finalized consensus.</p></div>
-        <div className="protocol-curve">{flow.map(({ icon: Icon, title, text }, index) => <div className="protocol-step" key={title}><span className="protocol-index">0{index + 1}</span><span className="protocol-icon"><Icon size={20}/></span><strong>{title}</strong><p>{text}</p></div>)}</div>
-        <div className="feature-grid">{features.map(({ icon: Icon, title, text }) => <article className="glass feature-card" key={title}><span className="feature-icon"><Icon size={22}/></span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
-      </section>
-      <section className="section shell" id="economics"><div className="glass economics-banner"><div><span className="eyebrow"><Sparkles size={14} /> Deterministic economics</span><h2>Hard gates beat arbitrary scores.</h2><p>Critical failures cannot be hidden by minor passes. PASS pays the worker, FAIL and UNVERIFIABLE refund the client, PARTIAL uses adjudicated basis points, and terminal UNDETERMINED follows the encoded fallback.</p></div><Link className="button" href="/docs#economics">Read settlement logic <ArrowRight size={16}/></Link></div></section>
-    </main>
-  </>;
+    <section className="settlement-line shell" aria-label="Workify settlement lifecycle">{stages.map((stage, index) => <div key={stage}><span>{index + 1}</span><strong>{stage}</strong></div>)}</section>
+
+    <section className="protocol-intro shell" id="protocol">
+      <div className="protocol-statement"><span>THE CONTRACT</span><h2>Not a marketplace approval. A verifiable settlement path.</h2></div>
+      <div className="protocol-copy"><p>The client locks exact acceptance criteria and funds the full reward. The worker locks a hashed public evidence manifest. GenLayer evaluates each criterion, independent validators reach consensus, and Base settles the result.</p><Link className="text-link" href="/docs">Read the protocol specification <ArrowRight size={14}/></Link></div>
+    </section>
+
+    <section className="mechanism-list shell">
+      <article><span><CircleDollarSign size={19}/></span><div><h3>Atomic escrow</h3><p>The Base contract transfers USDC before persisting a job. An unfunded job cannot exist.</p></div><code>BASE</code></article>
+      <article><span><Fingerprint size={19}/></span><div><h3>Evidence-bound adjudication</h3><p>Specifications and manifests are canonicalized and hashed. Validators fetch the same public sources.</p></div><code>GENLAYER</code></article>
+      <article><span><Gavel size={19}/></span><div><h3>Appealable verdicts</h3><p>Either party has five minutes to challenge a result by funding exactly 1 GEN.</p></div><code>5 MIN</code></article>
+      <article><span><ShieldCheck size={19}/></span><div><h3>Recipient-safe settlement</h3><p>Automation can trigger settlement, but it cannot redirect worker, client, or treasury funds.</p></div><code>FIXED</code></article>
+    </section>
+
+    <section className="proof-ledger shell" id="economics">
+      <div className="proof-copy"><span>PUBLIC PROOF</span><h2>The explorer shows the work, not a marketing summary.</h2><p>Open any resolved case to inspect the locked specification, evidence IDs, criterion decisions, public rationale, GenLayer finality, and Base settlement amounts.</p><Link className="button secondary" href="/explorer">Open verdict explorer <ArrowRight size={15}/></Link></div>
+      <div className="proof-record">
+        <div><FileCheck2 size={17}/><span>Resolved V8 cases</span><strong>{resolved}</strong></div>
+        <div><Scale size={17}/><span>USDC adjudicated</span><strong>{Number(adjudicated) / 1e6}</strong></div>
+        <div><GitPullRequest size={17}/><span>Policy classes</span><strong>5</strong></div>
+        <p>Live values are read from the configured WorkEscrow V2 deployment. No fixture counts are displayed.</p>
+      </div>
+    </section>
+
+    <section className="landing-cta shell"><div><span>SETTLE WORK</span><h2>Write the criteria. Lock the funds. Let evidence decide.</h2></div><Link className="button" href="/app/jobs/new">Create a work contract <ArrowRight size={16}/></Link></section>
+  </main></>;
 }

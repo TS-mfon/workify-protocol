@@ -1,14 +1,34 @@
 import type { Metadata } from "next";
-import { Activity, Bot, CheckCircle2, ExternalLink, FileCode2, Radar, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, CheckCircle2, CircleDollarSign, FileCheck2, Radar, ShieldCheck } from "lucide-react";
 import { Nav } from "@/components/Nav";
 import { getResolvedCases } from "@/lib/explorer";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Verdict Explorer", description: "Inspect Workify cases and contract-stored GenLayer verdicts." };
+export const metadata: Metadata = { title: "Verdict Explorer", description: "Inspect settled Workify cases backed by Base and GenLayer." };
 const short = (value: string) => `${value.slice(0, 8)}…${value.slice(-6)}`;
 
 export default async function Explorer() {
   const cases = await getResolvedCases();
-  const live = cases.filter((item) => item.verdict).length;
-  return <><Nav /><main className="shell explorer-page"><section className="explorer-hero"><span className="eyebrow"><Activity size={14} /> Public resolution ledger</span><h1>Inspect the work. <span className="gradient">Verify the verdict.</span></h1><p>Every case links the original specification and evidence to the verdict stored by its deployed GenLayer verifier.</p><div className="explorer-summary"><div><span className="page-icon"><Radar size={20}/></span><strong>{cases.length}</strong><p>finalized cases indexed</p></div><div><span className="page-icon"><Bot size={20}/></span><strong>{live}</strong><p>live contract reads</p></div><div><span className="page-icon"><ShieldCheck size={20}/></span><strong>5</strong><p>verification policies</p></div></div></section><section className="explorer-grid">{cases.map(({ policy, verifier, item, specification, verdict, readError }) => { const attempt = item.attempts.findLast((candidate) => candidate.status === "FINALIZED" && Boolean(candidate.verdict)) ?? item.attempts.at(-1); return <article className="glass explorer-card" key={`${verifier}:${item.jobId}`}><header className="explorer-card-head"><span className="explorer-policy-icon"><FileCode2 size={19}/></span><div><span className="kicker">{policy}</span><h2>{specification?.title || `Resolved case ${item.caseId}`}</h2></div>{verdict ? <span className={`verdict verdict-${verdict.decision.toLowerCase()}`}><CheckCircle2 size={14} /> {verdict.decision}</span> : <span className="verdict verdict-error">Read unavailable</span>}</header><p className="explorer-description">{specification?.description || "Public Workify verification case."}</p><div className="explorer-meta"><span><Bot size={14} /> {short(verifier)}</span><span><FileCode2 size={14} /> {short(item.jobId)}</span><span><ShieldCheck size={14} /> Attempt {attempt?.attempt ?? "—"}</span></div>{verdict ? <><div className="score-line"><div><span>Score</span><strong>{verdict.score}<small>/100</small></strong></div><div><span>Worker payout</span><strong>{verdict.payout_bps / 100}<small>%</small></strong></div><div><span>Criteria</span><strong>{verdict.criteria.length}</strong></div></div><div className="criteria-list">{verdict.criteria.map((criterion) => <div key={criterion.id}><span>{criterion.id}<small>{criterion.severity}</small></span><b className={`criterion-${criterion.decision.toLowerCase()}`}>{criterion.decision}</b></div>)}</div></> : <p className="explorer-error">{readError}</p>}<details><summary>Open technical evidence</summary><dl className="technical-list"><div><dt>Transaction</dt><dd>{attempt?.transactionHash || "Unavailable"}</dd></div><div><dt>Result hash</dt><dd>{verdict?.result_hash || "Unavailable"}</dd></div><div><dt>Policy</dt><dd>{verdict?.policy_version || policy}</dd></div></dl><div className="explorer-links"><a href={item.specificationUrl} target="_blank" rel="noreferrer">Specification <ExternalLink size={13} /></a><a href={item.evidenceUrl} target="_blank" rel="noreferrer">Evidence <ExternalLink size={13} /></a></div></details></article>; })}</section></main></>;
+  const settledValue = cases.reduce((total, item) => total + BigInt(item.base.reward), 0n);
+  return <><Nav /><main className="shell explorer-page">
+    <section className="explorer-hero">
+      <span className="eyebrow"><Radar size={14} /> Public settlement ledger</span>
+      <h1>Evidence in. <span>Verdict out.</span></h1>
+      <p>Every record below is a settled Base escrow joined to its finalized GenLayer V8 adjudication. No fixture data, editorial overrides, or simulated outcomes.</p>
+      <div className="explorer-summary">
+        <div><FileCheck2 size={18}/><strong>{cases.length}</strong><span>resolved cases</span></div>
+        <div><CircleDollarSign size={18}/><strong>{Number(settledValue) / 1e6}</strong><span>USDC adjudicated</span></div>
+        <div><ShieldCheck size={18}/><strong>{new Set(cases.map((item) => item.policy)).size}</strong><span>active policies</span></div>
+      </div>
+    </section>
+    {cases.length === 0 ? <section className="explorer-empty"><Radar size={25}/><h2>No settled V8 cases yet</h2><p>The explorer publishes only complete on-chain lifecycles. Cases appear after Base settlement and GenLayer finality.</p></section> :
+    <section className="case-list">{cases.map((item) => <Link className="case-row" href={`/explorer/${item.jobId}`} key={item.jobId}>
+      <div className="case-primary"><span className="case-policy">{item.policy}</span><h2>{item.specification.title}</h2><p>{item.specification.description}</p></div>
+      <div className="case-metric"><span>Verdict</span><strong className={`decision-${item.verdict.decision.toLowerCase()}`}><CheckCircle2 size={15}/>{item.verdict.decision}</strong></div>
+      <div className="case-metric"><span>Score</span><strong>{item.verdict.score}<small>/100</small></strong></div>
+      <div className="case-metric"><span>Payout</span><strong>{item.verdict.payout_bps / 100}<small>%</small></strong></div>
+      <div className="case-tail"><code>{short(item.jobId)}</code><ArrowUpRight size={18}/></div>
+    </Link>)}</section>}
+  </main></>;
 }

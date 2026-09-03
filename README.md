@@ -9,9 +9,9 @@ controls deterministic escrow settlement. Workify is not an AI freelance marketp
 not ask a model whether work is vaguely “good.” It asks whether a pinned delivery satisfies a
 predefined, evidence-backed contract.
 
-> **Status — September 1, 2026:** The production dApp and documentation are live at
-> `https://workify-protocol.vercel.app`. Base Sepolia escrow/treasury contracts, the Bradbury GEN
-> treasury, and all five v7 policy verifiers are deployed. The live phase gate is five distinct
+> **Status — September 3, 2026:** The production dApp and documentation are live at
+> `https://workify-protocol.vercel.app`. Base Sepolia V2 escrow/treasury contracts, the Bradbury GEN
+> treasury, and all five V8 policy verifiers have successful AGREE/FINISHED_WITH_RETURN deployment receipts. The live phase gate remains five distinct
 > finalized GenLayer verdicts per policy. Phase 1 advanced only through an explicit user waiver;
 > that waiver is recorded separately and is not represented as a passed consensus gate.
 
@@ -25,7 +25,7 @@ software and settlement must be machine-readable. Workify separates responsibili
 - **GenLayer Bradbury** owns subjective evidence evaluation and criterion-level consensus.
 - **Workify evidence services** turn friendly URLs into canonical, hashed, immutable manifests.
 - **The Vercel attestor** verifies finalized GenLayer receipts and signs bounded EIP-712 messages.
-- **The Vercel Base automation signer** pays Base gas and submits only six allowlisted escrow lifecycle methods.
+- **The Vercel Base automation signer** pays Base gas and submits only seven allowlisted escrow lifecycle methods.
 - **MongoDB Atlas** indexes asynchronous state, leases, audit records, and canonical JSON; it never owns funds.
 - **GitHub Actions** provides best-effort five-minute automation; onchain expiry and settlement stay permissionless.
 
@@ -33,23 +33,38 @@ software and settlement must be machine-readable. Workify separates responsibili
 
 ```mermaid
 flowchart LR
-  C[Client wallet] -->|approve + fund USDC| E[WorkEscrowV1 / Base Sepolia]
+  C[Client wallet] -->|approve + fund USDC| E[WorkEscrowV2 / Base Sepolia]
   W[Worker wallet] -->|public URLs| A[Workify evidence API / Vercel]
   A -->|canonical JSON + SHA-256| M[(MongoDB Atlas)]
   W -->|0.1 GEN per attempt| T[GenTreasuryV1 / Bradbury]
-  O[Workify GEN operator] -->|verify pinned evidence| V[WorkVerifierV7 policy deployments / Bradbury]
+  O[Workify GEN operator] -->|verify pinned evidence| V[WorkVerifierV8 policy deployments / Bradbury]
   V -->|FINALIZED verdict| R[Vercel receipt verifier + EIP-712 attestor]
   R -->|validated lifecycle parameters| S[Vercel automation signer / Base Sepolia]
   S -->|import verdict / settle| E
   E -->|worker award - 1%| W
   E -->|refund / remainder| C
-  E -->|USDC fee| BT[BaseTreasuryV1]
+  E -->|USDC fee| BT[BaseTreasuryV2]
 ```
 
-The Base↔GenLayer relay is an explicit v1 trust assumption. The attestor can misrepresent a
+The Base↔GenLayer relay is an explicit V2 trust assumption. The attestor can misrepresent a
 GenLayer result, but Base contracts constrain the message to a known job, locked hashes, a known
 policy, a valid payout range, a one-time nonce, and fixed client/worker/treasury recipients. It
 cannot redirect escrow to an arbitrary address.
+
+## Current Testnet Deployments
+
+| Component | Address | State |
+| --- | --- | --- |
+| WorkEscrowV2 | `0xCfc6B780CDe6f8e8b377f63E921B342ee9557294` | Deployed on Base Sepolia |
+| BaseTreasuryV2 | `0x02F383AA78C48eDf75dea0b74773AbFebF2CD8a4` | Deployed on Base Sepolia |
+| GenTreasuryV1 | `0xe11e888CD716b7fBd36442746Ea0C3A9f1d115B3` | Deployed on Bradbury |
+| GitHub V8 | `0x320eD11a756Fe66C270F7BdC752e28D74A79FB5E` | AGREE, execution returned |
+| Web V8 | `0xD1787Ae6bf72572Bb7675a47e36c4e2A535A2F88` | AGREE, execution returned |
+| Research V8 | `0xcf0cD2bB43814eA8eCB1F8358e54a2A6996A2e2e` | AGREE, execution returned |
+| Document V8 | `0x1cF9469872ed956405b5B922A55bCbbDB15c5873` | AGREE, execution returned |
+| Design V8 | `0x5A39Af8CBC9A7172918dC62c7761f0c27d87f429` | AGREE, execution returned |
+
+Deployment success is not the same as the product release gate. Five real, finalized adjudications and Base settlements are still required before calling the dApp production-ready.
 
 ## Supported Work Types
 
@@ -61,7 +76,7 @@ cannot redirect escrow to an arbitrary address.
 | Content/Document | Document and brief | Required structure, factual accuracy, links, brand and audience constraints |
 | Design/Creative | Images and brief | Components, hierarchy, responsive variants, states, consistency, accessibility |
 
-V1 does not support private repositories, login-gated evidence, physical-world work, confidential
+The current testnet protocol does not support private repositories, login-gated evidence, physical-world work, confidential
 artifacts, or purely subjective briefs without measurable criteria.
 
 ## Job Lifecycle
@@ -77,7 +92,7 @@ stateDiagram-v2
   Verifying --> RetryWindow: UNDETERMINED
   RetryWindow --> Verifying: worker funds next attempt
   RetryWindow --> Refunded: retry funding expires
-  Verifying --> AppealWindow: third UNDETERMINED becomes 50/50 SPLIT
+  Verifying --> AppealWindow: second UNDETERMINED becomes 50/50 SPLIT
   AppealWindow --> Settleable: five minutes expire
   AppealWindow --> AppealFunding: either party opens appeal
   AppealFunding --> Settleable: 1 GEN funding expires
@@ -185,7 +200,7 @@ native pre-final protocol appeal mechanism.
 | Initial verification | 0.1 GEN | `GenTreasuryV1` |
 | Re-verification | 0.1 GEN each | `GenTreasuryV1` |
 | Appeal | 1 GEN | `GenTreasuryV1` |
-| Worker award | 1% of awarded USDC | `BaseTreasuryV1` |
+| Worker award | 1% of awarded USDC | `BaseTreasuryV2` |
 | Client refund | 0% | Client receives full refundable share |
 
 Examples for a 100 USDC reward:
@@ -239,14 +254,14 @@ signed payloads must never be logged.
 ## Contracts and Versioning
 
 ```text
-contracts/base/v1/BaseTreasuryV1.sol
+contracts/base/v1/BaseTreasuryV2.sol
 contracts/base/v1/WorkEscrowV1.sol
 contracts/genlayer/v1/GenTreasuryV1.py
 contracts/genlayer/v1/WorkVerifierV1.py
-contracts/genlayer/v2..v7/WorkVerifierV*.py
+contracts/genlayer/v2..v8/WorkVerifierV*.py
 ```
 
-Contracts are immutable and versioned. Every historical verifier from v1 through v7 remains under
+Contracts are immutable and versioned. Every historical verifier from V1 through V8 remains under
 `contracts/genlayer`; deployed source is never overwritten. The owner may pause new job creation and rotate operator/attestor roles, but
 cannot rewrite existing job terms, redirect escrow, or disable matured refunds and settlements.
 
@@ -268,6 +283,11 @@ pnpm test:contracts
 uv run --with genlayer-test pytest tests/direct -v
 pnpm build
 ```
+
+The live gate is intentionally separate from local CI. It requires a funded GEN treasury
+payment for every attempt and a public evidence fixture. For V8, set `WORKIFY_FEE_PAYER` to the
+address that funded the exact treasury key before running `scripts/run-live-gate.mjs`; the script
+rejects the old verifier signature rather than silently producing invalid results.
 
 Never commit `.env.local`. The MongoDB password supplied during development was disclosed in chat
 and must be rotated before deployment.
@@ -293,7 +313,7 @@ records the confirmed receipt.
 
 ```bash
 cd contracts/base
-forge script script/DeployV1.s.sol:DeployV1 \
+forge script script/DeployV2.s.sol:DeployV2 \
   --rpc-url "$NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL" \
   --broadcast
 ```
@@ -302,7 +322,7 @@ forge script script/DeployV1.s.sol:DeployV1 \
 
 ```bash
 genlayer config set network=testnet-bradbury
-node scripts/deploy-genlayer.mjs
+pnpm deploy:genlayer:v8
 ```
 
 Always inspect finalized receipts for execution success. A finalized lifecycle status can still
@@ -323,7 +343,7 @@ Every phase additionally requires five distinct public works. A result counts on
 5. Base settlement and fee accounting match;
 6. GenLayer and Base transaction hashes are recorded.
 
-`fixtures/live-results/phase*-v7.json` is authoritative for live consensus progress and must not be
+`fixtures/live-results/phase*-v8.json` is authoritative for live consensus progress and must not be
 edited to claim success without machine-readable transaction evidence. Sequential advancement is
 required unless the user explicitly waives a gate. A waiver authorizes sequencing only; it never
 changes recorded receipt statuses or becomes a fake finalized result.
@@ -343,8 +363,8 @@ See `SECURITY.md` for disclosure and secret-handling rules.
 
 ```text
 apps/web                    Next.js dApp, APIs, and /docs
-contracts/base/v1           Base Sepolia escrow and treasury
-contracts/genlayer/v1..v7   Historical Bradbury verifiers and GEN treasury
+contracts/base/v1..v2       Versioned Base Sepolia escrow and treasury
+contracts/genlayer/v1..v8   Historical Bradbury verifiers and GEN treasury
 packages/protocol-types     Canonical schemas and constants
 packages/evidence-engine    GitHub, hashing, MongoDB, receipt, attestation, Base signer logic
 fixtures                    Live phase-gate records
@@ -356,3 +376,10 @@ deployments                 Versioned network manifests
 
 No source license has been granted yet. The repository is visible for review and testnet protocol
 transparency, but reuse rights remain reserved until an explicit license file is added.
+
+### Current V2 testnet deployment
+
+The additive V2 deployment is recorded in `deployments/base-sepolia/v2.json`.
+Set `NEXT_PUBLIC_WORK_ESCROW_ADDRESS` to the V2 escrow, `NEXT_PUBLIC_BASE_TREASURY_ADDRESS` to the V2 treasury,
+`WORK_ESCROW_DEPLOYMENT_BLOCK` to the recorded deployment block, and `WORKIFY_EIP712_VERSION=2` when enabling V2 automation.
+The automation private key belongs only in Vercel as `BASE_AUTOMATION_PRIVATE_KEY`; never commit it or expose it through `NEXT_PUBLIC_*`.

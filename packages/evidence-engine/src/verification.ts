@@ -15,6 +15,7 @@ export async function submitVerification(input: {
   appeal: boolean;
   appealContextUrl?: string;
   policyVersion: string;
+  feePayer?: `0x${string}`;
 }) {
   const key = process.env.GENLAYER_OPERATOR_PRIVATE_KEY as Hex | undefined;
   const endpoint = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
@@ -22,6 +23,23 @@ export async function submitVerification(input: {
   if (input.attempt < 1 || input.attempt > 3) throw new WorkifyError("USER_INPUT", "Attempt must be 1-3");
   const baseRequest = await executeBaseRelayAction("requestVerification", input.jobId, { appeal: input.appeal });
   const client = createClient({ chain: chains.testnetBradbury as never, endpoint, account: createAccount(key) });
+  const treasury = (process.env.NEXT_PUBLIC_GEN_TREASURY_ADDRESS || process.env.NEXT_PUBLIC_GENLAYER_TREASURY_ADDRESS) as `0x${string}` | undefined;
+  if (!treasury) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer treasury is not configured");
+  const paymentKey = `${input.jobId}${input.appeal ? ":appeal" : `:verification:${input.attempt}`}`;
+  const payment = await client.readContract({
+    address: treasury,
+    functionName: "get_payment",
+    args: [paymentKey],
+    jsonSafeReturn: true,
+  });
+  const paymentRecord = payment as unknown as { payer?: string; amount?: string | number | bigint };
+  if (!paymentRecord.payer || /^0x0{40}$/iu.test(paymentRecord.payer)) {
+    throw new WorkifyError("INSUFFICIENT_GEN", "The exact GenLayer fee is not finalized");
+  }
+  const feePayer = paymentRecord.payer as `0x${string}`;
+  if (input.feePayer && input.feePayer.toLowerCase() !== feePayer.toLowerCase()) {
+    throw new WorkifyError("ATTESTATION_INVALID", "Submitted fee payer does not match the finalized treasury payment");
+  }
   const hash = await client.writeContract({
     address: input.verifierAddress,
     functionName: "verify",
@@ -34,6 +52,7 @@ export async function submitVerification(input: {
       input.attempt,
       input.appeal,
       input.appealContextUrl ?? "",
+      feePayer,
     ] as never[],
     value: 0n,
   });
@@ -60,6 +79,7 @@ export async function submitVerification(input: {
       appeal: input.appeal,
       evidenceHash: input.evidenceHash,
       policyVersion: input.policyVersion,
+      feePayer,
       nonce,
       status: "PENDING",
       attempts: 0,

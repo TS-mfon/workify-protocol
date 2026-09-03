@@ -10,6 +10,7 @@ export const BASE_RELAY_ACTIONS = [
   "requestVerification",
   "importVerdict",
   "recordAttemptOutcome",
+  "confirmAppealFunded",
   "settle",
   "refundExpiredJob",
   "expireUnfundedAppeal",
@@ -20,6 +21,8 @@ export type BaseRelayParameters = {
   appeal?: boolean;
   verdict?: Record<string, unknown>;
   outcome?: Record<string, unknown>;
+  genlayerPaymentTxHash?: Hex;
+  nonce?: bigint;
   signature?: Hex;
 };
 
@@ -32,6 +35,10 @@ const escrowAbi = [
   { type: "function", name: "settle", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [] },
   { type: "function", name: "refundExpiredJob", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [] },
   { type: "function", name: "expireUnfundedAppeal", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [] },
+  { type: "function", name: "confirmAppealFunded", stateMutability: "nonpayable", inputs: [
+    { name: "jobId", type: "bytes32" }, { name: "genlayerPaymentTxHash", type: "bytes32" },
+    { name: "nonce", type: "uint256" }, { name: "signature", type: "bytes" },
+  ], outputs: [] },
   { type: "function", name: "importFinalVerdict", stateMutability: "nonpayable", inputs: [
     { name: "verdict", type: "tuple", components: [
       { name: "jobId", type: "bytes32" }, { name: "verifierId", type: "bytes32" },
@@ -98,6 +105,16 @@ export function encodeBaseRelayAction(action: BaseRelayAction, jobId: string, pa
     if (!params.outcome || !params.signature) throw new WorkifyError("ATTESTATION_INVALID", "Outcome and signature are required");
     if (String(params.outcome.jobId).toLowerCase() !== normalizedJobId.toLowerCase()) throw new WorkifyError("ATTESTATION_INVALID", "Outcome job ID mismatch");
     return encodeFunctionData({ abi: escrowAbi, functionName: "recordAttemptOutcome", args: [params.outcome as never, params.signature] });
+  }
+  if (action === "confirmAppealFunded") {
+    if (!params.genlayerPaymentTxHash || params.nonce === undefined || !params.signature) {
+      throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Appeal funding attestation is incomplete");
+    }
+    return encodeFunctionData({
+      abi: escrowAbi,
+      functionName: "confirmAppealFunded",
+      args: [normalizedJobId, params.genlayerPaymentTxHash, params.nonce, params.signature],
+    });
   }
   return encodeFunctionData({ abi: escrowAbi, functionName: action, args: [normalizedJobId] });
 }

@@ -210,3 +210,46 @@ def test_v6_accepts_fenced_json_and_confidence_label(direct_vm, direct_deploy, d
     )
     assert normalized["decision"] == "PASS"
     assert normalized["confidence"] == 90
+
+
+def test_v8_preserves_public_rationale_and_evidence(direct_vm, direct_deploy, direct_alice, direct_bob):
+    contract = direct_deploy(
+        "contracts/genlayer/v8/WorkVerifierV8.py",
+        "0x" + direct_alice.hex(), "0x" + direct_bob.hex(), "GITHUB_SOFTWARE", "github-software-v8.0",
+    )
+    result = contract._normalize(
+        {
+            "confidence": 91,
+            "criteria": [{"id": "C-001", "decision": "PASS", "evidence": ["PR-01"], "rationale": "The pinned diff implements the locked behavior and its CI check passes."}],
+            "missing_evidence": [],
+            "final_rationale": "Every mandatory criterion is directly supported by public evidence.",
+        },
+        {"criteria": [{"id": "C-001", "severity": "CRITICAL"}]},
+        "github-software-v8.0", "a" * 64, "b" * 64, 1, False,
+    )
+    assert result["decision"] == "PASS"
+    assert result["criteria"][0]["evidence_ids"] == ["PR-01"]
+    assert "pinned diff" in result["criteria"][0]["rationale"]
+    assert result["final_rationale"].startswith("Every mandatory")
+    assert result["appeal"] is False
+
+
+def test_v8_critical_failure_forces_zero_payout(direct_vm, direct_deploy, direct_alice, direct_bob):
+    contract = direct_deploy(
+        "contracts/genlayer/v8/WorkVerifierV8.py",
+        "0x" + direct_alice.hex(), "0x" + direct_bob.hex(), "WEB_APPLICATION", "web-application-v8.0",
+    )
+    result = contract._normalize(
+        {
+            "confidence": 88,
+            "criteria": [{"id": "C-001", "decision": "UNVERIFIABLE", "evidence": [], "rationale": "The required route could not be reached."}],
+            "missing_evidence": ["reachable production route"],
+            "final_rationale": "The critical route is not publicly verifiable.",
+        },
+        {"criteria": [{"id": "C-001", "severity": "CRITICAL"}]},
+        "web-application-v8.0", "c" * 64, "d" * 64, 2, True,
+    )
+    assert result["decision"] == "FAIL"
+    assert result["payout_bps"] == 0
+    assert result["critical_failures"] == ["C-001"]
+    assert result["appeal"] is True

@@ -4,12 +4,14 @@ import { chains, createAccount, createClient } from "genlayer-js";
 const phase = process.argv[2] ?? "phase1";
 const key = process.env.GENLAYER_OPERATOR_PRIVATE_KEY;
 if (!key) throw new Error("GENLAYER_OPERATOR_PRIVATE_KEY is required");
-const deploymentVersion = process.env.WORKIFY_VERIFIER_VERSION ?? "v3";
+const deploymentVersion = process.env.WORKIFY_VERIFIER_VERSION ?? "v8";
 const deployments = JSON.parse(await readFile(new URL(`../deployments/genlayer-bradbury/${deploymentVersion}.json`, import.meta.url), "utf8"));
 const verifierKey = { phase1: "github", phase2: "web", phase3: "research", phase4: "document", phase5: "design" }[phase];
 if (!verifierKey) throw new Error(`Unsupported phase ${phase}`);
 const verifier = deployments.verifiers[verifierKey]?.address;
 if (!verifier) throw new Error(`${phase} verifier is not deployed`);
+const feePayer = process.env.WORKIFY_FEE_PAYER;
+if (!feePayer) throw new Error("WORKIFY_FEE_PAYER is required for V8 exact-fee verification");
 const allCases = JSON.parse(await readFile(new URL(`../apps/web/public/verification-fixtures/${phase}/index.json`, import.meta.url), "utf8"));
 const requiredFinalized = Number(process.env.WORKIFY_REQUIRED_FINALIZED ?? 5);
 const caseLimit = Number(process.env.WORKIFY_CASE_LIMIT ?? requiredFinalized);
@@ -53,7 +55,7 @@ async function submit(testCase, attempt) {
       return await client.writeContract({
         address: verifier,
         functionName: "verify",
-        args: [testCase.jobId, testCase.specificationUrl, testCase.specificationHash, testCase.evidenceUrl, testCase.evidenceHash, attempt, false, ""],
+        args: [testCase.jobId, testCase.specificationUrl, testCase.specificationHash, testCase.evidenceUrl, testCase.evidenceHash, attempt, false, "", feePayer],
         value: 0n,
       });
     } catch (error) {

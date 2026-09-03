@@ -1,79 +1,189 @@
 import "server-only";
 
-import { chains, createClient } from "genlayer-js";
-import phase1 from "../../../fixtures/live-results/phase1-v7.json";
-import phase2 from "../../../fixtures/live-results/phase2-v7.json";
-import phase3 from "../../../fixtures/live-results/phase3-v7.json";
-import phase4 from "../../../fixtures/live-results/phase4-v7.json";
-import phase5 from "../../../fixtures/live-results/phase5-v7.json";
-import deployment from "../../../deployments/genlayer-bradbury/v7.json";
+import { chains, createClient as createGenLayerClient } from "genlayer-js";
+import { createPublicClient, http, keccak256, parseAbiItem, stringToHex, type Hex } from "viem";
+import { baseSepolia } from "viem/chains";
+import { getDatabase } from "@workify/evidence-engine";
 
-type Decision = "PASS" | "FAIL" | "PARTIAL" | "UNVERIFIABLE";
-type ManifestCase = {
-  caseId: string;
-  jobId: string;
-  specificationUrl: string;
-  evidenceUrl: string;
-  status?: string;
-  consensus?: string;
-  execution?: string;
-  attempts: Array<{ attempt: number; transactionHash: string; status?: string; verdict?: string }>;
+export type ExplorerDecision = "PASS" | "FAIL" | "PARTIAL" | "UNVERIFIABLE";
+export type ExplorerCriterion = {
+  id: string;
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  decision: ExplorerDecision;
+  evidence_ids: string[];
+  rationale: string;
 };
-type Manifest = { cases: ManifestCase[] };
-type Verdict = {
+export type ExplorerVerdict = {
   attempt: number;
-  decision: Decision;
+  appeal: boolean;
+  decision: ExplorerDecision;
   score: number;
+  confidence: number;
   payout_bps: number;
-  policy_version: string;
-  result_hash: string;
-  criteria: Array<{ id: string; decision: Decision; severity: string; critical: boolean }>;
+  criteria: ExplorerCriterion[];
   critical_failures: string[];
   missing_evidence: string[];
+  final_rationale: string;
+  specification_hash: string;
+  evidence_root: string;
+  policy_version: string;
+  result_hash: string;
 };
-type Specification = { title?: string; description?: string; workType?: string; criteria?: Array<{ id: string; requirement: string }> };
 
-const policies = [
-  { key: "github", label: "GitHub Software", manifest: phase1 as Manifest },
-  { key: "web", label: "Web Application", manifest: phase2 as Manifest },
-  { key: "research", label: "Research & Data", manifest: phase3 as Manifest },
-  { key: "document", label: "Content & Document", manifest: phase4 as Manifest },
-  { key: "design", label: "Design & Creative", manifest: phase5 as Manifest },
+const jobCreatedEvent = parseAbiItem("event JobCreated(bytes32 indexed jobId,address indexed client,address indexed worker,uint256 reward,uint64 deliveryDeadline,bytes32 specificationHash,bytes32 policyHash)");
+const jobSettledEvent = parseAbiItem("event JobSettled(bytes32 indexed jobId,uint256 workerAmount,uint256 clientAmount,uint256 protocolFee)");
+const verdictImportedEvent = parseAbiItem("event VerdictImported(bytes32 indexed jobId,bytes32 indexed verifierId,bytes32 indexed genlayerTxHash,uint8 attempt,uint8 decision,uint16 payoutBps,bytes32 resultHash,bool appeal)");
+const appealOpenedEvent = parseAbiItem("event AppealOpened(bytes32 indexed jobId,address indexed appellant,uint64 fundingDeadline)");
+const appealFundedEvent = parseAbiItem("event AppealFunded(bytes32 indexed jobId,address indexed appellant,bytes32 genlayerPaymentTxHash)");
+const verificationRequestedEvent = parseAbiItem("event VerificationRequested(bytes32 indexed jobId,uint8 attempt,bool appeal)");
+
+const jobComponents = [
+  { name: "client", type: "address" }, { name: "worker", type: "address" }, { name: "reward", type: "uint128" },
+  { name: "createdAt", type: "uint64" }, { name: "deliveryDeadline", type: "uint64" }, { name: "retryDeadline", type: "uint64" },
+  { name: "verdictAt", type: "uint64" }, { name: "appealDeadline", type: "uint64" }, { name: "appealFundingDeadline", type: "uint64" },
+  { name: "deliveryVersion", type: "uint32" }, { name: "attempts", type: "uint8" }, { name: "appealAttempts", type: "uint8" },
+  { name: "payoutBps", type: "uint16" }, { name: "status", type: "uint8" }, { name: "decision", type: "uint8" },
+  { name: "specificationHash", type: "bytes32" }, { name: "evidenceHash", type: "bytes32" }, { name: "policyHash", type: "bytes32" },
+  { name: "resultHash", type: "bytes32" }, { name: "verifierId", type: "bytes32" }, { name: "genlayerTxHash", type: "bytes32" },
+  { name: "appealPaymentTxHash", type: "bytes32" }, { name: "appellant", type: "address" }, { name: "verdictAttempt", type: "uint8" },
+  { name: "verdictAppeal", type: "bool" }, { name: "appealFunded", type: "bool" },
 ] as const;
+const escrowAbi = [{ type: "function", name: "getJob", stateMutability: "view", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [{ name: "", type: "tuple", components: jobComponents }] }] as const;
 
-async function loadSpecification(url: string): Promise<Specification | null> {
-  try {
-    const response = await fetch(url, { next: { revalidate: 300 } });
-    return response.ok ? await response.json() as Specification : null;
-  } catch {
-    return null;
-  }
+const statusNames = ["NONE", "AWAITING_DELIVERY", "DELIVERY_LOCKED", "VERIFYING", "RETRY_WINDOW", "APPEAL_WINDOW", "APPEAL_FUNDING", "APPEAL_VERIFYING", "SETTLEABLE", "SETTLED", "REFUNDED"] as const;
+const policyLabels: Record<string, string> = {
+  GITHUB_SOFTWARE: "GitHub Software",
+  WEB_APPLICATION: "Web Application",
+  RESEARCH_DATA: "Research & Data",
+  CONTENT_DOCUMENT: "Content & Document",
+  DESIGN_CREATIVE: "Design & Creative",
+};
+
+function config() {
+  const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
+  const fromBlock = process.env.WORK_ESCROW_DEPLOYMENT_BLOCK;
+  const baseRpc = process.env.BASE_SEPOLIA_RPC_URL || process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org";
+  const genlayerRpc = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
+  if (!escrow || !fromBlock || !genlayerRpc) return null;
+  const verifiers = [
+    ["GITHUB_SOFTWARE", process.env.NEXT_PUBLIC_GITHUB_VERIFIER_ADDRESS],
+    ["WEB_APPLICATION", process.env.NEXT_PUBLIC_WEB_VERIFIER_ADDRESS],
+    ["RESEARCH_DATA", process.env.NEXT_PUBLIC_RESEARCH_VERIFIER_ADDRESS],
+    ["CONTENT_DOCUMENT", process.env.NEXT_PUBLIC_DOCUMENT_VERIFIER_ADDRESS],
+    ["DESIGN_CREATIVE", process.env.NEXT_PUBLIC_DESIGN_VERIFIER_ADDRESS],
+  ].filter((entry): entry is [string, string] => Boolean(entry[1]));
+  return { escrow, fromBlock: BigInt(fromBlock), baseRpc, genlayerRpc, verifiers };
+}
+
+function verifierForId(verifiers: Array<[string, string]>, verifierId: Hex) {
+  return verifiers.find(([, address]) => keccak256(stringToHex(address.toLowerCase())) === verifierId);
+}
+
+function normalizeHash(value: string) {
+  return value.toLowerCase().replace(/^0x/u, "");
+}
+
+async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumber: bigint }) {
+  const settings = config();
+  if (!settings) return null;
+  const base = createPublicClient({ chain: baseSepolia, transport: http(settings.baseRpc) });
+  const job = await base.readContract({ address: settings.escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
+  if (![9, 10].includes(Number(job.status)) || job.verifierId === `0x${"00".repeat(32)}`) return null;
+  const verifier = verifierForId(settings.verifiers, job.verifierId);
+  if (!verifier || !verifier[1]) return null;
+
+  const db = await getDatabase();
+  const [specificationRecord, evidenceRecord, settlementLogs, verdictLogs, appealLogs, appealFundingLogs, requestLogs] = await Promise.all([
+    db.collection("specifications").findOne({ _id: normalizeHash(job.specificationHash) as never }),
+    db.collection("evidence_manifests").findOne({ _id: normalizeHash(job.evidenceHash) as never }),
+    base.getLogs({ address: settings.escrow, event: jobSettledEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
+    base.getLogs({ address: settings.escrow, event: verdictImportedEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
+    base.getLogs({ address: settings.escrow, event: appealOpenedEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
+    base.getLogs({ address: settings.escrow, event: appealFundedEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
+    base.getLogs({ address: settings.escrow, event: verificationRequestedEvent, args: { jobId }, fromBlock: settings.fromBlock, toBlock: "latest" }),
+  ]);
+  if (!specificationRecord?.document || !evidenceRecord?.document) return null;
+
+  const genlayer = createGenLayerClient({ chain: chains.testnetBradbury as never, endpoint: settings.genlayerRpc });
+  const rawVerdict = await genlayer.readContract({
+    address: verifier[1] as `0x${string}`,
+    functionName: "get_verdict",
+    args: [jobId, Number(job.verdictAttempt), Boolean(job.verdictAppeal)] as never[],
+    jsonSafeReturn: true,
+  });
+  if (!rawVerdict) return null;
+  const verdict = JSON.parse(String(rawVerdict)) as ExplorerVerdict;
+  const genlayerReceipt = await genlayer.getTransaction({ hash: job.genlayerTxHash as never });
+  const receiptRecord = genlayerReceipt as unknown as Record<string, unknown>;
+  const settlement = settlementLogs.at(-1);
+  const createdBlock = creation?.blockNumber ?? 0n;
+  const createdTimestamp = createdBlock ? await base.getBlock({ blockNumber: createdBlock }).then((block) => Number(block.timestamp)) : Number(job.createdAt);
+
+  return {
+    jobId,
+    escrowAddress: settings.escrow,
+    policy: policyLabels[String(specificationRecord.document.workType)] || String(specificationRecord.document.workType),
+    workType: String(specificationRecord.document.workType),
+    verifierAddress: verifier[1],
+    specification: specificationRecord.document,
+    evidence: evidenceRecord.document,
+    verdict,
+    base: {
+      status: statusNames[Number(job.status)] || "UNKNOWN",
+      client: job.client,
+      worker: job.worker,
+      reward: job.reward.toString(),
+      payoutBps: Number(job.payoutBps),
+      createdAt: createdTimestamp,
+      verdictAt: Number(job.verdictAt),
+      appealDeadline: Number(job.appealDeadline),
+      attempts: Number(job.attempts),
+      appealAttempts: Number(job.appealAttempts),
+      appealFunded: Boolean(job.appealFunded),
+      appellant: job.appellant,
+      creationTransactionHash: creation?.transactionHash || null,
+      settlementTransactionHash: settlement?.transactionHash || null,
+      settlement: settlement ? {
+        workerAmount: settlement.args.workerAmount?.toString() || "0",
+        clientAmount: settlement.args.clientAmount?.toString() || "0",
+        protocolFee: settlement.args.protocolFee?.toString() || "0",
+      } : null,
+    },
+    genlayer: {
+      transactionHash: job.genlayerTxHash,
+      status: String(receiptRecord.statusName || "UNKNOWN"),
+      consensus: String(receiptRecord.resultName || "UNKNOWN"),
+      execution: String(receiptRecord.txExecutionResultName || "UNKNOWN"),
+      finality: String(receiptRecord.statusName || "UNKNOWN") === "FINALIZED",
+      raw: JSON.parse(JSON.stringify(genlayerReceipt, (_, value) => typeof value === "bigint" ? value.toString() : value)),
+    },
+    timeline: [
+      { label: "USDC escrowed and job created", chain: "Base", transactionHash: creation?.transactionHash || null, timestamp: createdTimestamp },
+      ...requestLogs.map((log) => ({ label: `Verification attempt ${log.args.attempt}${log.args.appeal ? " (appeal)" : ""}`, chain: "Base", transactionHash: log.transactionHash, timestamp: null })),
+      ...verdictLogs.map((log) => ({ label: `${log.args.appeal ? "Appeal" : "Initial"} verdict imported`, chain: "Base", transactionHash: log.transactionHash, timestamp: Number(job.verdictAt) })),
+      ...appealLogs.map((log) => ({ label: "Appeal opened", chain: "Base", transactionHash: log.transactionHash, timestamp: null })),
+      ...appealFundingLogs.map((log) => ({ label: "Appeal fee confirmed", chain: "Base", transactionHash: log.transactionHash, timestamp: null })),
+      ...(settlement ? [{ label: "Escrow settled", chain: "Base", transactionHash: settlement.transactionHash, timestamp: null }] : []),
+    ],
+  };
 }
 
 export async function getResolvedCases() {
-  const endpoint = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL || deployment.endpoint;
-  const client = createClient({ chain: chains.testnetBradbury as never, endpoint });
-  const indexed = policies.flatMap((policy) => policy.manifest.cases
-    .filter((item) => item.status === "FINALIZED" && item.consensus === "AGREE" && item.execution === "FINISHED_WITH_RETURN")
-    .map((item) => ({ policy, item })));
-
-  return Promise.all(indexed.map(async ({ policy, item }) => {
-    const attempt = item.attempts.findLast((candidate) => candidate.status === "FINALIZED" && Boolean(candidate.verdict)) ?? item.attempts.at(-1);
-    const verifier = deployment.verifiers[policy.key].address as `0x${string}`;
-    const specification = await loadSpecification(item.specificationUrl);
-    if (!attempt) return { policy: policy.label, verifier, item, specification, verdict: null, readError: "No finalized attempt was indexed" };
-    try {
-      const raw = await client.readContract({
-        address: verifier,
-        functionName: "get_verdict",
-        args: [item.jobId, attempt.attempt, false],
-        jsonSafeReturn: true,
-      });
-      const verdict = JSON.parse(String(raw)) as Verdict;
-      return { policy: policy.label, verifier, item, specification, verdict, readError: null };
-    } catch (error) {
-      return { policy: policy.label, verifier, item, specification, verdict: null, readError: error instanceof Error ? error.message : "GenLayer read failed" };
-    }
-  }));
+  const settings = config();
+  if (!settings) return [];
+  const base = createPublicClient({ chain: baseSepolia, transport: http(settings.baseRpc) });
+  const logs = await base.getLogs({ address: settings.escrow, event: jobCreatedEvent, fromBlock: settings.fromBlock, toBlock: "latest" });
+  const cases = await Promise.all(logs.map((log) => loadCase(log.args.jobId!, { transactionHash: log.transactionHash, blockNumber: log.blockNumber })));
+  return cases.filter((item): item is NonNullable<typeof item> => Boolean(item)).sort((left, right) => right.base.createdAt - left.base.createdAt);
 }
 
+export async function getResolvedCase(jobId: string) {
+  if (!/^0x[a-fA-F0-9]{64}$/u.test(jobId)) return null;
+  const settings = config();
+  if (!settings) return null;
+  const base = createPublicClient({ chain: baseSepolia, transport: http(settings.baseRpc) });
+  const logs = await base.getLogs({ address: settings.escrow, event: jobCreatedEvent, args: { jobId: jobId as Hex }, fromBlock: settings.fromBlock, toBlock: "latest" });
+  const creation = logs.at(-1);
+  if (!creation) return null;
+  return loadCase(jobId as Hex, { transactionHash: creation.transactionHash, blockNumber: creation.blockNumber });
+}

@@ -17,3 +17,5 @@ contracts/base/out
 __pycache__
 .pytest_cache
 .DS_Store
+.workify-review/
+.workify-secrets/

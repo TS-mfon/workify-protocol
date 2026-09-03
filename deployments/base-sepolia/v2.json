@@ -1,0 +1,20 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "version": 2,
+  "status": "DEPLOYED",
+  "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "owner": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "verdictAttestor": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "automationOperator": "0x4c26bC7bDA4E75A6Ac7F8e6EB9b7e8e9784d5835",
+  "deploymentBlock": 46316078,
+  "baseTreasury": {
+    "address": "0x02F383AA78C48eDf75dea0b74773AbFebF2CD8a4",
+    "transactionHash": "0x7552748402138dd4d698596154dd77c84b4edc882c0331cd3a11eaa2adc615da"
+  },
+  "workEscrow": {
+    "address": "0xCfc6B780CDe6f8e8b377f63E921B342ee9557294",
+    "transactionHash": "0xef282b4adb83e14d85060e49fd207cd28b2630efb2bc7313b70c783addc1257b"
+  },
+  "deployedAt": "2026-09-03T01:45:00.000Z"
+}

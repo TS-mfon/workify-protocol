@@ -8,7 +8,7 @@ import { WalletButton } from "./WalletButton";
 
 const erc20Abi = [{ type: "function", name: "approve", stateMutability: "nonpayable", inputs: [{ name: "spender", type: "address" }, { name: "amount", type: "uint256" }], outputs: [{ type: "bool" }] }] as const;
 const escrowAbi = [{ type: "function", name: "createFundedJob", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }, { name: "worker", type: "address" }, { name: "reward", type: "uint128" }, { name: "deliveryDeadline", type: "uint64" }, { name: "specificationHash", type: "bytes32" }, { name: "policyHash", type: "bytes32" }], outputs: [] }] as const;
-const policies: Record<string, string> = { GITHUB_SOFTWARE: "github-software-v7.0", WEB_APPLICATION: "web-application-v7.0", RESEARCH_DATA: "research-data-v7.0", CONTENT_DOCUMENT: "content-document-v7.0", DESIGN_CREATIVE: "design-creative-v7.0" };
+const policies: Record<string, string> = { GITHUB_SOFTWARE: "github-software-v8.0", WEB_APPLICATION: "web-application-v8.0", RESEARCH_DATA: "research-data-v8.0", CONTENT_DOCUMENT: "content-document-v8.0", DESIGN_CREATIVE: "design-creative-v8.0" };
 const workTypes = [{ value: "GITHUB_SOFTWARE", label: "GitHub software", hint: "Issue, pull request, source and CI evidence" }, { value: "WEB_APPLICATION", label: "Web application", hint: "Public deployment, interface and behavior" }, { value: "RESEARCH_DATA", label: "Research & data", hint: "Report, dataset, claims and citations" }, { value: "CONTENT_DOCUMENT", label: "Content document", hint: "Technical or editorial deliverable" }, { value: "DESIGN_CREATIVE", label: "Design creative", hint: "Public images and structured visual criteria" }];
 const steps = ["Work details", "Payment & deadline", "Acceptance criteria", "Review & fund"];
 

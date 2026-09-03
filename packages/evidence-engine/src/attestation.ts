@@ -1,12 +1,21 @@
 import { privateKeyToAccount } from "viem/accounts";
 import type { Hex } from "viem";
 
+function domain(escrow: `0x${string}`) {
+  return {
+    name: "Workify",
+    version: process.env.WORKIFY_EIP712_VERSION || "1",
+    chainId: 84532,
+    verifyingContract: escrow,
+  } as const;
+}
+
 export async function signVerdictAttestation(message: Record<string, unknown>, escrow: `0x${string}`) {
   const key = process.env.VERDICT_ATTESTOR_PRIVATE_KEY as Hex | undefined;
   if (!key) throw new Error("VERDICT_ATTESTOR_PRIVATE_KEY is not configured");
   const account = privateKeyToAccount(key);
   return account.signTypedData({
-    domain: { name: "Workify", version: "1", chainId: 84532, verifyingContract: escrow },
+    domain: domain(escrow),
     primaryType: "Verdict",
     types: {
       Verdict: [
@@ -28,7 +37,7 @@ export async function signOutcomeAttestation(message: Record<string, unknown>, e
   if (!key) throw new Error("VERDICT_ATTESTOR_PRIVATE_KEY is not configured");
   const account = privateKeyToAccount(key);
   return account.signTypedData({
-    domain: { name: "Workify", version: "1", chainId: 84532, verifyingContract: escrow },
+    domain: domain(escrow),
     primaryType: "AttemptOutcome",
     types: {
       AttemptOutcome: [
@@ -38,6 +47,24 @@ export async function signOutcomeAttestation(message: Record<string, unknown>, e
         { name: "evidenceHash", type: "bytes32" }, { name: "policyHash", type: "bytes32" },
         { name: "outcome", type: "uint8" }, { name: "nonce", type: "uint256" },
         { name: "appeal", type: "bool" },
+      ],
+    },
+    message: message as any,
+  });
+}
+
+export async function signAppealFundingAttestation(message: Record<string, unknown>, escrow: `0x${string}`) {
+  const key = process.env.VERDICT_ATTESTOR_PRIVATE_KEY as Hex | undefined;
+  if (!key) throw new Error("VERDICT_ATTESTOR_PRIVATE_KEY is not configured");
+  const account = privateKeyToAccount(key);
+  return account.signTypedData({
+    domain: domain(escrow),
+    primaryType: "AppealFunded",
+    types: {
+      AppealFunded: [
+        { name: "jobId", type: "bytes32" }, { name: "chainId", type: "uint256" },
+        { name: "escrow", type: "address" }, { name: "appellant", type: "address" },
+        { name: "genlayerPaymentTxHash", type: "bytes32" }, { name: "nonce", type: "uint256" },
       ],
     },
     message: message as any,

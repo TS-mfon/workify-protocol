@@ -4,7 +4,7 @@ import { acquireLease, getDatabase } from "./mongodb";
 import { classifyGenLayerReceipt } from "./receipts";
 import { executeBaseRelayAction, type BaseRelayAction, type BaseRelayParameters } from "./base-relay";
 import { WorkifyError } from "./errors";
-import { signOutcomeAttestation, signVerdictAttestation } from "./attestation";
+import { signAppealFundingAttestation, signOutcomeAttestation, signVerdictAttestation } from "./attestation";
 
 const decisionCode: Record<string, number> = { PASS: 1, FAIL: 2, PARTIAL: 3, UNVERIFIABLE: 4 };
 const bytes32 = (value: string) => (value.startsWith("0x") ? value : `0x${value}`) as Hex;
@@ -31,7 +31,20 @@ export async function runAutomationBatch(limit = 20) {
       if (!escrow) throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Base escrow address is not configured");
       let action = String(intent.action) as BaseRelayAction;
       let params: BaseRelayParameters;
-      if (action === "importVerdict") {
+      if (action === "confirmAppealFunded") {
+        if (!classification || classification === "PENDING") continue;
+        if (classification !== "FINALIZED") throw new WorkifyError("GENLAYER_UNDETERMINED", "Appeal fee did not finalize");
+        const message = {
+          jobId: intent.jobId as Hex,
+          chainId: 84532n,
+          escrow,
+          appellant: intent.appellant as `0x${string}`,
+          genlayerPaymentTxHash: intent.genlayerTxHash as Hex,
+          nonce: BigInt(String(intent.nonce)),
+        };
+        const signature = await signAppealFundingAttestation(message, escrow);
+        params = { genlayerPaymentTxHash: message.genlayerPaymentTxHash, nonce: message.nonce, signature };
+      } else if (action === "importVerdict") {
         if (classification === "UNDETERMINED") {
           const outcome = {
             jobId: intent.jobId as Hex,

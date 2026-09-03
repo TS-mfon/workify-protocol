@@ -68,6 +68,16 @@ describe("direct Base automation signer", () => {
     expect(data.length).toBeGreaterThan(10);
   });
 
+  it("encodes appeal funding without accepting recipient parameters", () => {
+    const data = encodeBaseRelayAction("confirmAppealFunded", jobId, {
+      genlayerPaymentTxHash: `0x${"34".repeat(32)}`,
+      nonce: 7n,
+      signature: "0x1234",
+    });
+    expect(data.slice(0, 10)).toBe(toFunctionSelector("confirmAppealFunded(bytes32,bytes32,uint256,bytes)"));
+    expect(data.toLowerCase()).not.toContain(signer.slice(2).toLowerCase());
+  });
+
   it("rejects verdicts whose signed job differs from the relay intent", () => {
     expect(() => encodeBaseRelayAction("importVerdict", jobId, { verdict: { jobId: `0x${"cd".repeat(32)}` }, signature: "0x12" })).toThrow("mismatch");
   });
