@@ -1,0 +1,3 @@
+Workify real showcase case 5.
+The public delivery is a functional web application demonstration.
+Validation: the route loads, the primary interaction is described, and the result is reproducible from this source.

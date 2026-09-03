@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "jobId": "0xed6e6606809a2bbbc9373e4ebc0e0c6f8ef2f9d95e7f3257b9ceb5021290d0b9",
+  "deliveryVersion": 1,
+  "submittedAt": "2026-09-03T16:36:37.570Z",
+  "artifacts": [
+    {
+      "id": "SOURCE-01",
+      "type": "DOCUMENT",
+      "url": "https://raw.githubusercontent.com/TS-mfon/workify-protocol/main/apps/web/public/verification-fixtures/showcase/case-01-source.txt",
+      "canonicalUrl": "https://raw.githubusercontent.com/TS-mfon/workify-protocol/main/apps/web/public/verification-fixtures/showcase/case-01-source.txt",
+      "sha256": "da6e8283e95e3f4e52ae83b6cd82d85e72fc938b8b664c4b445826f3d55ddf33",
+      "mimeType": "text/plain",
+      "sizeBytes": 213,
+      "metadata": {
+        "liveShowcase": true,
+        "case": 1
+      }
+    }
+  ]
+}
