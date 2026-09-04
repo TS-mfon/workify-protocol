@@ -71,6 +71,7 @@ const waitForStatus = async (jobId, expectedStatus, attempts = 12) => {
 const sortValue = (value) => Array.isArray(value) ? value.map(sortValue) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, sortValue(child)])) : value;
 const canonical = (value) => JSON.stringify(sortValue(value));
 const canonicalHash = (value) => createHash("sha256").update(canonical(value)).digest("hex");
+const textHash = (value) => createHash("sha256").update(value, "utf8").digest("hex");
 const sha256 = async (text) => Buffer.from(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text))).toString("hex");
 const rawBase = "https://raw.githubusercontent.com/TS-mfon/workify-protocol/main/apps/web/public/verification-fixtures/showcase";
 
@@ -86,10 +87,12 @@ async function preparePlan() {
     const source = `Workify real showcase case ${index}.\nThe public delivery is a functional web application demonstration.\nValidation: the route loads, the primary interaction is described, and the result is reproducible from this source.\n`;
     const artifact = { id: `SOURCE-${id}`, type: "DOCUMENT", url: `${rawBase}/${sourcePath}`, canonicalUrl: `${rawBase}/${sourcePath}`, sha256: await sha256(source), mimeType: "text/plain", sizeBytes: Buffer.byteLength(source), metadata: { liveShowcase: true, case: index } };
     const evidence = { version: "1.0.0", jobId, deliveryVersion: 1, submittedAt: new Date().toISOString(), artifacts: [artifact] };
+    const specificationText = canonical(specification);
+    const evidenceText = canonical(evidence);
     await writeFile(new URL(sourcePath, directory), source);
-    await writeFile(new URL(`case-${id}-specification.json`, directory), canonical(specification));
-    await writeFile(new URL(`case-${id}-evidence.json`, directory), canonical(evidence));
-    plan.push({ index, jobId, specification, evidence });
+    await writeFile(new URL(`case-${id}-specification.json`, directory), specificationText);
+    await writeFile(new URL(`case-${id}-evidence.json`, directory), evidenceText);
+    plan.push({ index, jobId, specification, evidence, specificationHash: textHash(specificationText), evidenceHash: textHash(evidenceText) });
   }
   await writeFile(new URL("../../../fixtures/live-results/showcase-plan.json", import.meta.url), JSON.stringify(plan, null, 2) + "\n");
   console.log(`Prepared ${plan.length} real showcase manifests. Publish these files before executing.`);
@@ -145,8 +148,8 @@ async function main() {
   for (const item of plan) {
     const { index, jobId, specification, evidence } = item;
     const id = String(index).padStart(2, "0");
-    const evidenceHash = canonicalHash(evidence);
-    const specHash = canonicalHash(specification);
+    const evidenceHash = item.evidenceHash || canonicalHash(evidence);
+    const specHash = item.specificationHash || canonicalHash(specification);
     const jobStatus = (value) => Number(value?.status ?? value?.[13] ?? 0);
     const jobAttempts = (value) => Number(value?.attempts ?? value?.[10] ?? 0);
     const jobRetryDeadline = (value) => Number(value?.retryDeadline ?? value?.[5] ?? 0);
