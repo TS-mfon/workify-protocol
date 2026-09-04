@@ -101,7 +101,8 @@ async function waitGen(hash, terminal = ["ACCEPTED", "FINALIZED"]) {
       if (["VALIDATORS_TIMEOUT", "LEADER_TIMEOUT"].includes(String(item.statusName))) {
         return { ...item, statusName: "UNDETERMINED", networkStatusName: item.statusName };
       }
-      if (["CANCELED", "UNDETERMINED"].includes(String(item.statusName))) throw new Error(`GenLayer ${hash} ended ${item.statusName}`);
+      if (String(item.statusName) === "UNDETERMINED") return item;
+      if (String(item.statusName) === "CANCELED") throw new Error(`GenLayer ${hash} ended ${item.statusName}`);
     } catch (error) {
       if (String(error?.message).includes("ended ")) throw error;
       console.error(`GenLayer poll retry ${i + 1}/180: ${String(error?.shortMessage || error?.message).slice(0, 180)}`);
