@@ -154,6 +154,10 @@ async function main() {
       await receipt(createHash);
     }
     let job = await readJobUntil(jobId);
+    if ([9, 10].includes(jobStatus(job)) && state[jobId]?.status) {
+      console.log(`Case ${index}: already ${state[jobId].status}; skipping terminal job`);
+      continue;
+    }
     if (jobStatus(job) === 1) {
       deliveryHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "submitOrReplaceDelivery", args: [jobId, `0x${evidenceHash}`] });
       await receipt(deliveryHash);
