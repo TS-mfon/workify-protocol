@@ -1,0 +1,38 @@
+{
+  "network": "testnet-bradbury",
+  "version": 9,
+  "endpoint": "https://rpc-bradbury.genlayer.com",
+  "operator": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "treasury": {
+    "address": "0x46E31E4161AC0F4EeC33c585F752DAd13646Ee05",
+    "hash": "0x903f1c62bd4d50a17fb27e5bc8de42c33e97191393f27ab541cbd4dfef1b2b39"
+  },
+  "verifiers": {
+    "github": {
+      "address": "0xe5E347406756c9FFf887E95F398c0995967CeA4D",
+      "hash": "0xd947047e669fd363bc6dfb8bcd571d77a82d8da759695ed4aa97ed69cc515efb",
+      "policyVersion": "github-software-v8.0"
+    },
+    "web": {
+      "address": "0x9C3267313635606bAf70Eb9edCc115e2958026Dd",
+      "hash": "0xda40e23b0fef20c5592f17bbc0d9f6c6ec22811300e19f79e76129713e8911d0",
+      "policyVersion": "web-application-v8.0"
+    },
+    "research": {
+      "address": "0x4A8eB3d7e458B1BA6faC962eAD93aD5cD2c30FCf",
+      "hash": "0x490cab075363b3ee325f8a67bd646fd9ce2e0b4e9dd02d726c410f1d1b58f5b7",
+      "policyVersion": "research-data-v8.0"
+    },
+    "document": {
+      "address": "0x1D5Eb59b9aC361A9547e03A3b00F39d0cD8AF25B",
+      "hash": "0xa8e207d240e71baa0895c7b520bfaa5179e40b017b9bde920eba2e00da2e7326",
+      "policyVersion": "content-document-v8.0"
+    },
+    "design": {
+      "address": "0x5D2A4cDEcD52641D4692E23d29157e1b9Cb222B6",
+      "hash": "0xc83d750187a59b743b4ff6100907b482151cd86d2161f6f3dcd30c674569733d",
+      "policyVersion": "design-creative-v8.0"
+    }
+  },
+  "status": "DEPLOYED"
+}

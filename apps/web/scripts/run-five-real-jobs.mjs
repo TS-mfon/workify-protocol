@@ -18,8 +18,8 @@ process.env.WORKIFY_EIP712_VERSION ||= "2";
 
 const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS || "0xCfc6B780CDe6f8e8b377f63E921B342ee9557294";
 const usdc = process.env.NEXT_PUBLIC_BASE_USDC_ADDRESS || "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
-const genTreasury = process.env.NEXT_PUBLIC_GENLAYER_TREASURY_ADDRESS || "0xe11e888CD716b7fBd36442746Ea0C3A9f1d115B3";
-const verifier = process.env.NEXT_PUBLIC_WEB_VERIFIER_ADDRESS || "0xD1787Ae6bf72572Bb7675a47e36c4e2A535A2F88";
+const genTreasury = process.env.NEXT_PUBLIC_GENLAYER_TREASURY_ADDRESS || "0x46E31E4161AC0F4EeC33c585F752DAd13646Ee05";
+const verifier = process.env.NEXT_PUBLIC_WEB_VERIFIER_ADDRESS || "0x9C3267313635606bAf70Eb9edCc115e2958026Dd";
 const policyVersion = "web-application-v8.0";
 const baseRpc = process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org";
 const genRpc = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL || "https://rpc-bradbury.genlayer.com";
@@ -39,6 +39,7 @@ const escrowAbi = parseAbi([
   "function settle(bytes32)",
   "function getJob(bytes32) view returns ((address client,address worker,uint128 reward,uint64 createdAt,uint64 deliveryDeadline,uint64 retryDeadline,uint64 verdictAt,uint64 appealDeadline,uint64 appealFundingDeadline,uint32 deliveryVersion,uint8 attempts,uint8 appealAttempts,uint16 payoutBps,uint8 status,uint8 decision,bytes32 specificationHash,bytes32 evidenceHash,bytes32 policyHash,bytes32 resultHash,bytes32 verifierId,bytes32 genlayerTxHash,bytes32 appealPaymentTxHash,address appellant,uint8 verdictAttempt,bool verdictAppeal,bool appealFunded))",
 ]);
+const genTreasuryAbi = parseAbi(["function get_payment(string) view returns (string payer,uint256 amount)"]);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const receipt = async (hash) => base.waitForTransactionReceipt({ hash });
 const sortValue = (value) => Array.isArray(value) ? value.map(sortValue) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, sortValue(child)])) : value;
@@ -70,9 +71,14 @@ async function preparePlan() {
 
 async function waitGen(hash, terminal = ["FINALIZED"]) {
   for (let i = 0; i < 180; i += 1) {
-    const item = await gen.getTransaction({ hash });
-    if (terminal.includes(String(item.statusName))) return item;
-    if (["CANCELED", "UNDETERMINED"].includes(String(item.statusName))) throw new Error(`GenLayer ${hash} ended ${item.statusName}`);
+    try {
+      const item = await gen.getTransaction({ hash });
+      if (terminal.includes(String(item.statusName))) return item;
+      if (["CANCELED", "UNDETERMINED"].includes(String(item.statusName))) throw new Error(`GenLayer ${hash} ended ${item.statusName}`);
+    } catch (error) {
+      if (String(error?.message).includes("ended ")) throw error;
+      console.error(`GenLayer poll retry ${i + 1}/180: ${String(error?.shortMessage || error?.message).slice(0, 180)}`);
+    }
     await sleep(10_000);
   }
   throw new Error(`Timed out waiting for GenLayer transaction ${hash}`);
@@ -92,7 +98,10 @@ async function main() {
   const approvalHash = await clientWallet.writeContract({ address: usdc, abi: erc20, functionName: "approve", args: [escrow, approval] });
   await receipt(approvalHash);
   const plan = JSON.parse(await readFile(new URL("../../../fixtures/live-results/showcase-plan.json", import.meta.url), "utf8"));
-  const records = [];
+  const stateUrl = new URL("../../../fixtures/live-results/showcase-run.json", import.meta.url);
+  let state = {};
+  try { state = JSON.parse(await readFile(stateUrl, "utf8")); } catch {}
+  const records = state.records || [];
   for (const item of plan) {
     const { index, jobId, specification, evidence } = item;
     const id = String(index).padStart(2, "0");
@@ -101,18 +110,42 @@ async function main() {
     await database.collection("specifications").updateOne({ _id: specHash }, { $set: { document: specification, canonical: canonical(specification), createdAt: new Date() } }, { upsert: true });
     await database.collection("evidence_manifests").updateOne({ _id: evidenceHash }, { $set: { document: evidence, createdAt: new Date() } }, { upsert: true });
     const policyHash = keccak256(stringToHex(policyVersion));
-    const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
-    const createHash = await clientWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "createFundedJob", args: [jobId, workerAccount.address, reward, deadline, `0x${specHash}`, policyHash] });
-    await receipt(createHash);
-    const deliveryHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "submitOrReplaceDelivery", args: [jobId, `0x${evidenceHash}`] });
-    await receipt(deliveryHash);
-    const lockHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "lockDelivery", args: [jobId] });
-    await receipt(lockHash);
-    const requestHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "requestVerification", args: [jobId, false] });
-    await receipt(requestHash);
-    const paymentHash = await gen.writeContract({ address: genTreasury, functionName: "fund_verification", args: [jobId, 1], value: 100000000000000000n });
-    await waitGen(paymentHash);
-    const verifyHash = await gen.writeContract({ address: verifier, functionName: "verify", args: [jobId, `${rawBase}/case-${id}-specification.json`, specHash, `${rawBase}/case-${id}-evidence.json`, evidenceHash, 1, false, "", clientAccount.address], value: 0n });
+    const existing = await base.readContract({ address: escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
+    let createHash = state[jobId]?.createHash || null;
+    let deliveryHash = state[jobId]?.deliveryHash || null;
+    let lockHash = state[jobId]?.lockHash || null;
+    let requestHash = state[jobId]?.requestHash || null;
+    if (Number(existing.status) === 0) {
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
+      createHash = await clientWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "createFundedJob", args: [jobId, workerAccount.address, reward, deadline, `0x${specHash}`, policyHash] });
+      await receipt(createHash);
+    }
+    let job = await base.readContract({ address: escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
+    if (Number(job.status) === 1) {
+      deliveryHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "submitOrReplaceDelivery", args: [jobId, `0x${evidenceHash}`] });
+      await receipt(deliveryHash);
+      lockHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "lockDelivery", args: [jobId] });
+      await receipt(lockHash);
+      job = await base.readContract({ address: escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
+    }
+    if (Number(job.status) === 2) {
+      requestHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "requestVerification", args: [jobId, false] });
+      await receipt(requestHash);
+      job = await base.readContract({ address: escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
+    }
+    const paymentKey = `${jobId}:verification:1`;
+    const payment = await gen.readContract({ address: genTreasury, functionName: "get_payment", args: [paymentKey], jsonSafeReturn: true });
+    let paymentHash = state[jobId]?.paymentHash || null;
+    if (!payment || BigInt(String(payment.amount || 0)) !== 100000000000000000n) {
+      paymentHash = await gen.writeContract({ address: genTreasury, functionName: "fund_verification", args: [jobId, 1], value: 100000000000000000n });
+      await waitGen(paymentHash);
+    }
+    let verifyHash = state[jobId]?.verifyHash || null;
+    if (!verifyHash) {
+      verifyHash = await gen.writeContract({ address: verifier, functionName: "verify", args: [jobId, `${rawBase}/case-${id}-specification.json`, specHash, `${rawBase}/case-${id}-evidence.json`, evidenceHash, 1, false, "", clientAccount.address], value: 0n });
+      state[jobId] = { createHash, deliveryHash, lockHash, requestHash, paymentHash, verifyHash };
+      await writeFile(stateUrl, JSON.stringify({ records, ...state }, null, 2) + "\n");
+    }
     const verifyReceipt = await waitGen(verifyHash);
     if (verifyReceipt.resultName !== "AGREE" || verifyReceipt.txExecutionResultName !== "FINISHED_WITH_RETURN") throw new Error(`Case ${index} did not reach agreed successful execution`);
     const raw = await gen.readContract({ address: verifier, functionName: "get_verdict", args: [jobId, 1, false], jsonSafeReturn: true });
@@ -125,12 +158,19 @@ async function main() {
       types: { Verdict: [{ name: "jobId", type: "bytes32" }, { name: "chainId", type: "uint256" }, { name: "escrow", type: "address" }, { name: "verifierId", type: "bytes32" }, { name: "genlayerTxHash", type: "bytes32" }, { name: "attempt", type: "uint8" }, { name: "specificationHash", type: "bytes32" }, { name: "evidenceHash", type: "bytes32" }, { name: "policyHash", type: "bytes32" }, { name: "decision", type: "uint8" }, { name: "payoutBps", type: "uint16" }, { name: "resultHash", type: "bytes32" }, { name: "nonce", type: "uint256" }, { name: "appeal", type: "bool" }] },
       message: attestation,
     });
-    const importHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "importFinalVerdict", args: [attestation, signature] });
-    await receipt(importHash);
-    await sleep(5 * 60 * 1000);
-    const settleHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "settle", args: [jobId] });
-    await receipt(settleHash);
-    records.push({ index, jobId, createHash, deliveryHash, lockHash, requestHash, paymentHash, verifyHash, importHash, settleHash, decision: verdict.decision, score: verdict.score, status: "SETTLED" });
+    let importHash = state[jobId]?.importHash || null;
+    if (!importHash) { importHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "importFinalVerdict", args: [attestation, signature] }); await receipt(importHash); }
+    let settledJob = await base.readContract({ address: escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
+    const appealDeadline = Number(settledJob[7]);
+    const waitMs = Math.max(0, appealDeadline * 1000 - Date.now() + 2_000);
+    if (waitMs > 0) { console.log(`Case ${index}: waiting ${Math.ceil(waitMs / 1000)} seconds for appeal window`); await sleep(waitMs); }
+    let settleHash = state[jobId]?.settleHash || null;
+    settledJob = await base.readContract({ address: escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
+    if (Number(settledJob[13]) !== 9) { settleHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "settle", args: [jobId] }); await receipt(settleHash); }
+    const record = { index, jobId, createHash, deliveryHash, lockHash, requestHash, paymentHash, verifyHash, importHash, settleHash, decision: verdict.decision, score: verdict.score, status: "SETTLED" };
+    records.push(record);
+    state[jobId] = { ...record };
+    await writeFile(stateUrl, JSON.stringify({ records, ...state }, null, 2) + "\n");
     await writeFile(new URL(`../../../fixtures/live-results/showcase-${index}.json`, import.meta.url), JSON.stringify(records.at(-1), null, 2) + "\n");
     console.log(JSON.stringify(records.at(-1)));
   }

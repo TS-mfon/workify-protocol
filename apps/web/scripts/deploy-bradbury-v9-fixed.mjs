@@ -1,0 +1,13 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { chains, createAccount, createClient } from 'genlayer-js';
+const env=await readFile('/home/sudodave/workify-protocol/.env.local','utf8'); for(const line of env.split(/\r?\n/u)){const m=line.match(/^([A-Z0-9_]+)=(.*)$/u);if(m&&!process.env[m[1]])process.env[m[1]]=m[2];}
+const endpoint='https://rpc-bradbury.genlayer.com'; const account=createAccount(process.env.GENLAYER_OPERATOR_PRIVATE_KEY); const client=createClient({chain:chains.testnetBradbury,endpoint,account});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function deploy(code,args){for(let i=0;i<8;i++){try{const hash=await client.deployContract({code,args}); console.log('submitted',hash); for(let p=0;p<240;p++){try{const r=await client.getTransaction({hash}); if(['FINALIZED','ACCEPTED'].includes(String(r.statusName))){console.log('receipt',JSON.stringify({hash,status:r.statusName,result:r.resultName,execution:r.txExecutionResultName,address:r.txDataDecoded?.contractAddress})); if(r.resultName==='AGREE'&&r.txExecutionResultName==='FINISHED_WITH_RETURN')return {hash,address:r.txDataDecoded?.contractAddress}; throw new Error('deployment not agreed');} if(['CANCELED','UNDETERMINED'].includes(String(r.statusName)))throw new Error(`deployment ${r.statusName}`);}catch(e){if(String(e.message).includes('deployment '))throw e;} await sleep(10000);} throw new Error('deployment timeout');}catch(e){console.error('retry',i,String(e.message).slice(0,300));if(i===7)throw e;await sleep(5000);}}}
+const treasuryCode=await readFile('/home/sudodave/workify-protocol/contracts/genlayer/v1/GenTreasuryV1.py','utf8');
+const treasury=await deploy(treasuryCode,[account.address]);
+const manifestPath='/home/sudodave/workify-protocol/deployments/genlayer-bradbury/v9.json';
+const manifest={network:'testnet-bradbury',version:9,endpoint,operator:account.address,treasury:{address:treasury.address,hash:treasury.hash},verifiers:{}};
+const verifierCode=await readFile('/home/sudodave/workify-protocol/contracts/genlayer/v8/WorkVerifierV8.py','utf8');
+for(const [name,type,policy] of [['github','GITHUB_SOFTWARE','github-software-v8.0'],['web','WEB_APPLICATION','web-application-v8.0'],['research','RESEARCH_DATA','research-data-v8.0'],['document','CONTENT_DOCUMENT','content-document-v8.0'],['design','DESIGN_CREATIVE','design-creative-v8.0']]){const result=await deploy(verifierCode,[account.address,treasury.address,type,policy]);manifest.verifiers[name]={address:result.address,hash:result.hash,policyVersion:policy};await writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n');}
+manifest.status='DEPLOYED';await writeFile(manifestPath,JSON.stringify(manifest,null,2)+'\n'); console.log(JSON.stringify(manifest));
