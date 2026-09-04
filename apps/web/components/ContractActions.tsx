@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { encodeFunctionData, parseEther } from "viem";
+import { decodeErrorResult, encodeFunctionData, parseEther } from "viem";
 import { chains, createClient } from "genlayer-js";
 import { TransactionStatus } from "genlayer-js/types";
 import { WalletButton } from "./WalletButton";
@@ -26,6 +26,43 @@ async function genLayerClient(account: `0x${string}`) {
   return client;
 }
 
+const baseErrors = [
+  { type: "error", name: "Unauthorized", inputs: [] },
+  { type: "error", name: "InvalidEvidence", inputs: [] },
+  { type: "error", name: "DeadlinePassed", inputs: [] },
+  { type: "error", name: "InvalidState", inputs: [{ name: "expected", type: "uint8" }, { name: "actual", type: "uint8" }] },
+] as const;
+
+function friendlyBaseError(error: unknown, phase: string) {
+  const raw = String((error as { data?: string; message?: string })?.data || "");
+  if (raw.startsWith("0x")) {
+    try {
+      const decoded = decodeErrorResult({ abi: baseErrors, data: raw as `0x${string}` });
+      if (decoded.errorName === "Unauthorized") return "This wallet is not the assigned worker for this job.";
+      if (decoded.errorName === "InvalidEvidence") return "The evidence hash was invalid. Prepare the evidence again.";
+      if (decoded.errorName === "DeadlinePassed") return "The delivery deadline has passed; this delivery cannot be submitted.";
+      if (decoded.errorName === "InvalidState") return `The contract rejected ${phase} because the job state changed. Refresh the job and continue from the current step.`;
+    } catch { /* fall through to a safe message */ }
+  }
+  return `${phase} would be rejected by the Base escrow contract. Refresh the job and verify the assigned wallet before retrying.`;
+}
+
+async function sendBaseTransaction(from: string, to: string, data: `0x${string}`, phase: string) {
+  try {
+    await window.ethereum?.request({ method: "eth_call", params: [{ from, to, data }, "latest"] });
+  } catch (error) {
+    throw new Error(friendlyBaseError(error, phase));
+  }
+  const hash = await window.ethereum?.request({ method: "eth_sendTransaction", params: [{ from, to, data }] }) as string | undefined;
+  if (!hash) throw new Error(`${phase} did not return a transaction hash. No follow-up transaction was sent.`);
+  try {
+    await waitForBaseReceipt(hash);
+  } catch (error) {
+    throw new Error(error instanceof Error ? `${phase}: ${error.message}` : `${phase} failed on Base Sepolia.`);
+  }
+  return hash;
+}
+
 async function waitForBaseReceipt(hash: string) {
   for (let attempt = 0; attempt < 45; attempt += 1) {
     const receipt = await window.ethereum?.request({ method: "eth_getTransactionReceipt", params: [hash] }) as { status?: string } | null;
@@ -40,14 +77,14 @@ async function waitForBaseReceipt(hash: string) {
 
 async function readJobState(jobId: string) {
   const response = await fetch(`/api/ledger?jobId=${jobId}`, { cache: "no-store" });
-  const body = await response.json() as { error?: string; status?: string; job?: { attempts: string; appealAttempts: string } };
+  const body = await response.json() as { error?: string; status?: string; job?: { worker: string; attempts: string; appealAttempts: string } };
   if (!response.ok) throw new Error(body.error || "Could not read the current contract state");
   return body;
 }
 
 export function DeliveryAction({ jobId }: { jobId: `0x${string}` }) {
   const router = useRouter(); const busy = useRef(false); const [submitting, setSubmitting] = useState(false); const [account, setAccount] = useState<`0x${string}`>(); const [status, setStatus] = useState("");
-  return <form className="glass card form" style={{ marginTop: 28 }} onSubmit={async (event) => { event.preventDefault(); if (busy.current) return; const form = event.currentTarget; busy.current = true; setSubmitting(true); try { const current = await readJobState(jobId); if (current.status !== "AWAITING_DELIVERY") throw new Error(`Delivery is unavailable while this job is ${current.status?.replaceAll("_", " ") || "being processed"}.`); const data = new FormData(form); setStatus("Preparing immutable evidence manifest…"); const prepared = await fetch("/api/evidence/prepare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId, deliveryVersion: 1, artifacts: [{ id: "DELIVERY-01", type: "DOCUMENT", url: String(data.get("url")) }] }) }).then(async response => { const body = await response.json(); if (!response.ok) throw new Error(body.error || "Evidence preparation failed"); return body; }); setStatus("Submitting evidence hash…"); const submitHash = await window.ethereum!.request({ method: "eth_sendTransaction", params: [{ from: account, to: escrow, data: encodeFunctionData({ abi: base, functionName: "submitOrReplaceDelivery", args: [jobId, prepared.evidenceHash] }) }] }) as string; await waitForBaseReceipt(submitHash); setStatus("Delivery confirmed. Locking evidence…"); const lockHash = await window.ethereum!.request({ method: "eth_sendTransaction", params: [{ from: account, to: escrow, data: encodeFunctionData({ abi: base, functionName: "lockDelivery", args: [jobId] }) }] }) as string; await waitForBaseReceipt(lockHash); setStatus("Evidence locked. Opening the job dashboard…"); router.push(`/app/jobs/${jobId}`); } catch (error) { const walletError = error as { code?: number; message?: string }; setStatus(walletError.code === 4001 ? "Signature rejected. No further transaction was sent." : walletError.message || "Delivery transaction failed. Retry only after checking BaseScan."); } finally { busy.current = false; setSubmitting(false); } }}><WalletButton onAccount={setAccount} /><div className="field"><label>Public delivery URL</label><input name="url" type="url" required placeholder="https://github.com/owner/repo/pull/123" /></div><button className="button" type="submit" disabled={submitting}>{submitting ? "Confirming on Base…" : "Prepare and lock evidence"}</button>{status && <p className="muted">{status}</p>}</form>;
+  return <form className="glass card form" style={{ marginTop: 28 }} onSubmit={async (event) => { event.preventDefault(); if (busy.current) return; const form = event.currentTarget; busy.current = true; setSubmitting(true); try { if (!account || !window.ethereum || !escrow) throw new Error("Connect the assigned worker wallet on Base Sepolia first."); const connectedAccount = account; const current = await readJobState(jobId); if (current.status !== "AWAITING_DELIVERY") throw new Error(current.status === "RETRY_WINDOW" ? "This delivery is already locked. Use the Verification page to retry adjudication." : `Delivery is unavailable while this job is ${current.status?.replaceAll("_", " ") || "being processed"}.`); if (current.job?.worker?.toLowerCase() !== connectedAccount.toLowerCase()) throw new Error("This wallet is not the assigned worker for this job. Connect the worker wallet shown on the job dashboard."); const data = new FormData(form); setStatus("Preparing immutable evidence manifest…"); const prepared = await fetch("/api/evidence/prepare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId, deliveryVersion: 1, artifacts: [{ id: "DELIVERY-01", type: "DOCUMENT", url: String(data.get("url")) }] }) }).then(async response => { const body = await response.json(); if (!response.ok) throw new Error(body.error || "Evidence preparation failed"); return body; }); setStatus("Submitting evidence hash…"); const submitHash = await sendBaseTransaction(connectedAccount, escrow, encodeFunctionData({ abi: base, functionName: "submitOrReplaceDelivery", args: [jobId, prepared.evidenceHash] }), "Evidence submission"); setStatus(`Evidence confirmed (${submitHash.slice(0, 10)}…). Locking evidence…`); await sendBaseTransaction(connectedAccount, escrow, encodeFunctionData({ abi: base, functionName: "lockDelivery", args: [jobId] }), "Evidence lock"); setStatus("Evidence locked. Opening the job dashboard…"); router.push(`/app/jobs/${jobId}`); } catch (error) { const walletError = error as { code?: number; message?: string }; setStatus(walletError.code === 4001 ? "Signature rejected. No further transaction was sent." : walletError.message || "Delivery transaction failed. Retry only after checking BaseScan."); } finally { busy.current = false; setSubmitting(false); } }}><WalletButton onAccount={setAccount} /><div className="field"><label>Public delivery URL</label><input name="url" type="url" required placeholder="https://github.com/owner/repo/pull/123" /></div><button className="button" type="submit" disabled={submitting}>{submitting ? "Confirming on Base…" : "Prepare and lock evidence"}</button>{status && <p className="muted">{status}</p>}</form>;
 }
 
 export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}`; attempt?: number }) {
