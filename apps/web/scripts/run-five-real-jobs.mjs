@@ -37,6 +37,8 @@ const escrowAbi = parseAbi([
   "function requestVerification(bytes32,bool)",
   "function importFinalVerdict((bytes32 jobId,bytes32 verifierId,bytes32 genlayerTxHash,uint8 attempt,bytes32 specificationHash,bytes32 evidenceHash,bytes32 policyHash,uint8 decision,uint16 payoutBps,bytes32 resultHash,uint256 nonce,bool appeal),bytes)",
   "function recordAttemptOutcome((bytes32 jobId,bytes32 verifierId,bytes32 genlayerTxHash,uint8 attempt,bytes32 evidenceHash,bytes32 policyHash,uint8 outcome,uint256 nonce,bool appeal),bytes)",
+  "function expireRetryWindow(bytes32)",
+  "function refundExpiredJob(bytes32)",
   "function settle(bytes32)",
   "function getJob(bytes32) view returns ((address client,address worker,uint128 reward,uint64 createdAt,uint64 deliveryDeadline,uint64 retryDeadline,uint64 verdictAt,uint64 appealDeadline,uint64 appealFundingDeadline,uint32 deliveryVersion,uint8 attempts,uint8 appealAttempts,uint16 payoutBps,uint8 status,uint8 decision,bytes32 specificationHash,bytes32 evidenceHash,bytes32 policyHash,bytes32 resultHash,bytes32 verifierId,bytes32 genlayerTxHash,bytes32 appealPaymentTxHash,address appellant,uint8 verdictAttempt,bool verdictAppeal,bool appealFunded))",
 ]);
@@ -168,7 +170,15 @@ async function main() {
     if (jobStatus(job) === 4) {
       const retryDeadline = jobRetryDeadline(job);
       if (Math.floor(Date.now() / 1000) > retryDeadline) {
-        throw new Error(`Case ${index} retry window expired at ${new Date(retryDeadline * 1000).toISOString()}; refusing an unrecoverable refund path`);
+        const refundHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "expireRetryWindow", args: [jobId] });
+        await receipt(refundHash);
+        const record = { index, jobId, createHash, deliveryHash, lockHash, requestHash, paymentHash: state[jobId]?.paymentHash || null, verifyHash: state[jobId]?.verifyHash || null, importHash: null, settleHash: null, refundHash, decision: "UNDETERMINED", score: 0, status: "REFUNDED" };
+        records.push(record);
+        state[jobId] = { ...record };
+        await writeFile(stateUrl, JSON.stringify({ records, ...state }, null, 2) + "\n");
+        await writeFile(new URL(`../../../fixtures/live-results/showcase-${index}.json`, import.meta.url), JSON.stringify(record, null, 2) + "\n");
+        console.log(JSON.stringify(record));
+        continue;
       }
       requestHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "requestVerification", args: [jobId, false] });
       await receipt(requestHash);
