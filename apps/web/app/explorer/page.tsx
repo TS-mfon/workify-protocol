@@ -9,7 +9,8 @@ export const metadata: Metadata = { title: "Verdict Explorer", description: "Ins
 const short = (value: string) => `${value.slice(0, 8)}…${value.slice(-6)}`;
 
 export default async function Explorer() {
-  const cases = await getResolvedCases();
+  let cases = [] as Awaited<ReturnType<typeof getResolvedCases>>;
+  try { cases = await getResolvedCases(); } catch { cases = []; }
   const settledValue = cases.reduce((total, item) => total + BigInt(item.base.reward), 0n);
   return <><Nav /><main className="shell explorer-page">
     <section className="explorer-hero">

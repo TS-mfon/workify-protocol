@@ -170,9 +170,16 @@ export async function getResolvedCases() {
   if (!settings) return [];
   const base = createPublicClient({ chain: baseSepolia, transport: http(settings.baseRpc) });
   const logs = await getLogsInChunks(settings.fromBlock,
-    (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobCreatedEvent, fromBlock, toBlock }),
+    (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobSettledEvent, fromBlock, toBlock }),
     () => base.getBlockNumber());
-  const results = await Promise.allSettled(logs.map((log) => loadCase(log.args.jobId!, { transactionHash: log.transactionHash, blockNumber: log.blockNumber })));
+  const creations = new Map<string, { transactionHash: Hex; blockNumber: bigint }>();
+  for (const log of logs) creations.set(String(log.args.jobId), { transactionHash: log.transactionHash, blockNumber: log.blockNumber });
+  const results = await Promise.allSettled([...creations].map(async ([jobId, settlement]) => {
+    const creationLogs = await getLogsInChunks(settings.fromBlock,
+      (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobCreatedEvent, args: { jobId: jobId as Hex }, fromBlock, toBlock }),
+      () => base.getBlockNumber());
+    return loadCase(jobId as Hex, { transactionHash: creationLogs.at(-1)?.transactionHash || settlement.transactionHash, blockNumber: creationLogs.at(-1)?.blockNumber || settlement.blockNumber });
+  }));
   return results.flatMap((result) => result.status === "fulfilled" && result.value ? [result.value] : []).sort((left, right) => right.base.createdAt - left.base.createdAt);
 }
 
