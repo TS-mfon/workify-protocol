@@ -93,7 +93,7 @@ async function preparePlan() {
   console.log(`Prepared ${plan.length} real showcase manifests. Publish these files before executing.`);
 }
 
-async function waitGen(hash, terminal = ["FINALIZED"]) {
+async function waitGen(hash, terminal = ["ACCEPTED", "FINALIZED"]) {
   for (let i = 0; i < 180; i += 1) {
     try {
       const item = await gen.getTransaction({ hash });
@@ -200,7 +200,10 @@ async function main() {
       });
       const outcomeHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "recordAttemptOutcome", args: [outcome, outcomeSignature] });
       await receipt(outcomeHash);
-      throw new Error(`Case ${index} recorded UNDETERMINED outcome (${verifyReceipt.resultName}); retry window must elapse before attempt 2`);
+      state[jobId] = { createHash, deliveryHash, lockHash, requestHash, paymentHash, verifyHash, outcomeHash, attempt };
+      await writeFile(stateUrl, JSON.stringify({ records, ...state }, null, 2) + "\n");
+      console.log(`Case ${index}: recorded UNDETERMINED outcome (${verifyReceipt.resultName}); continuing with independent cases`);
+      continue;
     }
     const raw = await gen.readContract({ address: verifier, functionName: "get_verdict", args: [jobId, attempt, false], jsonSafeReturn: true });
     const verdict = JSON.parse(String(raw));
