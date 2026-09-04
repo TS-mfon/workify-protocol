@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, encodeFunctionData, http, type Hex } from "viem";
+import { createPublicClient, createWalletClient, encodeFunctionData, fallback, http, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
@@ -79,7 +79,9 @@ export function getBaseSignerConfig() {
 
 export function createBaseRelayAdapter(): BaseRelayAdapter {
   const { rpcUrl, account } = getBaseSignerConfig();
-  const publicClient = createPublicClient({ chain: baseSepolia, transport: http(rpcUrl) });
+  const fallbackUrls = (process.env.BASE_SEPOLIA_RPC_FALLBACK_URLS || "https://base-sepolia-rpc.publicnode.com,https://base-sepolia.blockpi.network/v1/rpc/public").split(",").map((url) => url.trim()).filter(Boolean);
+  const transport = fallback([http(rpcUrl), ...fallbackUrls.map((url) => http(url))], { rank: false });
+  const publicClient = createPublicClient({ chain: baseSepolia, transport });
   const walletClient = createWalletClient({ account, chain: baseSepolia, transport: http(rpcUrl) });
   return {
     account,
@@ -141,6 +143,7 @@ export type BaseSignerHealth = {
   signerAddress?: string;
   chainId?: number;
   balanceWei?: string;
+  balanceEth?: string;
   status: "healthy" | "low" | "empty" | "unavailable";
   lastSuccessfulRelayAt?: string;
 };
@@ -152,14 +155,21 @@ export async function getBaseSignerHealth(adapter?: BaseRelayAdapter): Promise<B
     if (chainId !== BASE_CHAIN_ID) return { configured: true, signerAddress: activeAdapter.account.address, chainId, status: "unavailable" };
     const balance = await activeAdapter.getBalance(activeAdapter.account.address);
     const lowBalance = BigInt(process.env.BASE_AUTOMATION_LOW_BALANCE_WEI || "5000000000000000");
-    const successful = await (await getDatabase()).collection("relay_intents").findOne({ status: "CONFIRMED" }, { sort: { confirmedAt: -1 } });
+    let lastSuccessfulRelayAt: string | undefined;
+    try {
+      const successful = await (await getDatabase()).collection("relay_intents").findOne({ status: "CONFIRMED" }, { sort: { confirmedAt: -1 } });
+      if (successful?.confirmedAt) lastSuccessfulRelayAt = new Date(successful.confirmedAt).toISOString();
+    } catch {
+      lastSuccessfulRelayAt = undefined;
+    }
     return {
       configured: true,
       signerAddress: activeAdapter.account.address,
       chainId,
       balanceWei: balance.toString(),
+      balanceEth: `${Number(balance) / 1e18}`,
       status: balance === 0n ? "empty" : balance < lowBalance ? "low" : "healthy",
-      ...(successful?.confirmedAt ? { lastSuccessfulRelayAt: new Date(successful.confirmedAt).toISOString() } : {}),
+      ...(lastSuccessfulRelayAt ? { lastSuccessfulRelayAt } : {}),
     };
   } catch {
     return { configured: false, status: "unavailable" };

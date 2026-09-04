@@ -107,9 +107,11 @@ async function preparePlan() {
 }
 
 async function waitGen(hash, terminal = ["FINALIZED"]) {
+  let consecutiveReceiptErrors = 0;
   for (let i = 0; i < 180; i += 1) {
     try {
       const item = await gen.getTransaction({ hash });
+      consecutiveReceiptErrors = 0;
       if (terminal.includes(String(item.statusName))) return item;
       if (["ACCEPTED", "READY_TO_FINALIZE", "PROPOSING", "COMMITTING", "REVEALING"].includes(String(item.statusName))) {
         await sleep(10_000);
@@ -122,6 +124,10 @@ async function waitGen(hash, terminal = ["FINALIZED"]) {
       if (String(item.statusName) === "CANCELED") throw new Error(`GenLayer ${hash} ended ${item.statusName}`);
     } catch (error) {
       if (String(error?.message).includes("ended ")) throw error;
+      consecutiveReceiptErrors += 1;
+      if (consecutiveReceiptErrors >= 3 && String(error?.message || error).includes("execution reverted")) {
+        return { statusName: "UNDETERMINED", networkStatusName: "RECEIPT_UNAVAILABLE" };
+      }
       console.error(`GenLayer poll retry ${i + 1}/180: ${String(error?.shortMessage || error?.message).slice(0, 180)}`);
     }
     await sleep(10_000);

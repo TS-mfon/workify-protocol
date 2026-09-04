@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { createPublicClient, http, parseAbiItem, type Hex } from "viem";
-import { baseSepolia } from "viem/chains";
-import { getLogsInChunks, publicNetworkConfig } from "@/lib/network";
+import { parseAbiItem, type Hex } from "viem";
+import { createBasePublicClient, getLogsInChunks, publicNetworkConfig } from "@/lib/network";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +53,7 @@ export async function GET(request: Request) {
   if (account && !addressPattern.test(account)) return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
   if (jobId && !jobPattern.test(jobId)) return NextResponse.json({ error: "Invalid job ID" }, { status: 400 });
   try {
-    const base = createPublicClient({ chain: baseSepolia, transport: http(config.rpc) });
+    const base = createBasePublicClient(config.rpc);
     const created = await getLogsInChunks(config.fromBlock,
       (fromBlock, toBlock) => base.getLogs({ address: config.address, event: jobCreated, fromBlock, toBlock }),
       () => base.getBlockNumber());
@@ -63,10 +62,10 @@ export async function GET(request: Request) {
       if (!account) return true;
       return log.args.client?.toLowerCase() === account.toLowerCase() || log.args.worker?.toLowerCase() === account.toLowerCase();
     });
-    const jobs = await Promise.all(selected.map(async (log) => {
+    const jobs = (await Promise.allSettled(selected.map(async (log) => {
       const current = await base.readContract({ address: config.address, abi: escrowAbi, functionName: "getJob", args: [log.args.jobId as Hex] });
       return { jobId: log.args.jobId, creationTransactionHash: log.transactionHash, createdBlock: log.blockNumber, status: statuses[Number(current.status)] ?? "UNKNOWN", job: current };
-    }));
+    }))).flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
     if (jobId) return jobs[0] ? NextResponse.json(json(jobs[0])) : NextResponse.json({ error: "Job not found" }, { status: 404 });
     const activity = account ? [] : await Promise.all(events.slice(1).map(async ([name, event]) => {
       const logs = await getLogsInChunks(config.fromBlock,
@@ -76,6 +75,8 @@ export async function GET(request: Request) {
     }));
     return NextResponse.json(json({ jobs, activity: activity.flat().sort((left, right) => Number(right.blockNumber - left.blockNumber)).slice(0, 100), escrow: config.address }));
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Base ledger read failed" }, { status: 503 });
+    const message = String(error instanceof Error ? error.message : error);
+    const rateLimited = /rate limit|over rate limit|429/u.test(message);
+    return NextResponse.json({ error: rateLimited ? "Base RPC is temporarily rate-limited. Retry in a few seconds." : "Base ledger is temporarily unavailable. Retry shortly.", retryable: true }, { status: 503 });
   }
 }

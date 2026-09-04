@@ -1,3 +1,6 @@
+import { createPublicClient, fallback, http } from "viem";
+import { baseSepolia } from "viem/chains";
+
 export const WORKIFY_NETWORK = {
   baseRpc: "https://sepolia.base.org",
   baseUsdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as `0x${string}`,
@@ -19,6 +22,7 @@ export function publicNetworkConfig() {
   const useEnvironmentAddresses = process.env.WORKIFY_USE_ENV_NETWORK === "true";
   return {
     baseRpc: process.env.BASE_SEPOLIA_RPC_URL || process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || WORKIFY_NETWORK.baseRpc,
+    baseRpcFallbacks: (process.env.BASE_SEPOLIA_RPC_FALLBACK_URLS || "https://base-sepolia-rpc.publicnode.com,https://base-sepolia.blockpi.network/v1/rpc/public").split(",").map((url) => url.trim()).filter(Boolean),
     baseUsdc: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_BASE_USDC_ADDRESS : undefined) || WORKIFY_NETWORK.baseUsdc) as `0x${string}`,
     escrow: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS : undefined) || WORKIFY_NETWORK.escrow) as `0x${string}`,
     fromBlock: WORKIFY_NETWORK.escrowDeploymentBlock,
@@ -32,6 +36,11 @@ export function publicNetworkConfig() {
       DESIGN_CREATIVE: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_DESIGN_VERIFIER_ADDRESS : undefined) || WORKIFY_NETWORK.verifiers.DESIGN_CREATIVE) as `0x${string}`,
     },
   };
+}
+
+export function createBasePublicClient(rpc: string) {
+  const urls = [rpc, ...publicNetworkConfig().baseRpcFallbacks].filter((url, index, all) => url && all.indexOf(url) === index);
+  return createPublicClient({ chain: baseSepolia, transport: fallback(urls.map((url) => http(url)), { rank: false }) });
 }
 
 export async function getLogsInChunks<T>(

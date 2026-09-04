@@ -1,10 +1,9 @@
 import "server-only";
 
 import { chains, createClient as createGenLayerClient } from "genlayer-js";
-import { createPublicClient, http, keccak256, parseAbiItem, stringToHex, type Hex } from "viem";
-import { baseSepolia } from "viem/chains";
+import { keccak256, parseAbiItem, stringToHex, type Hex } from "viem";
 import { getDatabase } from "@workify/evidence-engine";
-import { getLogsInChunks, publicNetworkConfig } from "./network";
+import { createBasePublicClient, getLogsInChunks, publicNetworkConfig } from "./network";
 
 export type ExplorerDecision = "PASS" | "FAIL" | "PARTIAL" | "UNVERIFIABLE";
 export type ExplorerCriterion = {
@@ -83,7 +82,7 @@ function normalizeHash(value: string) {
 async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumber: bigint }) {
   const settings = config();
   if (!settings) return null;
-  const base = createPublicClient({ chain: baseSepolia, transport: http(settings.baseRpc) });
+  const base = createBasePublicClient(settings.baseRpc);
   const job = await base.readContract({ address: settings.escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
   if (![9, 10].includes(Number(job.status)) || job.verifierId === `0x${"00".repeat(32)}`) return null;
   const verifier = verifierForId(settings.verifiers, job.verifierId);
@@ -168,7 +167,7 @@ async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumb
 export async function getResolvedCases() {
   const settings = config();
   if (!settings) return [];
-  const base = createPublicClient({ chain: baseSepolia, transport: http(settings.baseRpc) });
+  const base = createBasePublicClient(settings.baseRpc);
   const logs = await getLogsInChunks(settings.fromBlock,
     (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobSettledEvent, fromBlock, toBlock }),
     () => base.getBlockNumber());
@@ -187,7 +186,7 @@ export async function getResolvedCase(jobId: string) {
   if (!/^0x[a-fA-F0-9]{64}$/u.test(jobId)) return null;
   const settings = config();
   if (!settings) return null;
-  const base = createPublicClient({ chain: baseSepolia, transport: http(settings.baseRpc) });
+  const base = createBasePublicClient(settings.baseRpc);
   const logs = await getLogsInChunks(settings.fromBlock,
     (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobCreatedEvent, args: { jobId: jobId as Hex }, fromBlock, toBlock }),
     () => base.getBlockNumber());
