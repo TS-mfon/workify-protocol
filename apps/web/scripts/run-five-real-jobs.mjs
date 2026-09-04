@@ -74,6 +74,9 @@ async function waitGen(hash, terminal = ["FINALIZED"]) {
     try {
       const item = await gen.getTransaction({ hash });
       if (terminal.includes(String(item.statusName))) return item;
+      if (["VALIDATORS_TIMEOUT", "LEADER_TIMEOUT"].includes(String(item.statusName))) {
+        return { ...item, statusName: "UNDETERMINED", networkStatusName: item.statusName };
+      }
       if (["CANCELED", "UNDETERMINED"].includes(String(item.statusName))) throw new Error(`GenLayer ${hash} ended ${item.statusName}`);
     } catch (error) {
       if (String(error?.message).includes("ended ")) throw error;
