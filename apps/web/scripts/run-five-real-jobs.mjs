@@ -68,6 +68,14 @@ const waitForStatus = async (jobId, expectedStatus, attempts = 12) => {
   }
   return readJob(jobId);
 };
+const waitForDelivery = async (jobId, evidenceHash, attempts = 12) => {
+  for (let index = 0; index < attempts; index += 1) {
+    const job = await readJob(jobId);
+    if (job && Number(job.status ?? job[13]) === 1 && String(job.evidenceHash ?? job[16]).toLowerCase() === `0x${evidenceHash}`.toLowerCase()) return job;
+    await sleep(2_000);
+  }
+  return readJob(jobId);
+};
 const sortValue = (value) => Array.isArray(value) ? value.map(sortValue) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, sortValue(child)])) : value;
 const canonical = (value) => JSON.stringify(sortValue(value));
 const canonicalHash = (value) => createHash("sha256").update(canonical(value)).digest("hex");
@@ -174,7 +182,7 @@ async function main() {
     if (jobStatus(job) === 1) {
       deliveryHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "submitOrReplaceDelivery", args: [jobId, `0x${evidenceHash}`] });
       await receipt(deliveryHash);
-      await waitForStatus(jobId, 1);
+      await waitForDelivery(jobId, evidenceHash);
       lockHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "lockDelivery", args: [jobId] });
       await receipt(lockHash);
       job = await waitForStatus(jobId, 2);
