@@ -119,7 +119,17 @@ async function main() {
   if (!process.env.GENLAYER_OPERATOR_PRIVATE_KEY || !process.env.VERDICT_ATTESTOR_PRIVATE_KEY || !process.env.MONGODB_URI) throw new Error("Missing real GenLayer attestor/operator or MongoDB configuration");
   const require = createRequire(new URL("../../../packages/evidence-engine/package.json", import.meta.url));
   const { MongoClient } = require("mongodb");
-  const mongo = await new MongoClient(process.env.MONGODB_URI).connect();
+  let mongo;
+  for (let attempt = 1; attempt <= 8; attempt += 1) {
+    try {
+      mongo = await new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 15_000, connectTimeoutMS: 15_000, family: 4 }).connect();
+      break;
+    } catch (error) {
+      if (attempt === 8) throw error;
+      console.error(`MongoDB connection retry ${attempt}/8: ${String(error?.message || error).slice(0, 180)}`);
+      await sleep(3_000);
+    }
+  }
   const database = mongo.db(process.env.MONGODB_DATABASE || "workify");
   const reward = parseUnits("0.25", 6);
   const approval = reward * 5n;
