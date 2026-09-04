@@ -172,8 +172,8 @@ export async function getResolvedCases() {
   const logs = await getLogsInChunks(settings.fromBlock,
     (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobCreatedEvent, fromBlock, toBlock }),
     () => base.getBlockNumber());
-  const cases = await Promise.all(logs.map((log) => loadCase(log.args.jobId!, { transactionHash: log.transactionHash, blockNumber: log.blockNumber })));
-  return cases.filter((item): item is NonNullable<typeof item> => Boolean(item)).sort((left, right) => right.base.createdAt - left.base.createdAt);
+  const results = await Promise.allSettled(logs.map((log) => loadCase(log.args.jobId!, { transactionHash: log.transactionHash, blockNumber: log.blockNumber })));
+  return results.flatMap((result) => result.status === "fulfilled" && result.value ? [result.value] : []).sort((left, right) => right.base.createdAt - left.base.createdAt);
 }
 
 export async function getResolvedCase(jobId: string) {
@@ -186,5 +186,9 @@ export async function getResolvedCase(jobId: string) {
     () => base.getBlockNumber());
   const creation = logs.at(-1);
   if (!creation) return null;
-  return loadCase(jobId as Hex, { transactionHash: creation.transactionHash, blockNumber: creation.blockNumber });
+  try {
+    return await loadCase(jobId as Hex, { transactionHash: creation.transactionHash, blockNumber: creation.blockNumber });
+  } catch {
+    return null;
+  }
 }
