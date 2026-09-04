@@ -15,6 +15,7 @@ export type WorkifyErrorCode =
   | "RELAY_STATUS_UNKNOWN"
   | "BASE_REVERT"
   | "DATABASE_TRANSIENT"
+  | "DUPLICATE_SUBMISSION"
   | "AUTOMATION_LEASE_CONFLICT";
 
 export class WorkifyError extends Error {
