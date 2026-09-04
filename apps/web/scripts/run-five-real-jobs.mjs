@@ -106,11 +106,15 @@ async function preparePlan() {
   console.log(`Prepared ${plan.length} real showcase manifests. Publish these files before executing.`);
 }
 
-async function waitGen(hash, terminal = ["ACCEPTED", "FINALIZED"]) {
+async function waitGen(hash, terminal = ["FINALIZED"]) {
   for (let i = 0; i < 180; i += 1) {
     try {
       const item = await gen.getTransaction({ hash });
       if (terminal.includes(String(item.statusName))) return item;
+      if (["ACCEPTED", "READY_TO_FINALIZE", "PROPOSING", "COMMITTING", "REVEALING"].includes(String(item.statusName))) {
+        await sleep(10_000);
+        continue;
+      }
       if (["VALIDATORS_TIMEOUT", "LEADER_TIMEOUT"].includes(String(item.statusName))) {
         return { ...item, statusName: "UNDETERMINED", networkStatusName: item.statusName };
       }
