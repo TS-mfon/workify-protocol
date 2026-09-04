@@ -136,23 +136,33 @@ async function main() {
       await receipt(requestHash);
       job = await base.readContract({ address: escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
     }
-    const paymentKey = `${jobId}:verification:1`;
+    if (Number(job.status) === 4) {
+      const retryDeadline = Number(job[5]);
+      const waitMs = Math.max(0, retryDeadline * 1000 - Date.now() + 2_000);
+      if (waitMs > 0) { console.log(`Case ${index}: waiting ${Math.ceil(waitMs / 1000)} seconds for retry window`); await sleep(waitMs); }
+      requestHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "requestVerification", args: [jobId, false] });
+      await receipt(requestHash);
+      job = await base.readContract({ address: escrow, abi: escrowAbi, functionName: "getJob", args: [jobId] });
+    }
+    const attempt = Number(job[10]) + 1;
+    if (Number(job.status) !== 3) throw new Error(`Case ${index} is not verifying (status ${String(job.status)})`);
+    const paymentKey = `${jobId}:verification:${attempt}`;
     const payment = await gen.readContract({ address: genTreasury, functionName: "get_payment", args: [paymentKey], jsonSafeReturn: true });
     let paymentHash = state[jobId]?.paymentHash || null;
     if (!payment || BigInt(String(payment.amount || 0)) !== 100000000000000000n) {
-      paymentHash = await gen.writeContract({ address: genTreasury, functionName: "fund_verification", args: [jobId, 1], value: 100000000000000000n });
+      paymentHash = await gen.writeContract({ address: genTreasury, functionName: "fund_verification", args: [jobId, attempt], value: 100000000000000000n });
       await waitGen(paymentHash);
     }
     let verifyHash = state[jobId]?.verifyHash || null;
     if (!verifyHash) {
-      verifyHash = await gen.writeContract({ address: verifier, functionName: "verify", args: [jobId, `${rawBase}/case-${id}-specification.json`, specHash, `${rawBase}/case-${id}-evidence.json`, evidenceHash, 1, false, "", clientAccount.address], value: 0n });
+      verifyHash = await gen.writeContract({ address: verifier, functionName: "verify", args: [jobId, `${rawBase}/case-${id}-specification.json`, specHash, `${rawBase}/case-${id}-evidence.json`, evidenceHash, attempt, false, "", clientAccount.address], value: 0n });
       state[jobId] = { createHash, deliveryHash, lockHash, requestHash, paymentHash, verifyHash };
       await writeFile(stateUrl, JSON.stringify({ records, ...state }, null, 2) + "\n");
     }
     const verifyReceipt = await waitGen(verifyHash);
     if (verifyReceipt.resultName !== "AGREE" || verifyReceipt.txExecutionResultName !== "FINISHED_WITH_RETURN") {
       const outcomeNonce = BigInt(`0x${Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("hex")}`);
-      const outcome = { jobId, chainId: 84532n, escrow, verifierId: keccak256(stringToHex(verifier.toLowerCase())), genlayerTxHash: verifyHash, attempt: 1, evidenceHash: `0x${evidenceHash}`, policyHash, outcome: 1, nonce: outcomeNonce, appeal: false };
+      const outcome = { jobId, chainId: 84532n, escrow, verifierId: keccak256(stringToHex(verifier.toLowerCase())), genlayerTxHash: verifyHash, attempt, evidenceHash: `0x${evidenceHash}`, policyHash, outcome: 1, nonce: outcomeNonce, appeal: false };
       const outcomeSignature = await privateKeyToAccount(process.env.VERDICT_ATTESTOR_PRIVATE_KEY).signTypedData({
         domain: { name: "Workify", version: process.env.WORKIFY_EIP712_VERSION, chainId: 84532, verifyingContract: escrow },
         primaryType: "AttemptOutcome",
@@ -163,10 +173,10 @@ async function main() {
       await receipt(outcomeHash);
       throw new Error(`Case ${index} recorded UNDETERMINED outcome (${verifyReceipt.resultName}); retry window must elapse before attempt 2`);
     }
-    const raw = await gen.readContract({ address: verifier, functionName: "get_verdict", args: [jobId, 1, false], jsonSafeReturn: true });
+    const raw = await gen.readContract({ address: verifier, functionName: "get_verdict", args: [jobId, attempt, false], jsonSafeReturn: true });
     const verdict = JSON.parse(String(raw));
     const nonce = BigInt(`0x${Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("hex")}`);
-    const attestation = { jobId, chainId: 84532n, escrow, verifierId: keccak256(stringToHex(verifier.toLowerCase())), genlayerTxHash: verifyHash, attempt: 1, specificationHash: `0x${verdict.specification_hash}`, evidenceHash: `0x${verdict.evidence_root}`, policyHash: keccak256(stringToHex(verdict.policy_version)), decision: { PASS: 1, FAIL: 2, PARTIAL: 3, UNVERIFIABLE: 4 }[verdict.decision], payoutBps: Number(verdict.payout_bps), resultHash: `0x${verdict.result_hash}`, nonce, appeal: false };
+    const attestation = { jobId, chainId: 84532n, escrow, verifierId: keccak256(stringToHex(verifier.toLowerCase())), genlayerTxHash: verifyHash, attempt, specificationHash: `0x${verdict.specification_hash}`, evidenceHash: `0x${verdict.evidence_root}`, policyHash: keccak256(stringToHex(verdict.policy_version)), decision: { PASS: 1, FAIL: 2, PARTIAL: 3, UNVERIFIABLE: 4 }[verdict.decision], payoutBps: Number(verdict.payout_bps), resultHash: `0x${verdict.result_hash}`, nonce, appeal: false };
     const signature = await privateKeyToAccount(process.env.VERDICT_ATTESTOR_PRIVATE_KEY).signTypedData({
       domain: { name: "Workify", version: process.env.WORKIFY_EIP712_VERSION, chainId: 84532, verifyingContract: escrow },
       primaryType: "Verdict",

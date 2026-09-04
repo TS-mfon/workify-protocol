@@ -19,17 +19,17 @@ export function publicNetworkConfig() {
   const useEnvironmentAddresses = process.env.WORKIFY_USE_ENV_NETWORK === "true";
   return {
     baseRpc: process.env.BASE_SEPOLIA_RPC_URL || process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || WORKIFY_NETWORK.baseRpc,
-    baseUsdc: (process.env.NEXT_PUBLIC_BASE_USDC_ADDRESS || WORKIFY_NETWORK.baseUsdc) as `0x${string}`,
-    escrow: (useEnvironmentAddresses ? process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS : WORKIFY_NETWORK.escrow) as `0x${string}`,
+    baseUsdc: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_BASE_USDC_ADDRESS : undefined) || WORKIFY_NETWORK.baseUsdc) as `0x${string}`,
+    escrow: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS : undefined) || WORKIFY_NETWORK.escrow) as `0x${string}`,
     fromBlock: WORKIFY_NETWORK.escrowDeploymentBlock,
     genlayerRpc: process.env.NEXT_PUBLIC_GENLAYER_RPC_URL || WORKIFY_NETWORK.genlayerRpc,
-    genTreasury: (useEnvironmentAddresses ? (process.env.NEXT_PUBLIC_GEN_TREASURY_ADDRESS || process.env.NEXT_PUBLIC_GENLAYER_TREASURY_ADDRESS) : WORKIFY_NETWORK.genTreasury) as `0x${string}`,
+    genTreasury: ((useEnvironmentAddresses ? (process.env.NEXT_PUBLIC_GEN_TREASURY_ADDRESS || process.env.NEXT_PUBLIC_GENLAYER_TREASURY_ADDRESS) : undefined) || WORKIFY_NETWORK.genTreasury) as `0x${string}`,
     verifiers: {
-      GITHUB_SOFTWARE: (useEnvironmentAddresses ? process.env.NEXT_PUBLIC_GITHUB_VERIFIER_ADDRESS : WORKIFY_NETWORK.verifiers.GITHUB_SOFTWARE) as `0x${string}`,
-      WEB_APPLICATION: (useEnvironmentAddresses ? process.env.NEXT_PUBLIC_WEB_VERIFIER_ADDRESS : WORKIFY_NETWORK.verifiers.WEB_APPLICATION) as `0x${string}`,
-      RESEARCH_DATA: (useEnvironmentAddresses ? process.env.NEXT_PUBLIC_RESEARCH_VERIFIER_ADDRESS : WORKIFY_NETWORK.verifiers.RESEARCH_DATA) as `0x${string}`,
-      CONTENT_DOCUMENT: (useEnvironmentAddresses ? process.env.NEXT_PUBLIC_DOCUMENT_VERIFIER_ADDRESS : WORKIFY_NETWORK.verifiers.CONTENT_DOCUMENT) as `0x${string}`,
-      DESIGN_CREATIVE: (useEnvironmentAddresses ? process.env.NEXT_PUBLIC_DESIGN_VERIFIER_ADDRESS : WORKIFY_NETWORK.verifiers.DESIGN_CREATIVE) as `0x${string}`,
+      GITHUB_SOFTWARE: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_GITHUB_VERIFIER_ADDRESS : undefined) || WORKIFY_NETWORK.verifiers.GITHUB_SOFTWARE) as `0x${string}`,
+      WEB_APPLICATION: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_WEB_VERIFIER_ADDRESS : undefined) || WORKIFY_NETWORK.verifiers.WEB_APPLICATION) as `0x${string}`,
+      RESEARCH_DATA: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_RESEARCH_VERIFIER_ADDRESS : undefined) || WORKIFY_NETWORK.verifiers.RESEARCH_DATA) as `0x${string}`,
+      CONTENT_DOCUMENT: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_DOCUMENT_VERIFIER_ADDRESS : undefined) || WORKIFY_NETWORK.verifiers.CONTENT_DOCUMENT) as `0x${string}`,
+      DESIGN_CREATIVE: ((useEnvironmentAddresses ? process.env.NEXT_PUBLIC_DESIGN_VERIFIER_ADDRESS : undefined) || WORKIFY_NETWORK.verifiers.DESIGN_CREATIVE) as `0x${string}`,
     },
   };
 }
