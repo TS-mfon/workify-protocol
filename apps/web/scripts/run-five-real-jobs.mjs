@@ -36,10 +36,10 @@ const escrowAbi = parseAbi([
   "function lockDelivery(bytes32)",
   "function requestVerification(bytes32,bool)",
   "function importFinalVerdict((bytes32 jobId,bytes32 verifierId,bytes32 genlayerTxHash,uint8 attempt,bytes32 specificationHash,bytes32 evidenceHash,bytes32 policyHash,uint8 decision,uint16 payoutBps,bytes32 resultHash,uint256 nonce,bool appeal),bytes)",
+  "function recordAttemptOutcome((bytes32 jobId,bytes32 verifierId,bytes32 genlayerTxHash,uint8 attempt,bytes32 evidenceHash,bytes32 policyHash,uint8 outcome,uint256 nonce,bool appeal),bytes)",
   "function settle(bytes32)",
   "function getJob(bytes32) view returns ((address client,address worker,uint128 reward,uint64 createdAt,uint64 deliveryDeadline,uint64 retryDeadline,uint64 verdictAt,uint64 appealDeadline,uint64 appealFundingDeadline,uint32 deliveryVersion,uint8 attempts,uint8 appealAttempts,uint16 payoutBps,uint8 status,uint8 decision,bytes32 specificationHash,bytes32 evidenceHash,bytes32 policyHash,bytes32 resultHash,bytes32 verifierId,bytes32 genlayerTxHash,bytes32 appealPaymentTxHash,address appellant,uint8 verdictAttempt,bool verdictAppeal,bool appealFunded))",
 ]);
-const genTreasuryAbi = parseAbi(["function get_payment(string) view returns (string payer,uint256 amount)"]);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const receipt = async (hash) => base.waitForTransactionReceipt({ hash });
 const sortValue = (value) => Array.isArray(value) ? value.map(sortValue) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, sortValue(child)])) : value;
@@ -147,7 +147,19 @@ async function main() {
       await writeFile(stateUrl, JSON.stringify({ records, ...state }, null, 2) + "\n");
     }
     const verifyReceipt = await waitGen(verifyHash);
-    if (verifyReceipt.resultName !== "AGREE" || verifyReceipt.txExecutionResultName !== "FINISHED_WITH_RETURN") throw new Error(`Case ${index} did not reach agreed successful execution`);
+    if (verifyReceipt.resultName !== "AGREE" || verifyReceipt.txExecutionResultName !== "FINISHED_WITH_RETURN") {
+      const outcomeNonce = BigInt(`0x${Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("hex")}`);
+      const outcome = { jobId, chainId: 84532n, escrow, verifierId: keccak256(stringToHex(verifier.toLowerCase())), genlayerTxHash: verifyHash, attempt: 1, evidenceHash: `0x${evidenceHash}`, policyHash, outcome: 1, nonce: outcomeNonce, appeal: false };
+      const outcomeSignature = await privateKeyToAccount(process.env.VERDICT_ATTESTOR_PRIVATE_KEY).signTypedData({
+        domain: { name: "Workify", version: process.env.WORKIFY_EIP712_VERSION, chainId: 84532, verifyingContract: escrow },
+        primaryType: "AttemptOutcome",
+        types: { AttemptOutcome: [{ name: "jobId", type: "bytes32" }, { name: "chainId", type: "uint256" }, { name: "escrow", type: "address" }, { name: "verifierId", type: "bytes32" }, { name: "genlayerTxHash", type: "bytes32" }, { name: "attempt", type: "uint8" }, { name: "evidenceHash", type: "bytes32" }, { name: "policyHash", type: "bytes32" }, { name: "outcome", type: "uint8" }, { name: "nonce", type: "uint256" }, { name: "appeal", type: "bool" }] },
+        message: outcome,
+      });
+      const outcomeHash = await workerWallet.writeContract({ address: escrow, abi: escrowAbi, functionName: "recordAttemptOutcome", args: [outcome, outcomeSignature] });
+      await receipt(outcomeHash);
+      throw new Error(`Case ${index} recorded UNDETERMINED outcome (${verifyReceipt.resultName}); retry window must elapse before attempt 2`);
+    }
     const raw = await gen.readContract({ address: verifier, functionName: "get_verdict", args: [jobId, 1, false], jsonSafeReturn: true });
     const verdict = JSON.parse(String(raw));
     const nonce = BigInt(`0x${Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("hex")}`);
