@@ -25,4 +25,12 @@ describe("evidence engine", () => {
     expect(classifyGenLayerReceipt({ status_name: "FINALIZED", executionResult: "1" })).toBe("FINALIZED");
     expect(classifyGenLayerReceipt({ statusName: "FINALIZED", executionResultName: "FINISHED_WITH_RETURN" })).toBe("FINALIZED");
   });
+
+  it("treats an accepted transaction as progress, not finalized adjudication", () => {
+    expect(classifyGenLayerReceipt({
+      status: 5,
+      resultName: "AGREE",
+      txExecutionResultName: "FINISHED_WITH_RETURN",
+    })).toBe("ACCEPTED");
+  });
 });

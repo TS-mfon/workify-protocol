@@ -1,4 +1,4 @@
-import { submitVerification } from "@workify/evidence-engine";
+import { getGenLayerNetworkConfig, submitVerification } from "@workify/evidence-engine";
 import { getDatabase } from "@workify/evidence-engine";
 import { NextResponse } from "next/server";
 import { createBasePublicClient, publicNetworkConfig } from "@/lib/network";
@@ -9,6 +9,7 @@ const inputSchema = z.object({
   jobId: z.string().regex(/^0x[a-fA-F0-9]{64}$/u),
   attempt: z.number().int().min(1).max(3),
   feePayer: z.string().regex(/^0x[a-fA-F0-9]{40}$/u),
+  network: z.enum(["bradbury", "studionet"]).optional(),
 });
 
 const jobAbi = [{
@@ -27,14 +28,6 @@ const jobAbi = [{
   ] }],
 }] as const;
 
-const workTypeVerifier: Record<string, `0x${string}`> = {
-  GITHUB_SOFTWARE: "0xe5E347406756c9FFf887E95F398c0995967CeA4D",
-  WEB_APPLICATION: "0x9C3267313635606bAf70Eb9edCc115e2958026Dd",
-  RESEARCH_DATA: "0x4A8eB3d7e458B1BA6faC962eAD93aD5cD2c30FCf",
-  CONTENT_DOCUMENT: "0x1D5Eb59b9aC361A9547e03A3b00F39d0cD8AF25B",
-  DESIGN_CREATIVE: "0x5D2A4cDEcD52641D4692E23d29157e1b9Cb222B6",
-};
-
 function publicOrigin(request: Request) {
   const configured = process.env.PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL;
   if (configured) return configured.replace(/\/$/u, "");
@@ -46,6 +39,7 @@ function publicOrigin(request: Request) {
 export async function POST(request: Request) {
   try {
     const input = inputSchema.parse(await request.json());
+    const selectedNetwork = input.network || (request.headers.get("cookie") || "").match(/(?:^|;\s*)workify-genlayer-network=(studionet|bradbury)/u)?.[1] || "bradbury";
     const network = publicNetworkConfig();
     const base = createBasePublicClient(network.baseRpc);
     const job = await base.readContract({ address: network.escrow, abi: jobAbi, functionName: "getJob", args: [input.jobId as Hex] });
@@ -56,7 +50,7 @@ export async function POST(request: Request) {
     const evidence = await db.collection("evidence_manifests").findOne({ _id: evidenceHash as never });
     const workType = String((specification?.document as { workType?: string } | undefined)?.workType || "");
     const policyVersion = String((specification?.document as { policyVersion?: string } | undefined)?.policyVersion || "");
-    const verifierAddress = workTypeVerifier[workType];
+    const verifierAddress = getGenLayerNetworkConfig(selectedNetwork as "bradbury" | "studionet").verifiers[workType];
     if (!specification || !evidence || !verifierAddress || !policyVersion) {
       return NextResponse.json({ error: "The locked specification or evidence manifest is unavailable for verification." }, { status: 409 });
     }
@@ -72,6 +66,7 @@ export async function POST(request: Request) {
       appeal: false,
       policyVersion,
       feePayer: input.feePayer as `0x${string}`,
+      network: selectedNetwork as "bradbury" | "studionet",
     });
     return NextResponse.json({ queued: true, ...result });
   } catch (error) {

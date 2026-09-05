@@ -1,10 +1,11 @@
-import { chains, createClient } from "genlayer-js";
+import { createServerGenLayerClient, getGenLayerNetworkConfig, type GenLayerNetwork } from "./genlayer-network";
 import { keccak256, stringToHex, type Hex } from "viem";
 import { acquireLease, getDatabase } from "./mongodb";
 import { classifyGenLayerReceipt } from "./receipts";
 import { executeBaseRelayAction, type BaseRelayAction, type BaseRelayParameters } from "./base-relay";
 import { WorkifyError } from "./errors";
 import { signAppealFundingAttestation, signOutcomeAttestation, signVerdictAttestation } from "./attestation";
+import { submitVerification } from "./verification";
 
 const decisionCode: Record<string, number> = { PASS: 1, FAIL: 2, PARTIAL: 3, UNVERIFIABLE: 4 };
 const bytes32 = (value: string) => (value.startsWith("0x") ? value : `0x${value}`) as Hex;
@@ -12,20 +13,48 @@ const bytes32 = (value: string) => (value.startsWith("0x") ? value : `0x${value}
 export async function runAutomationBatch(limit = 20) {
   if (!(await acquireLease("automation:global"))) return { skipped: "lease-held", processed: 0 };
   const db = await getDatabase();
-  const intents = await db.collection("relay_intents").find({ status: "PENDING" }).sort({ createdAt: 1 }).limit(limit).toArray();
+  const intents = await db.collection("relay_intents").find({ status: { $in: ["PENDING", "PENDING_PAYMENT"] } }).sort({ createdAt: 1 }).limit(limit).toArray();
   let processed = 0;
   for (const intent of intents) {
     try {
-      const rpcUrl = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
-      const genlayerClient = rpcUrl
-        ? createClient({ chain: chains.testnetBradbury as never, endpoint: rpcUrl })
+      const selectedNetwork = (String(intent.genlayerNetwork || "bradbury") === "studionet" ? "studionet" : "bradbury") as GenLayerNetwork;
+      if (!intent.genlayerTxHash && intent.verifierAddress && intent.specificationUrl && intent.evidenceUrl && intent.policyVersion) {
+        const submission = await submitVerification({
+          jobId: intent.jobId as Hex,
+          verifierAddress: intent.verifierAddress as `0x${string}`,
+          specificationUrl: String(intent.specificationUrl),
+          specificationHash: String(intent.specificationHash),
+          evidenceUrl: String(intent.evidenceUrl),
+          evidenceHash: String(intent.evidenceHash),
+          attempt: Number(intent.attempt),
+          appeal: Boolean(intent.appeal),
+          policyVersion: String(intent.policyVersion),
+          ...(intent.feePayer ? { feePayer: intent.feePayer as `0x${string}` } : {}),
+          network: selectedNetwork,
+        });
+        if (!submission.transactionHash) {
+          await db.collection("relay_intents").updateOne({ _id: intent._id }, { $set: { lifecycle: "PAYMENT_PENDING", lastCheckedAt: new Date(), updatedAt: new Date() } });
+          continue;
+        }
+        intent.genlayerTxHash = submission.transactionHash;
+        intent.status = "PENDING";
+      }
+      const networkConfig = getGenLayerNetworkConfig(selectedNetwork);
+      const genlayerClient = networkConfig.endpoint
+        ? createServerGenLayerClient(selectedNetwork, process.env.GENLAYER_OPERATOR_PRIVATE_KEY as `0x${string}`)
         : undefined;
-      let classification: "FINALIZED" | "UNDETERMINED" | "PENDING" | undefined;
+      let classification: "ACCEPTED" | "FINALIZED" | "UNDETERMINED" | "PENDING" | undefined;
       if (intent.genlayerTxHash) {
-        if (!genlayerClient) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer RPC is not configured");
+        if (!genlayerClient) throw new WorkifyError("GENLAYER_PREFLIGHT", `${selectedNetwork} GenLayer RPC is not configured`, true);
         const receipt = await genlayerClient.getTransaction({ hash: intent.genlayerTxHash as never });
         classification = classifyGenLayerReceipt(receipt as never);
-        if (classification === "PENDING") continue;
+        if (classification === "PENDING" || classification === "ACCEPTED") {
+          await db.collection("relay_intents").updateOne(
+            { _id: intent._id },
+            { $set: { lifecycle: classification === "ACCEPTED" ? "VERIFIER_ACCEPTED" : "VERIFIER_PENDING", lastCheckedAt: new Date(), updatedAt: new Date() } },
+          );
+          continue;
+        }
       }
       const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
       if (!escrow) throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Base escrow address is not configured");
@@ -77,7 +106,7 @@ export async function runAutomationBatch(limit = 20) {
           action = "recordAttemptOutcome";
           params = { outcome, signature };
         } else {
-          if (!genlayerClient) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer RPC is not configured");
+          if (!genlayerClient) throw new WorkifyError("GENLAYER_PREFLIGHT", `${selectedNetwork} GenLayer RPC is not configured`, true);
           const raw = await genlayerClient.readContract({
             address: intent.verifierAddress as `0x${string}`,
             functionName: "get_verdict",

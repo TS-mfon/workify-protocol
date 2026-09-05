@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { chains, createAccount, createClient } from "genlayer-js";
+import { getGenLayerNetworkConfig, createServerGenLayerClient, type GenLayerNetwork } from "./genlayer-network";
 import { createPublicClient, fallback, http, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
 import { getDatabase } from "./mongodb";
@@ -40,10 +40,12 @@ export async function submitVerification(input: {
   appealContextUrl?: string;
   policyVersion: string;
   feePayer?: `0x${string}`;
+  network?: GenLayerNetwork;
 }) {
   const key = process.env.GENLAYER_OPERATOR_PRIVATE_KEY as Hex | undefined;
-  const endpoint = process.env.NEXT_PUBLIC_GENLAYER_RPC_URL;
-  if (!key || !endpoint) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer operator is not configured");
+  const selectedNetwork = input.network || "bradbury";
+  const genlayer = getGenLayerNetworkConfig(selectedNetwork);
+  if (!key || !genlayer.endpoint) throw new WorkifyError("GENLAYER_PREFLIGHT", `${selectedNetwork} GenLayer operator is not configured`);
   if (input.attempt < 1 || input.attempt > 3) throw new WorkifyError("USER_INPUT", "Attempt must be 1-3");
   const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
   if (!escrow) throw new WorkifyError("GENLAYER_PREFLIGHT", "Base escrow is not configured");
@@ -56,11 +58,12 @@ export async function submitVerification(input: {
   const db = await getDatabase();
   const intentId = `${input.jobId}:${input.appeal ? "appeal" : "initial"}:${input.attempt}`;
   const existing = await db.collection("relay_intents").findOne({ _id: intentId as never });
+  if (existing?.genlayerTxHash) return { transactionHash: String(existing.genlayerTxHash), resumed: true };
   if (existing && ["STARTING", "PENDING", "SUBMITTED", "CONFIRMED"].includes(String(existing.status))) {
-    throw new WorkifyError("DUPLICATE_SUBMISSION", "This verification attempt has already been submitted or is still being processed");
+    if (String(existing.status) !== "PENDING_PAYMENT") throw new WorkifyError("DUPLICATE_SUBMISSION", "This verification attempt has already been submitted or is still being processed");
   }
   try {
-    await db.collection("relay_intents").insertOne({ _id: intentId as never, action: "importVerdict", jobId: input.jobId, attempt: input.attempt, appeal: input.appeal, status: "STARTING", createdAt: new Date() });
+    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $setOnInsert: { _id: intentId as never, action: "importVerdict", jobId: input.jobId, attempt: input.attempt, appeal: input.appeal, verifierAddress: input.verifierAddress, specificationUrl: input.specificationUrl, specificationHash: input.specificationHash, evidenceUrl: input.evidenceUrl, evidenceHash: input.evidenceHash, policyVersion: input.policyVersion, feePayer: input.feePayer, genlayerNetwork: selectedNetwork, status: "STARTING", createdAt: new Date() } }, { upsert: true });
   } catch (error: unknown) {
     if ((error as { code?: number })?.code === 11000) throw new WorkifyError("DUPLICATE_SUBMISSION", "This verification attempt is already being processed");
     throw error;
@@ -71,10 +74,10 @@ export async function submitVerification(input: {
       { $set: { status: "FAILED", failureReason: error instanceof Error ? error.message : "Verification submission failed", updatedAt: new Date() } },
     );
   };
-  const client = createClient({ chain: chains.testnetBradbury as never, endpoint, account: createAccount(key) });
-  const treasury = (process.env.NEXT_PUBLIC_GEN_TREASURY_ADDRESS || process.env.NEXT_PUBLIC_GENLAYER_TREASURY_ADDRESS) as `0x${string}` | undefined;
+  const client = createServerGenLayerClient(selectedNetwork, key);
+  const treasury = genlayer.treasury;
   if (!treasury) {
-    const error = new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer treasury is not configured");
+    const error = new WorkifyError("GENLAYER_PREFLIGHT", `${selectedNetwork} GenLayer treasury is not configured`);
     await failReservation(error);
     throw error;
   }
@@ -83,8 +86,8 @@ export async function submitVerification(input: {
   try {
     payment = await client.readContract({ address: treasury, functionName: "get_payment", args: [paymentKey], jsonSafeReturn: true });
   } catch (error) {
-    await failReservation(error);
-    throw error;
+    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "PENDING_PAYMENT", failureReason: "GenLayer payment visibility is temporarily unavailable; the operator will retry automatically.", retryable: true, updatedAt: new Date() } });
+    return { transactionHash: null, pending: true };
   }
   let paymentRecord: { payer?: string; amount?: string | number | bigint };
   try {
@@ -97,9 +100,8 @@ export async function submitVerification(input: {
     throw parseError;
   }
   if (!paymentRecord.payer || /^0x0{40}$/iu.test(paymentRecord.payer)) {
-    const error = new WorkifyError("INSUFFICIENT_GEN", "The exact GenLayer fee is not finalized");
-    await failReservation(error);
-    throw error;
+    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "PENDING_PAYMENT", failureReason: "The GenLayer payment is not visible yet; the operator will retry automatically.", retryable: true, updatedAt: new Date() } });
+    return { transactionHash: null, pending: true };
   }
   const expectedFee = input.appeal ? 1_000_000_000_000_000_000n : 100_000_000_000_000_000n;
   if (BigInt(String(paymentRecord.amount ?? 0)) !== expectedFee) {
@@ -133,6 +135,7 @@ export async function submitVerification(input: {
       evidenceHash: input.evidenceHash,
       policyVersion: input.policyVersion,
       feePayer,
+      genlayerNetwork: selectedNetwork,
       nonce,
       status: "PENDING",
       attempts: 0,

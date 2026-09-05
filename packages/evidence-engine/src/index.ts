@@ -9,3 +9,4 @@ export * from "./attestation";
 export * from "./automation";
 export * from "./evidence";
 export * from "./verification";
+export * from "./genlayer-network";

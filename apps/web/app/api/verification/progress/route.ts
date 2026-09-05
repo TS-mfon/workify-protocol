@@ -30,6 +30,10 @@ export async function GET(request: Request) {
       baseRequestTransactionHash: intent.baseRequestTransactionHash || null,
       verdictImportTransactionHash: intent.transactionHash || null,
       failureReason: intent.failureReason || intent.baseRequestFailure || null,
+      lifecycle: intent.lifecycle || (intent.status === "PENDING_PAYMENT" ? "PAYMENT_PENDING" : intent.genlayerTxHash ? "VERIFIER_SUBMITTED" : "QUEUED"),
+      retryable: Boolean(intent.retryable),
+      attempts: Number(intent.attempts || 0),
+      lastCheckedAt: intent.lastCheckedAt || null,
       updatedAt: intent.updatedAt || intent.createdAt || null,
     }, { headers: { "cache-control": "no-store" } });
   } catch (error) {
