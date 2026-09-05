@@ -1,7 +1,7 @@
 import { queueRelayIntent } from "@workify/evidence-engine";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createPublicClient, http, type Hex } from "viem";
+import { createPublicClient, http, keccak256, stringToHex, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
 import { publicNetworkConfig } from "@/lib/network";
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     const job = await base.readContract({ address: escrow, abi: jobAbi, functionName: "getJob", args: [input.jobId as Hex] });
     if (Number(job.status) !== 6) throw new Error("The job is not awaiting appeal funding");
     if (job.appellant.toLowerCase() !== input.appellant.toLowerCase()) throw new Error("Appellant does not match the onchain appeal intent");
-    const nonce = BigInt(`0x${crypto.getRandomValues(new Uint8Array(16)).reduce((value, byte) => value + byte.toString(16).padStart(2, "0"), "")}`).toString();
+    const nonce = BigInt(keccak256(stringToHex(`${input.jobId.toLowerCase()}:${input.genlayerPaymentTxHash.toLowerCase()}`))).toString();
     await queueRelayIntent({
       idempotencyKey: `${input.jobId}:confirm-appeal:${input.genlayerPaymentTxHash}`,
       action: "confirmAppealFunded",

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, LoaderCircle, Plus, Trash2, Wallet } from "lucide-react";
-import { encodeFunctionData, keccak256, parseUnits, stringToHex } from "viem";
+import { decodeErrorResult, encodeFunctionData, keccak256, parseUnits, stringToHex } from "viem";
 import { BASE_SEPOLIA_USDC, MAX_JOB_TERM_SECONDS, MIN_JOB_TERM_SECONDS } from "@workify/protocol-types";
 import { WalletButton } from "./WalletButton";
 import { publicNetworkConfig } from "@/lib/network";
@@ -21,16 +21,61 @@ const initialDraft: Draft = { workType: "GITHUB_SOFTWARE", title: "", descriptio
 
 type TxState = "idle" | "preparing" | "approval-signature" | "approval-submitted" | "job-signature" | "job-submitted" | "confirmed" | "failed";
 
+const baseErrors = [
+  { type: "error", name: "InvalidAddress", inputs: [] },
+  { type: "error", name: "InvalidAmount", inputs: [] },
+  { type: "error", name: "JobExists", inputs: [] },
+  { type: "error", name: "InvalidDeadline", inputs: [] },
+  { type: "error", name: "InvalidState", inputs: [{ name: "expected", type: "uint8" }, { name: "actual", type: "uint8" }] },
+] as const;
+
+function providerError(error: unknown, phase: string) {
+  const value = error as { code?: number; shortMessage?: string; message?: string; data?: unknown };
+  const text = `${value.shortMessage || ""} ${value.message || ""}`;
+  if (value.code === 4001 || /user rejected|denied/iu.test(text)) return "Signature rejected. No transaction was sent.";
+  if (/insufficient funds|insufficient balance/iu.test(text)) return "This wallet does not have enough ETH for Base Sepolia gas or USDC for the reward.";
+  const data = typeof value.data === "string" ? value.data : text.match(/0x[0-9a-f]{8,}/iu)?.[0];
+  if (data) {
+    try {
+      const decoded = decodeErrorResult({ abi: baseErrors, data: data as `0x${string}` });
+      if (decoded.errorName === "JobExists") return "This job was already created. Refresh the dashboard before retrying.";
+      if (decoded.errorName === "InvalidAmount") return "Enter a reward greater than zero and confirm the wallet has enough USDC.";
+      if (decoded.errorName === "InvalidAddress") return "The worker address is invalid or cannot be used for this job.";
+      if (decoded.errorName === "InvalidDeadline") return "Choose a delivery deadline between 15 minutes and 30 days from now.";
+    } catch { /* fall through to a safe message */ }
+  }
+  return `${phase} failed on Base Sepolia. Refresh the page and check the transaction before retrying.`;
+}
+
 async function waitForReceipt(hash: string) {
   for (let attempt = 0; attempt < 45; attempt += 1) {
     const receipt = await window.ethereum?.request({ method: "eth_getTransactionReceipt", params: [hash] }) as { status?: string } | null;
     if (receipt) {
-      if (receipt.status === "0x0") throw new Error("The transaction reverted on Base Sepolia");
+      if (receipt.status === "0x0") throw new Error("Base Sepolia rejected the transaction. No follow-up transaction was sent.");
       return receipt;
     }
     await new Promise((resolve) => setTimeout(resolve, 2_000));
   }
   throw new Error("Transaction confirmation timed out. Check BaseScan before retrying.");
+}
+
+async function sendBaseTransaction(account: `0x${string}`, to: `0x${string}`, data: `0x${string}`, phase: string) {
+  if (!window.ethereum) throw new Error("No browser wallet detected. Install MetaMask or another EVM wallet.");
+  await switchToBaseSepolia(window.ethereum);
+  try {
+    await window.ethereum.request({ method: "eth_call", params: [{ from: account, to, data }, "latest"] });
+  } catch (error) {
+    throw new Error(providerError(error, phase));
+  }
+  try {
+    const hash = await window.ethereum.request({ method: "eth_sendTransaction", params: [{ from: account, to, data }] }) as string;
+    if (!hash) throw new Error("No transaction hash was returned.");
+    await waitForReceipt(hash);
+    return hash;
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("Base Sepolia rejected")) throw error;
+    throw new Error(providerError(error, phase));
+  }
 }
 
 export function NewJobForm() {
@@ -68,7 +113,7 @@ export function NewJobForm() {
     try {
       if (!account || !window.ethereum) throw new Error("Connect a wallet before funding the job");
       await switchToBaseSepolia(window.ethereum);
-      const { escrow } = publicNetworkConfig();
+      const { escrow, baseUsdc } = publicNetworkConfig();
       if (!escrow) throw new Error("WorkEscrowV3 is not configured");
       const reward = parseUnits(draft.reward, 6);
       const deadline = Math.floor(new Date(draft.deadline).getTime() / 1000);
@@ -79,21 +124,17 @@ export function NewJobForm() {
       const prepared = await fetch("/api/jobs/prepare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ version: "1.0.0", title: draft.title, description: draft.description, workType: draft.workType, deliverables: [draft.deliverable], criteria: draft.criteria.map((criterion, index) => ({ id: `C-${String(index + 1).padStart(3, "0")}`, requirement: criterion.requirement, severity: criterion.severity, verificationMethod: "source-grounded", evidenceRequired: [criterion.evidence], passCondition: criterion.requirement, failureCondition: `Evidence does not demonstrate: ${criterion.requirement}` })), authorizedSources: [], exclusions: [], policyVersion: policy }) }).then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.error); return body as { jobId: `0x${string}`; specificationHash: `0x${string}` }; });
 
       setTxState("approval-signature"); setMessage("Base Sepolia is selected. Approve the exact USDC reward in your wallet.");
-      const approvalHash = await window.ethereum.request({ method: "eth_sendTransaction", params: [{ from: account, to: BASE_SEPOLIA_USDC, data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [escrow, reward] }) }] }) as string;
-      setTxState("approval-submitted"); setMessage("USDC approval submitted. Waiting for Base confirmation…");
-      await waitForReceipt(approvalHash);
-
+      const approvalHash = await sendBaseTransaction(account, baseUsdc || BASE_SEPOLIA_USDC, encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [escrow, reward] }), "USDC approval");
+      setTxState("approval-submitted"); setMessage(`USDC approval confirmed (${approvalHash.slice(0, 10)}…).`);
       setTxState("job-signature"); setMessage("Approve the funded job creation. USDC locks atomically in escrow.");
-      const jobHash = await window.ethereum.request({ method: "eth_sendTransaction", params: [{ from: account, to: escrow, data: encodeFunctionData({ abi: escrowAbi, functionName: "createFundedJob", args: [prepared.jobId, draft.worker as `0x${string}`, reward, BigInt(deadline), prepared.specificationHash, keccak256(stringToHex(policy))] }) }] }) as string;
-      setTxState("job-submitted"); setMessage("Funded job submitted. Waiting for final Base confirmation…");
-      await waitForReceipt(jobHash);
+      const jobHash = await sendBaseTransaction(account, escrow, encodeFunctionData({ abi: escrowAbi, functionName: "createFundedJob", args: [prepared.jobId, draft.worker as `0x${string}`, reward, BigInt(deadline), prepared.specificationHash, keccak256(stringToHex(policy))] }), "Funded job creation");
+      setTxState("job-submitted"); setMessage(`Funded job confirmed (${jobHash.slice(0, 10)}…).`);
       setTxState("confirmed"); setMessage(`Job ${prepared.jobId} is funded and active. Opening dashboard…`);
       sessionStorage.removeItem("workify:new-job");
       window.setTimeout(() => router.push(`/app/jobs/${prepared.jobId}`), 500);
     } catch (error: unknown) {
-      const walletError = error as { code?: number; message?: string };
       setTxState("failed");
-      setMessage(walletError.code === 4001 ? "Signature rejected. No additional transaction was sent." : formatNetworkError(error, "creating the job"));
+      setMessage(error instanceof Error ? error.message : formatNetworkError(error, "creating the job"));
     }
   }
 

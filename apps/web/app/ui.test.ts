@@ -14,7 +14,7 @@ describe("app protocol presentation", () => {
     const css = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
     const nav = readFileSync(new URL("../components/Nav.tsx", import.meta.url), "utf8");
     const shell = readFileSync(new URL("../components/AppShell.tsx", import.meta.url), "utf8");
-    const provider = readFileSync(new URL("../components/WalletProvider.tsx", import.meta.url), "utf8");
+    const walletNetwork = readFileSync(new URL("../lib/wallet-network.ts", import.meta.url), "utf8");
     expect(form).toContain("Work details");
     expect(form).toContain("Review & fund");
     expect(form).toContain("Approve USDC & fund job");
@@ -23,7 +23,7 @@ describe("app protocol presentation", () => {
     expect(css).toContain("border-radius: 42px 42px 14px 42px");
     expect(nav).toContain("<WalletButton compact />");
     expect(shell).toContain("<WalletButton compact />");
-    expect(provider).toContain("wallet_switchEthereumChain");
+    expect(walletNetwork).toContain("wallet_switchEthereumChain");
     expect(css).not.toContain("--purple:");
   });
 

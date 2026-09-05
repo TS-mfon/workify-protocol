@@ -79,6 +79,14 @@ function normalizeHash(value: string) {
   return value.toLowerCase().replace(/^0x/u, "");
 }
 
+function receiptField(receipt: Record<string, unknown>, ...keys: string[]) {
+  for (const key of keys) {
+    const value = receipt[key];
+    if (value !== undefined && value !== null) return value;
+  }
+  return undefined;
+}
+
 async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumber: bigint }) {
   const settings = config();
   if (!settings) return null;
@@ -111,6 +119,12 @@ async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumb
   const verdict = JSON.parse(String(rawVerdict)) as ExplorerVerdict;
   const genlayerReceipt = await genlayer.getTransaction({ hash: job.genlayerTxHash as never });
   const receiptRecord = genlayerReceipt as unknown as Record<string, unknown>;
+  const rawStatus = receiptField(receiptRecord, "statusName", "status_name", "status");
+  const rawConsensus = receiptField(receiptRecord, "resultName", "result");
+  const rawExecution = receiptField(receiptRecord, "txExecutionResultName", "executionResultName", "txExecutionResult");
+  const genlayerStatus = rawStatus === 7 || rawStatus === "7" ? "FINALIZED" : String(rawStatus || "UNKNOWN").toUpperCase();
+  const genlayerConsensus = rawConsensus === 1 || rawConsensus === "1" ? "AGREE" : String(rawConsensus || "UNKNOWN").toUpperCase();
+  const genlayerExecution = rawExecution === 1 || rawExecution === "1" ? "FINISHED_WITH_RETURN" : String(rawExecution || "UNKNOWN").toUpperCase();
   const settlement = settlementLogs.at(-1);
   const createdBlock = creation?.blockNumber ?? 0n;
   const createdTimestamp = createdBlock ? await base.getBlock({ blockNumber: createdBlock }).then((block) => Number(block.timestamp)) : Number(job.createdAt);
@@ -147,10 +161,10 @@ async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumb
     },
     genlayer: {
       transactionHash: job.genlayerTxHash,
-      status: String(receiptRecord.statusName || "UNKNOWN"),
-      consensus: String(receiptRecord.resultName || "UNKNOWN"),
-      execution: String(receiptRecord.txExecutionResultName || "UNKNOWN"),
-      finality: String(receiptRecord.statusName || "UNKNOWN") === "FINALIZED",
+      status: genlayerStatus,
+      consensus: genlayerConsensus,
+      execution: genlayerExecution,
+      finality: genlayerStatus === "FINALIZED",
       raw: JSON.parse(JSON.stringify(genlayerReceipt, (_, value) => typeof value === "bigint" ? value.toString() : value)),
     },
     timeline: [
@@ -168,16 +182,20 @@ export async function getResolvedCases() {
   const settings = config();
   if (!settings) return [];
   const base = createBasePublicClient(settings.baseRpc);
-  const logs = await getLogsInChunks(settings.fromBlock,
-    (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobSettledEvent, fromBlock, toBlock }),
-    () => base.getBlockNumber());
+  const [logs, creationLogs] = await Promise.all([
+    getLogsInChunks(settings.fromBlock,
+      (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobSettledEvent, fromBlock, toBlock }),
+      () => base.getBlockNumber()),
+    getLogsInChunks(settings.fromBlock,
+      (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobCreatedEvent, fromBlock, toBlock }),
+      () => base.getBlockNumber()),
+  ]);
   const creations = new Map<string, { transactionHash: Hex; blockNumber: bigint }>();
-  for (const log of logs) creations.set(String(log.args.jobId), { transactionHash: log.transactionHash, blockNumber: log.blockNumber });
-  const results = await Promise.allSettled([...creations].map(async ([jobId, settlement]) => {
-    const creationLogs = await getLogsInChunks(settings.fromBlock,
-      (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobCreatedEvent, args: { jobId: jobId as Hex }, fromBlock, toBlock }),
-      () => base.getBlockNumber());
-    return loadCase(jobId as Hex, { transactionHash: creationLogs.at(-1)?.transactionHash || settlement.transactionHash, blockNumber: creationLogs.at(-1)?.blockNumber || settlement.blockNumber });
+  for (const log of creationLogs) creations.set(String(log.args.jobId).toLowerCase(), { transactionHash: log.transactionHash, blockNumber: log.blockNumber });
+  const results = await Promise.allSettled(logs.map(async (settlement) => {
+    const jobId = String(settlement.args.jobId).toLowerCase();
+    const creation = creations.get(jobId);
+    return loadCase(jobId as Hex, creation || { transactionHash: settlement.transactionHash, blockNumber: settlement.blockNumber });
   }));
   return results.flatMap((result) => result.status === "fulfilled" && result.value ? [result.value] : []).sort((left, right) => right.base.createdAt - left.base.createdAt);
 }
@@ -192,9 +210,5 @@ export async function getResolvedCase(jobId: string) {
     () => base.getBlockNumber());
   const creation = logs.at(-1);
   if (!creation) return null;
-  try {
-    return await loadCase(jobId as Hex, { transactionHash: creation.transactionHash, blockNumber: creation.blockNumber });
-  } catch {
-    return null;
-  }
+  return loadCase(jobId as Hex, { transactionHash: creation.transactionHash, blockNumber: creation.blockNumber });
 }

@@ -25,8 +25,10 @@ export async function switchToBaseSepolia(provider: Eip1193Provider) {
 
 export function formatNetworkError(error: unknown, action: string) {
   const code = (error as { code?: number })?.code;
-  const message = String((error as { message?: string })?.message || error || "");
+  const message = String((error as { message?: string; shortMessage?: string })?.shortMessage || (error as { message?: string })?.message || error || "");
   if (code === 4001 || /user rejected|denied/iu.test(message)) return "Network switch or signature rejected. No transaction was sent.";
+  if (/insufficient funds|insufficient balance|not enough/iu.test(message)) return `This wallet does not have enough ETH for ${action}.`;
+  if (/timeout|timed out|rate limit|429|failed to fetch|network error/iu.test(message)) return `${action} could not reach Base Sepolia. Retry shortly; no follow-up transaction was sent.`;
   if (/chain|network|switch/iu.test(message)) return `Could not switch to Base Sepolia before ${action}. No transaction was sent.`;
-  return message || `${action} failed before the Base Sepolia transaction was submitted.`;
+  return `${action} failed before the Base Sepolia transaction was submitted. Check the job state before retrying.`;
 }

@@ -29,3 +29,10 @@ export class WorkifyError extends Error {
     this.name = "WorkifyError";
   }
 }
+
+export function publicError(error: unknown, fallback: string) {
+  if (error instanceof WorkifyError) {
+    return { error: error.message, code: error.code, retryable: error.retryable, status: error.retryable ? 503 : error.code === "DUPLICATE_SUBMISSION" ? 409 : 400 };
+  }
+  return { error: fallback, code: "INTERNAL_ERROR", retryable: true, status: 503 } as const;
+}

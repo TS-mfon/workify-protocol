@@ -62,18 +62,24 @@ export async function GET(request: Request) {
       if (!account) return true;
       return log.args.client?.toLowerCase() === account.toLowerCase() || log.args.worker?.toLowerCase() === account.toLowerCase();
     });
-    const jobs = (await Promise.allSettled(selected.map(async (log) => {
+    const jobResults = await Promise.allSettled(selected.map(async (log) => {
       const current = await base.readContract({ address: config.address, abi: escrowAbi, functionName: "getJob", args: [log.args.jobId as Hex] });
       return { jobId: log.args.jobId, creationTransactionHash: log.transactionHash, createdBlock: log.blockNumber, status: statuses[Number(current.status)] ?? "UNKNOWN", job: current };
-    }))).flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
-    if (jobId) return jobs[0] ? NextResponse.json(json(jobs[0])) : NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }));
+    const jobs = jobResults.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
+    const failedJobReads = jobResults.filter((result) => result.status === "rejected").length;
+    if (jobId) {
+      if (jobs[0]) return NextResponse.json(json(jobs[0]));
+      if (failedJobReads > 0) return NextResponse.json({ error: "This job was found, but Base Sepolia did not return its current state. Retry shortly.", retryable: true }, { status: 503 });
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
     const activity = account ? [] : await Promise.all(events.slice(1).map(async ([name, event]) => {
       const logs = await getLogsInChunks(config.fromBlock,
         (fromBlock, toBlock) => base.getLogs({ address: config.address, event, fromBlock, toBlock }),
         () => base.getBlockNumber());
       return logs.map((log) => ({ name, transactionHash: log.transactionHash, blockNumber: log.blockNumber, args: log.args }));
     }));
-    return NextResponse.json(json({ jobs, activity: activity.flat().sort((left, right) => Number(right.blockNumber - left.blockNumber)).slice(0, 100), escrow: config.address }));
+    return NextResponse.json(json({ jobs, activity: activity.flat().sort((left, right) => Number(right.blockNumber - left.blockNumber)).slice(0, 100), escrow: config.address, degraded: failedJobReads > 0, failedJobReads }));
   } catch (error) {
     const message = String(error instanceof Error ? error.message : error);
     const rateLimited = /rate limit|over rate limit|429/u.test(message);

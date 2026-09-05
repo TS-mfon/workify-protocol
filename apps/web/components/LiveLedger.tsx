@@ -18,7 +18,7 @@ export function LiveJobs() {
   const load = useCallback(async () => {
     if (!account) { setJobs([]); return; }
     setState("loading");
-    try { const response = await fetch(`/api/ledger?address=${account}`, { cache: "no-store" }); const body = await response.json(); if (!response.ok) throw new Error(body.error); setJobs(body.jobs ?? []); setState("idle"); }
+    try { const response = await fetch(`/api/ledger?address=${account}`, { cache: "no-store" }); const body = await response.json(); if (!response.ok) throw new Error(body.error); setJobs(body.jobs ?? []); setError(body.degraded ? "Some job reads were unavailable. Showing the records Base returned; retry to refresh the rest." : ""); setState("idle"); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Could not load Base jobs"); setState("error"); }
   }, [account]);
   useEffect(() => { const timer = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(timer); }, [load]);
@@ -26,7 +26,7 @@ export function LiveJobs() {
   if (state === "loading") return <div className="live-ledger-empty"><LoaderCircle className="spin" size={24}/><p>Reading WorkEscrowV2 from Base Sepolia…</p></div>;
   if (state === "error") return <div className="live-ledger-empty"><CircleAlert size={24}/><h3>Ledger unavailable</h3><p>{error}</p><button className="button secondary" type="button" onClick={() => void load()}><RefreshCw size={15}/> Retry</button></div>;
   if (jobs.length === 0) return <div className="live-ledger-empty"><BriefcaseBusiness size={25}/><h3>No work contracts found</h3><p>No funded Base escrow job currently lists this wallet as client or worker.</p><Link className="button" href="/app/jobs/new">Create funded job <ArrowUpRight size={15}/></Link></div>;
-  return <div className="live-job-list">{jobs.map(({ jobId, status, job }) => <Link className="live-job-row" href={`/app/jobs/${jobId}`} key={jobId}><div><span className="case-policy">{status.replaceAll("_", " ")}</span><h3>{short(jobId)}</h3><p>Worker {short(job.worker)} · {usdc(job.reward)} USDC</p></div><div className="live-job-meta"><span>{job.attempts}/3 attempts</span><strong>{job.payoutBps ? `${Number(job.payoutBps) / 100}%` : "Pending"}</strong><ArrowUpRight size={16}/></div></Link>)}</div>;
+  return <>{error && <p className="muted ledger-warning"><CircleAlert size={14} /> {error}</p>}<div className="live-job-list">{jobs.map(({ jobId, status, job }) => <Link className="live-job-row" href={`/app/jobs/${jobId}`} key={jobId}><div><span className="case-policy">{status.replaceAll("_", " ")}</span><h3>{short(jobId)}</h3><p>Worker {short(job.worker)} · {usdc(job.reward)} USDC</p></div><div className="live-job-meta"><span>{job.attempts}/3 attempts</span><strong>{job.payoutBps ? `${Number(job.payoutBps) / 100}%` : "Pending"}</strong><ArrowUpRight size={16}/></div></Link>)}</div></>;
 }
 
 export function LiveActivity() {

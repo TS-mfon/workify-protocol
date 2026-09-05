@@ -10,7 +10,8 @@ const short = (value: string) => `${value.slice(0, 8)}…${value.slice(-6)}`;
 
 export default async function Explorer() {
   let cases = [] as Awaited<ReturnType<typeof getResolvedCases>>;
-  try { cases = await getResolvedCases(); } catch { cases = []; }
+  let degraded = false;
+  try { cases = await getResolvedCases(); } catch { degraded = true; }
   const settledValue = cases.reduce((total, item) => total + BigInt(item.base.reward), 0n);
   return <><Nav /><main className="shell explorer-page">
     <section className="explorer-hero">
@@ -23,7 +24,7 @@ export default async function Explorer() {
         <div><ShieldCheck size={18}/><strong>{new Set(cases.map((item) => item.policy)).size}</strong><span>active policies</span></div>
       </div>
     </section>
-    {cases.length === 0 ? <section className="explorer-empty"><Radar size={25}/><h2>No settled V8 cases yet</h2><p>The explorer publishes only complete on-chain lifecycles. Cases appear after Base settlement and GenLayer finality.</p></section> :
+    {degraded ? <section className="explorer-empty"><Radar size={25}/><h2>Live ledger temporarily unavailable</h2><p>Base Sepolia did not return the settlement records. Nothing was deleted; reload in a few seconds.</p></section> : cases.length === 0 ? <section className="explorer-empty"><Radar size={25}/><h2>No settled V8 cases yet</h2><p>The explorer publishes only complete on-chain lifecycles. Cases appear after Base settlement and GenLayer finality.</p></section> :
     <section className="case-list">{cases.map((item) => <Link className="case-row" href={`/explorer/${item.jobId}`} key={item.jobId}>
       <div className="case-primary"><span className="case-policy">{item.policy}</span><h2>{item.specification.title}</h2><p>{item.specification.description}</p></div>
       <div className="case-metric"><span>Verdict</span><strong className={`decision-${item.verdict.decision.toLowerCase()}`}><CheckCircle2 size={15}/>{item.verdict.decision}</strong></div>
