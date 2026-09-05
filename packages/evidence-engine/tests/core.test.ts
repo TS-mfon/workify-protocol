@@ -9,7 +9,8 @@ describe("evidence engine", () => {
 
   it("requires successful execution inside finalized receipts", () => {
     expect(classifyGenLayerReceipt({ statusName: "UNDETERMINED" })).toBe("UNDETERMINED");
-    expect(classifyGenLayerReceipt({ statusName: "PENDING" })).toBe("PENDING");
+  expect(classifyGenLayerReceipt({ statusName: "PENDING" })).toBe("PENDING");
+  expect(classifyGenLayerReceipt({ status_name: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" })).toBe("FINALIZED");
     expect(classifyGenLayerReceipt({ statusName: "FINALIZED", consensus_data: { leader_receipt: [{ execution_result: "SUCCESS", result: { status: "return" } }] } })).toBe("FINALIZED");
     expect(() => classifyGenLayerReceipt({ statusName: "FINALIZED" })).toThrow();
   });

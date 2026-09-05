@@ -13,7 +13,7 @@ type Provider = { request(args: { method: string; params?: unknown[] }): Promise
 declare global { interface Window { ethereum?: Provider } }
 
 type JobState = { status?: string; job?: { worker?: string; attempts?: string | number; appealAttempts?: string | number } };
-type GenReceipt = { status?: string | number; statusName?: string; resultName?: string; txExecutionResultName?: string; executionResultName?: string; message?: string };
+type GenReceipt = { status?: string | number; statusName?: string; status_name?: string; result?: string | number; resultName?: string; txExecutionResult?: string | number; txExecutionResultName?: string; executionResultName?: string; message?: string };
 
 const network = publicNetworkConfig();
 const escrow = network.escrow;
@@ -150,10 +150,12 @@ async function waitForGenLayerDecision(client: { waitForTransactionReceipt(input
   } catch (error) {
     throw new Error(formatWalletError(error, `${label} was submitted but GenLayer did not reach finality. Do not pay again until this transaction is inspected.`));
   }
-  const execution = receipt.txExecutionResultName || receipt.executionResultName;
-  const status = String(receipt.statusName || receipt.status || "").toUpperCase();
+  const execution = receipt.txExecutionResultName || receipt.executionResultName || (String(receipt.txExecutionResult) === "1" ? ExecutionResult.FINISHED_WITH_RETURN : "");
+  const rawStatus = receipt.statusName || receipt.status_name || receipt.status;
+  const status = rawStatus === 5 || rawStatus === "5" ? "ACCEPTED" : rawStatus === 6 || rawStatus === "6" ? "UNDETERMINED" : rawStatus === 7 || rawStatus === "7" ? "FINALIZED" : String(rawStatus || "").toUpperCase();
+  const result = receipt.resultName || (String(receipt.result) === "1" ? "AGREE" : "");
   if (status.includes("UNDETERMINED")) throw new Error(`${label} is undetermined. No duplicate payment was sent; inspect the transaction before retrying.`);
-  if (!(status.includes("ACCEPTED") || status.includes("FINALIZED")) || receipt.resultName !== "AGREE" || execution !== ExecutionResult.FINISHED_WITH_RETURN) {
+  if (!(status.includes("ACCEPTED") || status.includes("FINALIZED")) || result !== "AGREE" || execution !== ExecutionResult.FINISHED_WITH_RETURN) {
     throw new Error(`${label} did not reach validator agreement. No duplicate payment was sent.`);
   }
   return receipt;
