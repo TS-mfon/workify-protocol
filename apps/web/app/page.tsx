@@ -47,7 +47,7 @@ export default async function Home() {
         <div><FileCheck2 size={17}/><span>Resolved V8 cases</span><strong>{resolved}</strong></div>
         <div><Scale size={17}/><span>USDC adjudicated</span><strong>{Number(adjudicated) / 1e6}</strong></div>
         <div><GitPullRequest size={17}/><span>Policy classes</span><strong>5</strong></div>
-        <p>Live values are read from the configured WorkEscrow V2 deployment. No fixture counts are displayed.</p>
+        <p>Live values are read from the configured WorkEscrow V3 deployment. No fixture counts are displayed.</p>
       </div>
     </section>
 

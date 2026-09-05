@@ -33,7 +33,7 @@ software and settlement must be machine-readable. Workify separates responsibili
 
 ```mermaid
 flowchart LR
-  C[Client wallet] -->|approve + fund USDC| E[WorkEscrowV2 / Base Sepolia]
+  C[Client wallet] -->|approve + fund USDC| E[WorkEscrowV3 / Base Sepolia]
   W[Worker wallet] -->|public URLs| A[Workify evidence API / Vercel]
   A -->|canonical JSON + SHA-256| M[(MongoDB Atlas)]
   W -->|0.1 GEN per attempt| T[GenTreasuryV1 / Bradbury]
@@ -55,7 +55,7 @@ cannot redirect escrow to an arbitrary address.
 
 | Component | Address | State |
 | --- | --- | --- |
-| WorkEscrowV2 | `0xCfc6B780CDe6f8e8b377f63E921B342ee9557294` | Deployed on Base Sepolia |
+| WorkEscrowV3 | `0x409424DA561231b6367cC2FDDD55C2613cC1133a` | Deployed on Base Sepolia |
 | BaseTreasuryV2 | `0x02F383AA78C48eDf75dea0b74773AbFebF2CD8a4` | Deployed on Base Sepolia |
 | GenTreasuryV1 | `0xe11e888CD716b7fBd36442746Ea0C3A9f1d115B3` | Deployed on Bradbury |
 | GitHub V8 | `0x320eD11a756Fe66C270F7BdC752e28D74A79FB5E` | AGREE, execution returned |
@@ -379,7 +379,7 @@ transparency, but reuse rights remain reserved until an explicit license file is
 
 ### Current V2 testnet deployment
 
-The additive V2 deployment is recorded in `deployments/base-sepolia/v2.json`.
+The hardened V3 deployment is recorded in `deployments/base-sepolia/v3.json`.
 Set `NEXT_PUBLIC_WORK_ESCROW_ADDRESS` to the V2 escrow, `NEXT_PUBLIC_BASE_TREASURY_ADDRESS` to the V2 treasury,
-`WORK_ESCROW_DEPLOYMENT_BLOCK` to the recorded deployment block, and `WORKIFY_EIP712_VERSION=2` when enabling V2 automation.
+`WORK_ESCROW_DEPLOYMENT_BLOCK` to the recorded deployment block, and `WORKIFY_EIP712_VERSION=2` when enabling V3 automation.
 The automation private key belongs only in Vercel as `BASE_AUTOMATION_PRIVATE_KEY`; never commit it or expose it through `NEXT_PUBLIC_*`.

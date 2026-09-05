@@ -16,7 +16,7 @@ const walletFile = JSON.parse(await readFile(new URL(".workify-secrets/base-auto
 process.env.BASE_AUTOMATION_PRIVATE_KEY ||= walletFile.private_key;
 process.env.WORKIFY_EIP712_VERSION ||= "2";
 
-const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS || "0xCfc6B780CDe6f8e8b377f63E921B342ee9557294";
+const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS || "0x409424DA561231b6367cC2FDDD55C2613cC1133a";
 const usdc = process.env.NEXT_PUBLIC_BASE_USDC_ADDRESS || "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
 const genTreasury = process.env.NEXT_PUBLIC_GENLAYER_TREASURY_ADDRESS || "0x46E31E4161AC0F4EeC33c585F752DAd13646Ee05";
 const verifier = process.env.NEXT_PUBLIC_WEB_VERIFIER_ADDRESS || "0x9C3267313635606bAf70Eb9edCc115e2958026Dd";

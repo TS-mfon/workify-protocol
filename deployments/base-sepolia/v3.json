@@ -1,0 +1,18 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "version": 3,
+  "status": "DEPLOYED",
+  "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "owner": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "verdictAttestor": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "automationOperator": "0x4c26bC7bDA4E75A6Ac7F8e6EB9b7e8e9784d5835",
+  "deploymentBlock": 46436220,
+  "baseTreasury": { "address": "0x02F383AA78C48eDf75dea0b74773AbFebF2CD8a4" },
+  "workEscrow": {
+    "address": "0x409424DA561231b6367cC2FDDD55C2613cC1133a",
+    "transactionHash": "0x99c65088910b2897fbc56e51612cc98854970b1b1d9945e4e9d5a5385780d05d"
+  },
+  "eip712": { "name": "Workify", "version": "2" },
+  "deployedAt": "2026-09-05T00:00:00.000Z"
+}

@@ -4,8 +4,8 @@ import { baseSepolia } from "viem/chains";
 export const WORKIFY_NETWORK = {
   baseRpc: "https://sepolia.base.org",
   baseUsdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as `0x${string}`,
-  escrow: "0xCfc6B780CDe6f8e8b377f63E921B342ee9557294" as `0x${string}`,
-  escrowDeploymentBlock: 46316078n,
+  escrow: "0x409424DA561231b6367cC2FDDD55C2613cC1133a" as `0x${string}`,
+  escrowDeploymentBlock: 46436220n,
   baseTreasury: "0x02F383AA78C48eDf75dea0b74773AbFebF2CD8a4" as `0x${string}`,
   genTreasury: "0x46E31E4161AC0F4EeC33c585F752DAd13646Ee05" as `0x${string}`,
   genlayerRpc: "https://rpc-bradbury.genlayer.com",
