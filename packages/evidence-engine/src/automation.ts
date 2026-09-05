@@ -70,7 +70,7 @@ export async function runAutomationBatch(limit = 20) {
             args: [intent.jobId, Number(intent.attempt), Boolean(intent.appeal)] as never[],
             jsonSafeReturn: true,
           });
-          const verdict = JSON.parse(String(raw));
+          const verdict = typeof raw === "string" ? JSON.parse(raw) : raw as Record<string, unknown>;
           const decision = decisionCode[String(verdict.decision)];
           if (!decision) throw new WorkifyError("ATTESTATION_INVALID", "Verifier returned an unsupported decision");
           const message = {

@@ -70,13 +70,6 @@ export async function submitVerification(input: {
       { $set: { status: "FAILED", failureReason: error instanceof Error ? error.message : "Verification submission failed", updatedAt: new Date() } },
     );
   };
-  let baseRequest: { transactionHash: Hex };
-  try {
-    baseRequest = await executeBaseRelayAction("requestVerification", input.jobId, { appeal: input.appeal });
-  } catch (error) {
-    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "FAILED", failureReason: error instanceof Error ? error.message : "Base verification request failed", updatedAt: new Date() } });
-    throw error;
-  }
   const client = createClient({ chain: chains.testnetBradbury as never, endpoint, account: createAccount(key) });
   const treasury = (process.env.NEXT_PUBLIC_GEN_TREASURY_ADDRESS || process.env.NEXT_PUBLIC_GENLAYER_TREASURY_ADDRESS) as `0x${string}` | undefined;
   if (!treasury) {
@@ -92,9 +85,24 @@ export async function submitVerification(input: {
     await failReservation(error);
     throw error;
   }
-  const paymentRecord = payment as unknown as { payer?: string; amount?: string | number | bigint };
+  let paymentRecord: { payer?: string; amount?: string | number | bigint };
+  try {
+    paymentRecord = typeof payment === "string"
+      ? JSON.parse(payment) as { payer?: string; amount?: string | number | bigint }
+      : payment as { payer?: string; amount?: string | number | bigint };
+  } catch (error) {
+    const parseError = new WorkifyError("GENLAYER_EXECUTION_ERROR", "The GenLayer treasury returned an invalid payment record");
+    await failReservation(error);
+    throw parseError;
+  }
   if (!paymentRecord.payer || /^0x0{40}$/iu.test(paymentRecord.payer)) {
     const error = new WorkifyError("INSUFFICIENT_GEN", "The exact GenLayer fee is not finalized");
+    await failReservation(error);
+    throw error;
+  }
+  const expectedFee = input.appeal ? 1_000_000_000_000_000_000n : 100_000_000_000_000_000n;
+  if (BigInt(String(paymentRecord.amount ?? 0)) !== expectedFee) {
+    const error = new WorkifyError("INSUFFICIENT_GEN", `The treasury payment must equal exactly ${input.appeal ? "1" : "0.1"} GEN`);
     await failReservation(error);
     throw error;
   }
@@ -102,6 +110,13 @@ export async function submitVerification(input: {
   if (input.feePayer && input.feePayer.toLowerCase() !== feePayer.toLowerCase()) {
     const error = new WorkifyError("ATTESTATION_INVALID", "Submitted fee payer does not match the finalized treasury payment");
     await failReservation(error);
+    throw error;
+  }
+  let baseRequest: { transactionHash: Hex };
+  try {
+    baseRequest = await executeBaseRelayAction("requestVerification", input.jobId, { appeal: input.appeal });
+  } catch (error) {
+    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "FAILED", failureReason: error instanceof Error ? error.message : "Base verification request failed", updatedAt: new Date() } });
     throw error;
   }
   let hash: Hex;
