@@ -51,11 +51,17 @@ async function switchToBase() {
 async function genLayerClient(account: `0x${string}`) {
   if (!window.ethereum) throw new Error("No browser wallet detected. Install MetaMask or another EVM wallet.");
   const client = createClient({ chain: chains.testnetBradbury as never, account, provider: window.ethereum });
+  const expectedChainId = `0x${chains.testnetBradbury.id.toString(16)}`;
   try {
-    await client.connect("testnetBradbury");
+    const currentChainId = String(await window.ethereum.request({ method: "eth_chainId" })).toLowerCase();
+    if (currentChainId !== expectedChainId) {
+      await client.connect("testnetBradbury");
+    }
   } catch (error) {
-    throw new Error(formatWalletError(error, "Could not switch this wallet to GenLayer Bradbury."));
+    throw new Error(formatWalletError(error, `Wallet is not connected to GenLayer Bradbury (${expectedChainId}). Switch networks in your wallet and try again.`));
   }
+  const confirmedChainId = String(await window.ethereum.request({ method: "eth_chainId" })).toLowerCase();
+  if (confirmedChainId !== expectedChainId) throw new Error(`Wallet is on chain ${confirmedChainId}; GenLayer Bradbury requires ${expectedChainId}.`);
   return client;
 }
 
