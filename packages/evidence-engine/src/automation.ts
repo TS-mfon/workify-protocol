@@ -31,9 +31,23 @@ export async function runAutomationBatch(limit = 20) {
       if (!escrow) throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Base escrow address is not configured");
       let action = String(intent.action) as BaseRelayAction;
       let params: BaseRelayParameters;
+      if (action === "importVerdict" && !intent.baseRequestTransactionHash) {
+        try {
+          const request = await executeBaseRelayAction("requestVerification", String(intent.jobId), { appeal: Boolean(intent.appeal) });
+          await db.collection("relay_intents").updateOne(
+            { _id: intent._id },
+            { $set: { baseRequestTransactionHash: request.transactionHash, baseRequestedAt: new Date(), updatedAt: new Date() } },
+          );
+        } catch (error) {
+          await db.collection("relay_intents").updateOne(
+            { _id: intent._id },
+            { $set: { baseRequestFailure: error instanceof Error ? error.message : "Base verification request status is unknown", updatedAt: new Date() } },
+          );
+        }
+      }
       if (action === "confirmAppealFunded") {
         if (!classification || classification === "PENDING") continue;
-        if (classification !== "FINALIZED") throw new WorkifyError("GENLAYER_UNDETERMINED", "Appeal fee did not finalize");
+        if (classification !== "FINALIZED") throw new WorkifyError("GENLAYER_UNDETERMINED", "Appeal fee did not finalize", true);
         const message = {
           jobId: intent.jobId as Hex,
           chainId: 84532n,
@@ -112,10 +126,12 @@ export async function runAutomationBatch(limit = 20) {
       );
       processed += 1;
     } catch (error) {
+      const attempts = Number(intent.attempts || 0);
+      const terminal = error instanceof WorkifyError && ["ATTESTATION_INVALID", "DUPLICATE_SUBMISSION", "USER_INPUT"].includes(error.code);
       await db.collection("relay_intents").updateOne(
         { _id: intent._id },
         { $set: {
-          status: error instanceof WorkifyError && error.retryable && Number(intent.attempts || 0) < 2 ? "PENDING" : "FAILED",
+          status: !terminal && attempts < 3 ? "PENDING" : "FAILED",
           failureReason: error instanceof Error ? error.message : "Unknown error",
           updatedAt: new Date(),
         }, $inc: { attempts: 1 } },

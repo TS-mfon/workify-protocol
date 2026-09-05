@@ -1,5 +1,5 @@
 import { evidenceManifestSchema } from "@workify/protocol-types";
-import { canonicalHash, sha256 } from "./canonical";
+import { canonicalHash, canonicalJson, sha256 } from "./canonical";
 import { getDatabase } from "./mongodb";
 import { WorkifyError } from "./errors";
 
@@ -91,9 +91,10 @@ export async function prepareEvidenceManifest(input: {
     artifacts,
   });
   const hash = canonicalHash(manifest);
+  const canonical = canonicalJson(manifest);
   await (await getDatabase()).collection("evidence_manifests").updateOne(
     { _id: hash as never },
-    { $setOnInsert: { document: manifest, createdAt: new Date() } },
+    { $setOnInsert: { document: manifest, canonical, createdAt: new Date() } },
     { upsert: true },
   );
   return { evidenceHash: `0x${hash}` as const, manifest };

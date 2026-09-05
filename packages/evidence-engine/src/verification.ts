@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { chains, createAccount, createClient } from "genlayer-js";
 import { createPublicClient, fallback, http, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
@@ -112,13 +113,6 @@ export async function submitVerification(input: {
     await failReservation(error);
     throw error;
   }
-  let baseRequest: { transactionHash: Hex };
-  try {
-    baseRequest = await executeBaseRelayAction("requestVerification", input.jobId, { appeal: input.appeal });
-  } catch (error) {
-    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "FAILED", failureReason: error instanceof Error ? error.message : "Base verification request failed", updatedAt: new Date() } });
-    throw error;
-  }
   let hash: Hex;
   try {
     hash = await client.writeContract({ address: input.verifierAddress, functionName: "verify", args: [input.jobId, input.specificationUrl, input.specificationHash.replace(/^0x/u, ""), input.evidenceUrl, input.evidenceHash.replace(/^0x/u, ""), input.attempt, input.appeal, input.appealContextUrl ?? "", feePayer] as never[], value: 0n });
@@ -126,17 +120,7 @@ export async function submitVerification(input: {
     await failReservation(error);
     throw error;
   }
-  const nonce = BigInt(`0x${crypto.getRandomValues(new Uint8Array(16)).reduce((value, byte) => value + byte.toString(16).padStart(2, "0"), "")}`).toString();
-  await db.collection("verification_attempts").insertOne({
-    jobId: input.jobId,
-    attempt: input.attempt,
-    appeal: input.appeal,
-    verifierAddress: input.verifierAddress,
-    genlayerTxHash: hash,
-    status: "SUBMITTED",
-    baseRequestTransactionHash: baseRequest.transactionHash,
-    createdAt: new Date(),
-  });
+  const nonce = BigInt(`0x${randomBytes(16).toString("hex")}`).toString();
   await db.collection("relay_intents").updateOne(
     { _id: intentId as never },
     { $set: {
@@ -156,5 +140,14 @@ export async function submitVerification(input: {
       updatedAt: new Date(),
     } },
   );
-  return { transactionHash: hash, baseRequestTransactionHash: baseRequest.transactionHash };
+  try {
+    await db.collection("verification_attempts").updateOne(
+      { jobId: input.jobId, attempt: input.attempt, appeal: input.appeal },
+      { $set: { jobId: input.jobId, attempt: input.attempt, appeal: input.appeal, verifierAddress: input.verifierAddress, genlayerTxHash: hash, status: "SUBMITTED", createdAt: new Date(), updatedAt: new Date() } },
+      { upsert: true },
+    );
+  } catch {
+    // The intent already contains the transaction hash and is sufficient for recovery.
+  }
+  return { transactionHash: hash };
 }

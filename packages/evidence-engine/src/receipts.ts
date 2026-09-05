@@ -6,6 +6,9 @@ export interface GenLayerReceipt {
   status?: string | number;
   resultName?: string;
   txExecutionResultName?: string;
+  executionResultName?: string;
+  txExecutionResult?: string | number;
+  executionResult?: string | number;
   consensus_data?: { leader_receipt?: Array<{ execution_result?: string; result?: { status?: string }; genvm_result?: { error_description?: string | null } }> };
 }
 
@@ -15,8 +18,10 @@ export function classifyGenLayerReceipt(receipt: GenLayerReceipt): "FINALIZED" |
   if (status.includes("UNDETERMINED")) return "UNDETERMINED";
   if (!status.includes("FINALIZED")) return "PENDING";
   const leader = receipt.consensus_data?.leader_receipt?.[0];
+  const rawExecution = receipt.txExecutionResultName ?? receipt.executionResultName ?? receipt.txExecutionResult ?? receipt.executionResult;
   const executionSucceeded =
-    receipt.txExecutionResultName === "FINISHED_WITH_RETURN" ||
+    String(rawExecution ?? "").toUpperCase() === "FINISHED_WITH_RETURN" ||
+    rawExecution === 1 || rawExecution === "1" ||
     (leader?.execution_result === "SUCCESS" && leader.result?.status === "return");
   if (!executionSucceeded) {
     throw new WorkifyError("GENLAYER_EXECUTION_ERROR", leader?.genvm_result?.error_description || "Finalized GenLayer execution failed");

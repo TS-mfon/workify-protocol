@@ -13,6 +13,7 @@ import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 contract WorkEscrowV3 is Ownable2Step, Pausable, ReentrancyGuard, EIP712 {
     using SafeERC20 for IERC20;
 
+    address public constant BASE_SEPOLIA_USDC = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
     uint16 public constant BPS_DENOMINATOR = 10_000;
     uint16 public constant PLATFORM_FEE_BPS = 100;
     uint64 public constant MIN_JOB_TERM = 15 minutes;
@@ -21,7 +22,7 @@ contract WorkEscrowV3 is Ownable2Step, Pausable, ReentrancyGuard, EIP712 {
     uint64 public constant APPEAL_FUNDING_WINDOW = 30 minutes;
     uint64 public constant RETRY_WINDOW = 30 minutes;
     uint8 public constant MAX_ATTEMPTS = 3;
-    uint8 public constant UNDETERMINED_FINAL_ATTEMPT = 2;
+    uint8 public constant UNDETERMINED_FINAL_ATTEMPT = 3;
 
     bytes32 public constant VERDICT_TYPEHASH = keccak256(
         "Verdict(bytes32 jobId,uint256 chainId,address escrow,bytes32 verifierId,bytes32 genlayerTxHash,uint8 attempt,bytes32 specificationHash,bytes32 evidenceHash,bytes32 policyHash,uint8 decision,uint16 payoutBps,bytes32 resultHash,uint256 nonce,bool appeal)"
@@ -134,6 +135,9 @@ contract WorkEscrowV3 is Ownable2Step, Pausable, ReentrancyGuard, EIP712 {
     error JobExists();
     error JobMissing();
     error AppealAlreadyUsed();
+    error UnsupportedTokenBehavior();
+    error UnsupportedTokenAddress();
+    error PartialPayoutTooSmall();
 
     event JobCreated(
         bytes32 indexed jobId,
@@ -197,6 +201,7 @@ contract WorkEscrowV3 is Ownable2Step, Pausable, ReentrancyGuard, EIP712 {
             usdcAddress == address(0) || treasuryAddress == address(0) || initialOwner == address(0)
                 || initialAttestor == address(0) || initialOperator == address(0)
         ) revert InvalidAddress();
+        if (block.chainid == 84532 && usdcAddress != BASE_SEPOLIA_USDC) revert UnsupportedTokenAddress();
         usdc = IERC20(usdcAddress);
         treasury = treasuryAddress;
         verdictAttestor = initialAttestor;
@@ -220,7 +225,10 @@ contract WorkEscrowV3 is Ownable2Step, Pausable, ReentrancyGuard, EIP712 {
                 || deliveryDeadline > block.timestamp + MAX_JOB_TERM
         ) revert InvalidDeadline();
 
+        uint256 balanceBefore = usdc.balanceOf(address(this));
         usdc.safeTransferFrom(msg.sender, address(this), reward);
+        uint256 balanceAfter = usdc.balanceOf(address(this));
+        if (balanceAfter < balanceBefore || balanceAfter - balanceBefore != reward) revert UnsupportedTokenBehavior();
         jobs[jobId] = Job({
             client: msg.sender,
             worker: worker,
@@ -453,6 +461,7 @@ contract WorkEscrowV3 is Ownable2Step, Pausable, ReentrancyGuard, EIP712 {
         if (job.status != Status.SETTLEABLE) revert InvalidState(Status.SETTLEABLE, job.status);
 
         uint256 grossWorker = uint256(job.reward) * job.payoutBps / BPS_DENOMINATOR;
+        if (job.payoutBps > 0 && grossWorker == 0) revert PartialPayoutTooSmall();
         uint256 protocolFee = grossWorker * PLATFORM_FEE_BPS / BPS_DENOMINATOR;
         uint256 workerAmount = grossWorker - protocolFee;
         uint256 clientAmount = uint256(job.reward) - grossWorker;

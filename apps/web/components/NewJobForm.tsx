@@ -86,6 +86,7 @@ export function NewJobForm() {
   const [txState, setTxState] = useState<TxState>("idle");
   const [message, setMessage] = useState("");
   const draftLoaded = useRef(false);
+  const submitting = useRef(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("workify:new-job");
@@ -110,9 +111,13 @@ export function NewJobForm() {
   function removeCriterion(index: number) { if (draft.criteria.length > 1) update("criteria", draft.criteria.filter((_, position) => position !== index)); }
 
   async function submit() {
+    if (submitting.current) return;
+    submitting.current = true;
     try {
       if (!account || !window.ethereum) throw new Error("Connect a wallet before funding the job");
       await switchToBaseSepolia(window.ethereum);
+      const activeAccounts = await window.ethereum.request({ method: "eth_accounts" }) as string[];
+      if (!activeAccounts[0] || activeAccounts[0].toLowerCase() !== account.toLowerCase()) throw new Error("The connected wallet changed during job creation. Reconnect the original funding wallet and try again.");
       const { escrow, baseUsdc } = publicNetworkConfig();
       if (!escrow) throw new Error("WorkEscrowV3 is not configured");
       const reward = parseUnits(draft.reward, 6);
@@ -124,9 +129,13 @@ export function NewJobForm() {
       const prepared = await fetch("/api/jobs/prepare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ version: "1.0.0", title: draft.title, description: draft.description, workType: draft.workType, deliverables: [draft.deliverable], criteria: draft.criteria.map((criterion, index) => ({ id: `C-${String(index + 1).padStart(3, "0")}`, requirement: criterion.requirement, severity: criterion.severity, verificationMethod: "source-grounded", evidenceRequired: [criterion.evidence], passCondition: criterion.requirement, failureCondition: `Evidence does not demonstrate: ${criterion.requirement}` })), authorizedSources: [], exclusions: [], policyVersion: policy }) }).then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.error); return body as { jobId: `0x${string}`; specificationHash: `0x${string}` }; });
 
       setTxState("approval-signature"); setMessage("Base Sepolia is selected. Approve the exact USDC reward in your wallet.");
+      const approvalAccount = await window.ethereum.request({ method: "eth_accounts" }) as string[];
+      if (!approvalAccount[0] || approvalAccount[0].toLowerCase() !== account.toLowerCase()) throw new Error("The connected wallet changed. No approval was sent.");
       const approvalHash = await sendBaseTransaction(account, baseUsdc || BASE_SEPOLIA_USDC, encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [escrow, reward] }), "USDC approval");
       setTxState("approval-submitted"); setMessage(`USDC approval confirmed (${approvalHash.slice(0, 10)}…).`);
       setTxState("job-signature"); setMessage("Approve the funded job creation. USDC locks atomically in escrow.");
+      const jobAccount = await window.ethereum.request({ method: "eth_accounts" }) as string[];
+      if (!jobAccount[0] || jobAccount[0].toLowerCase() !== account.toLowerCase()) throw new Error("The connected wallet changed. No job was created.");
       const jobHash = await sendBaseTransaction(account, escrow, encodeFunctionData({ abi: escrowAbi, functionName: "createFundedJob", args: [prepared.jobId, draft.worker as `0x${string}`, reward, BigInt(deadline), prepared.specificationHash, keccak256(stringToHex(policy))] }), "Funded job creation");
       setTxState("job-submitted"); setMessage(`Funded job confirmed (${jobHash.slice(0, 10)}…).`);
       setTxState("confirmed"); setMessage(`Job ${prepared.jobId} is funded and active. Opening dashboard…`);
@@ -135,6 +144,8 @@ export function NewJobForm() {
     } catch (error: unknown) {
       setTxState("failed");
       setMessage(error instanceof Error ? error.message : formatNetworkError(error, "creating the job"));
+    } finally {
+      submitting.current = false;
     }
   }
 

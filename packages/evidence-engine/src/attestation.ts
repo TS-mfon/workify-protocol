@@ -2,9 +2,11 @@ import { privateKeyToAccount } from "viem/accounts";
 import type { Hex } from "viem";
 
 function domain(escrow: `0x${string}`) {
+  const version = process.env.WORKIFY_EIP712_VERSION;
+  if (version !== "2") throw new Error("WORKIFY_EIP712_VERSION must be configured as 2 for WorkEscrowV3");
   return {
     name: "Workify",
-    version: process.env.WORKIFY_EIP712_VERSION || "1",
+    version,
     chainId: 84532,
     verifyingContract: escrow,
   } as const;

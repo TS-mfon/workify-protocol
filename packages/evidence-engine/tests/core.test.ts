@@ -21,5 +21,8 @@ describe("evidence engine", () => {
       resultName: "AGREE",
       txExecutionResultName: "FINISHED_WITH_RETURN",
     })).toBe("FINALIZED");
+    expect(classifyGenLayerReceipt({ status: 7, txExecutionResult: 1 })).toBe("FINALIZED");
+    expect(classifyGenLayerReceipt({ status_name: "FINALIZED", executionResult: "1" })).toBe("FINALIZED");
+    expect(classifyGenLayerReceipt({ statusName: "FINALIZED", executionResultName: "FINISHED_WITH_RETURN" })).toBe("FINALIZED");
   });
 });

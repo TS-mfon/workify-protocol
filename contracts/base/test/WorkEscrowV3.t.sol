@@ -4,6 +4,7 @@ pragma solidity ^0.8.30;
 import { Test } from "forge-std/Test.sol";
 import { BaseTreasuryV2 } from "../v2/BaseTreasuryV2.sol";
 import { MockUSDC } from "../v1/MockUSDC.sol";
+import { FeeOnTransferMock } from "./FeeOnTransferMock.sol";
 import { WorkEscrowV3 } from "../v3/WorkEscrowV3.sol";
 
 contract WorkEscrowV3Test is Test {
@@ -48,6 +49,18 @@ contract WorkEscrowV3Test is Test {
         assertEq(usdc.balanceOf(address(escrow)), 100e6);
     }
 
+    function testFeeOnTransferTokenCannotUnderfundEscrow() external {
+        FeeOnTransferMock feeToken = new FeeOnTransferMock();
+        WorkEscrowV3 feeEscrow = new WorkEscrowV3(address(feeToken), address(treasury), owner, attestor, operator);
+        bytes32 jobId = keccak256("fee-token-job");
+        feeToken.mint(client, 100e18);
+        vm.prank(client);
+        feeToken.approve(address(feeEscrow), type(uint256).max);
+        vm.prank(client);
+        vm.expectRevert(WorkEscrowV3.UnsupportedTokenBehavior.selector);
+        feeEscrow.createFundedJob(jobId, worker, 100e18, uint64(block.timestamp + 7 days), specificationHash, policyHash);
+    }
+
     function testPassPaysWorkerAndTreasury() external {
         bytes32 jobId = _lockedJob(100e6);
         _request(false, jobId);
@@ -85,9 +98,9 @@ contract WorkEscrowV3Test is Test {
         assertEq(usdc.balanceOf(address(escrow)), 0);
     }
 
-    function testSecondUndeterminedAttemptSettlesFiftyFifty() external {
+    function testThirdUndeterminedAttemptSettlesFiftyFifty() external {
         bytes32 jobId = _lockedJob(100e6);
-        for (uint8 attempt = 1; attempt <= 2; attempt++) {
+        for (uint8 attempt = 1; attempt <= 3; attempt++) {
             _request(false, jobId);
             _recordUndetermined(jobId, attempt, false, 100 + attempt);
         }
@@ -170,7 +183,7 @@ contract WorkEscrowV3Test is Test {
     }
 
     function testFuzzRewardConservation(uint128 reward, uint16 payoutBps) external {
-        reward = uint128(bound(reward, 1, 1_000_000e6));
+        reward = uint128(bound(reward, 10_000, 1_000_000e6));
         payoutBps = uint16(bound(payoutBps, 1, 9_999));
         bytes32 jobId = _lockedJob(reward);
         _request(false, jobId);
