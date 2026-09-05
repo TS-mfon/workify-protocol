@@ -7,6 +7,7 @@ import { encodeFunctionData, keccak256, parseUnits, stringToHex } from "viem";
 import { BASE_SEPOLIA_USDC, MAX_JOB_TERM_SECONDS, MIN_JOB_TERM_SECONDS } from "@workify/protocol-types";
 import { WalletButton } from "./WalletButton";
 import { publicNetworkConfig } from "@/lib/network";
+import { formatNetworkError, switchToBaseSepolia } from "@/lib/wallet-network";
 
 const erc20Abi = [{ type: "function", name: "approve", stateMutability: "nonpayable", inputs: [{ name: "spender", type: "address" }, { name: "amount", type: "uint256" }], outputs: [{ type: "bool" }] }] as const;
 const escrowAbi = [{ type: "function", name: "createFundedJob", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }, { name: "worker", type: "address" }, { name: "reward", type: "uint128" }, { name: "deliveryDeadline", type: "uint64" }, { name: "specificationHash", type: "bytes32" }, { name: "policyHash", type: "bytes32" }], outputs: [] }] as const;
@@ -66,6 +67,7 @@ export function NewJobForm() {
   async function submit() {
     try {
       if (!account || !window.ethereum) throw new Error("Connect a wallet before funding the job");
+      await switchToBaseSepolia(window.ethereum);
       const { escrow } = publicNetworkConfig();
       if (!escrow) throw new Error("WorkEscrowV3 is not configured");
       const reward = parseUnits(draft.reward, 6);
@@ -76,7 +78,7 @@ export function NewJobForm() {
       setTxState("preparing"); setMessage("Canonicalizing and storing the locked specification…");
       const prepared = await fetch("/api/jobs/prepare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ version: "1.0.0", title: draft.title, description: draft.description, workType: draft.workType, deliverables: [draft.deliverable], criteria: draft.criteria.map((criterion, index) => ({ id: `C-${String(index + 1).padStart(3, "0")}`, requirement: criterion.requirement, severity: criterion.severity, verificationMethod: "source-grounded", evidenceRequired: [criterion.evidence], passCondition: criterion.requirement, failureCondition: `Evidence does not demonstrate: ${criterion.requirement}` })), authorizedSources: [], exclusions: [], policyVersion: policy }) }).then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.error); return body as { jobId: `0x${string}`; specificationHash: `0x${string}` }; });
 
-      setTxState("approval-signature"); setMessage("Approve the exact USDC reward in your wallet.");
+      setTxState("approval-signature"); setMessage("Base Sepolia is selected. Approve the exact USDC reward in your wallet.");
       const approvalHash = await window.ethereum.request({ method: "eth_sendTransaction", params: [{ from: account, to: BASE_SEPOLIA_USDC, data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [escrow, reward] }) }] }) as string;
       setTxState("approval-submitted"); setMessage("USDC approval submitted. Waiting for Base confirmation…");
       await waitForReceipt(approvalHash);
@@ -91,7 +93,7 @@ export function NewJobForm() {
     } catch (error: unknown) {
       const walletError = error as { code?: number; message?: string };
       setTxState("failed");
-      setMessage(walletError.code === 4001 ? "Signature rejected. No additional transaction was sent." : walletError.message || "Job creation failed");
+      setMessage(walletError.code === 4001 ? "Signature rejected. No additional transaction was sent." : formatNetworkError(error, "creating the job"));
     }
   }
 

@@ -7,6 +7,7 @@ import { chains, createClient } from "genlayer-js";
 import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
 import { WalletButton } from "./WalletButton";
 import { publicNetworkConfig } from "@/lib/network";
+import { switchToBaseSepolia } from "@/lib/wallet-network";
 
 type Provider = { request(args: { method: string; params?: unknown[] }): Promise<unknown> };
 declare global { interface Window { ethereum?: Provider } }
@@ -24,28 +25,9 @@ const base = [
   { type: "function", name: "settle", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [] },
 ] as const;
 
-const baseChain = {
-  chainId: "0x14a34",
-  chainName: "Base Sepolia",
-  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-  rpcUrls: [network.baseRpc],
-  blockExplorerUrls: ["https://sepolia.basescan.org"],
-};
-
-async function switchChain(provider: Provider, chainId: string, params: Record<string, unknown>) {
-  try {
-    await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId }] });
-  } catch (error) {
-    const code = (error as { code?: number })?.code;
-    if (code !== 4902) throw error;
-    await provider.request({ method: "wallet_addEthereumChain", params: [params] });
-    await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId }] });
-  }
-}
-
 async function switchToBase() {
   if (!window.ethereum) throw new Error("No browser wallet detected. Install MetaMask or another EVM wallet.");
-  await switchChain(window.ethereum, "0x14a34", baseChain);
+  await switchToBaseSepolia(window.ethereum);
 }
 
 async function genLayerClient(account: `0x${string}`) {

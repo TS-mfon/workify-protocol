@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { formatNetworkError, switchToBaseSepolia } from "@/lib/wallet-network";
 
 type Provider = { request(args: { method: string; params?: unknown[] }): Promise<unknown> };
 declare global { interface Window { ethereum?: Provider } }
@@ -24,11 +25,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setConnecting(true);
       setError("");
       if (!window.ethereum) throw new Error("Install an EVM wallet to continue");
-      await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x14a34" }] }).catch(async () => window.ethereum!.request({ method: "wallet_addEthereumChain", params: [{ chainId: "0x14a34", chainName: "Base Sepolia", nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrls: ["https://sepolia.base.org"], blockExplorerUrls: ["https://sepolia.basescan.org"] }] }));
+      await switchToBaseSepolia(window.ethereum);
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" }) as `0x${string}`[];
       setAccount(accounts[0]);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Wallet connection failed");
+      setError(formatNetworkError(cause, "connecting the wallet"));
     } finally {
       setConnecting(false);
     }
