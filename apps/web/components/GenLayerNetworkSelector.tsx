@@ -9,7 +9,14 @@ export function GenLayerNetworkSelector() {
     if (typeof window === "undefined") return "bradbury";
     return window.localStorage.getItem("workify-genlayer-network") === "studionet" ? "studionet" : "bradbury";
   });
-  const studioReady = Boolean(process.env.NEXT_PUBLIC_STUDIO_NET_GEN_TREASURY_ADDRESS);
+  const studioReady = [
+    process.env.NEXT_PUBLIC_STUDIO_NET_GEN_TREASURY_ADDRESS,
+    process.env.NEXT_PUBLIC_STUDIO_NET_GITHUB_VERIFIER_ADDRESS,
+    process.env.NEXT_PUBLIC_STUDIO_NET_WEB_VERIFIER_ADDRESS,
+    process.env.NEXT_PUBLIC_STUDIO_NET_RESEARCH_VERIFIER_ADDRESS,
+    process.env.NEXT_PUBLIC_STUDIO_NET_DOCUMENT_VERIFIER_ADDRESS,
+    process.env.NEXT_PUBLIC_STUDIO_NET_DESIGN_VERIFIER_ADDRESS,
+  ].every(Boolean);
 
   function change(value: Network) {
     if (value === "studionet" && !studioReady) return;

@@ -4,15 +4,35 @@
   "endpoint": "https://studio.genlayer.com/api",
   "operator": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
   "treasury": {
-    "address": "0xFd682C098E88b1900BD5a6a68cAac43A6b1f5C13",
-    "hash": "0x7a8464be113cd00d6934a5303e22f855b8ae3a8095e67dd65bc810dfc666279d"
+    "address": "0x16B1F21b48c70c1f8Be5CB6287b1507d47303E27",
+    "hash": "0xb49a8d757d8f5924f7d6c903691d981f46b9b21068061db051d37369feda0a82"
   },
   "verifiers": {
-    "github": { "address": "0x5D73D33915823e2B7F7d4A283Ca7430d2323A061", "hash": "0x4b7f1209b65ae6aa53d516371666e4d4132a45eb6fa6fc3a0540cae58761afdd", "policyVersion": "github-software-v8.0" },
-    "web": { "address": "0xA758D03379f0A8e304724D4D5ad784129F6A7132", "hash": "0x810155301ee8ba61390d8ef82982d427ca5a65c835c2cbbab78afbd7ab5f954a", "policyVersion": "web-application-v8.0" },
-    "research": { "address": "0xAeC16f3b790308F46f3550BCf2cEd776a687A456", "hash": "0xea13c9abb835da1798f4c99b75dd996b123c3f00109a06a0d1e7db8538512bf3", "policyVersion": "research-data-v8.0" },
-    "document": { "address": "0xEbC774d80AdFa10b690fD0F43328550492b5E1bf", "hash": "0xb094ac8530db550f9667779012ee2482e68876891a45da4abc103cdf9499ca75", "policyVersion": "content-document-v8.0" },
-    "design": { "address": "0x23efb926b2DB12a8A9a9A46d660d2db9eC50e498", "hash": "0x034dcf17c07fbcb66daae80d245abbddaec53e05144e37a970e9e482ccb19aba", "policyVersion": "design-creative-v8.0" }
+    "github": {
+      "hash": "0x4acfc47830d88e870d8a9a926302dfeb0b4530d82c7300b6786f37660bc7f90c",
+      "address": "0x6e523dAF49E231E65930A8320eD51aE23fe93c05",
+      "policyVersion": "github-software-v8.0"
+    },
+    "web": {
+      "hash": "0xf7b2e29a1ca0ba6e02d133d1081ec2a8754c4b704fd29bd2a13f10747a08bc64",
+      "address": "0x87EF1DC37B8f223067a43cBDA08b1FefE38c8e7D",
+      "policyVersion": "web-application-v8.0"
+    },
+    "research": {
+      "hash": "0x29b1e048a1ee93b410944b523b50722b64d65768e13dbe3647c13912fffc9185",
+      "address": "0x6BE0124B618DDA9E7Ab391d9C8A1A995b4Da800E",
+      "policyVersion": "research-data-v8.0"
+    },
+    "document": {
+      "hash": "0xcc47df1bd207aaa978edefda28c894edf5f502248842ff07ff69005eb8db33ed",
+      "address": "0x35cd5379B486c7eBc30BF7CE16400F3B38121dF0",
+      "policyVersion": "content-document-v8.0"
+    },
+    "design": {
+      "hash": "0x7dfedc892e5f8e1d5df78a93f8ab1546c3fae2681c09c874c7d48f66280864be",
+      "address": "0x91e174748d0e6B48607F4045701FF89E39dC91ab",
+      "policyVersion": "design-creative-v8.0"
+    }
   },
-  "status": "DEPLOYED"
+  "status": "DEPLOYED_AND_VALIDATED"
 }
