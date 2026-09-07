@@ -13,7 +13,11 @@ const bytes32 = (value: string) => (value.startsWith("0x") ? value : `0x${value}
 export async function runAutomationBatch(limit = 20) {
   if (!(await acquireLease("automation:global"))) return { skipped: "lease-held", processed: 0 };
   const db = await getDatabase();
-  const intents = await db.collection("relay_intents").find({ status: { $in: ["PENDING", "PENDING_PAYMENT"] } }).sort({ createdAt: 1 }).limit(limit).toArray();
+  const now = new Date();
+  const intents = await db.collection("relay_intents").find({
+    status: { $in: ["PENDING", "PENDING_PAYMENT"] },
+    $or: [{ nextRetryAt: { $lte: now } }, { nextRetryAt: { $exists: false } }],
+  }).sort({ createdAt: 1 }).limit(limit).toArray();
   let processed = 0;
   for (const intent of intents) {
     try {
@@ -55,6 +59,10 @@ export async function runAutomationBatch(limit = 20) {
           );
           continue;
         }
+        await db.collection("relay_intents").updateOne(
+          { _id: intent._id },
+          { $set: { lifecycle: classification === "UNDETERMINED" ? "UNDETERMINED" : "VERIFIER_FINALIZED", lastCheckedAt: new Date(), updatedAt: new Date() } },
+        );
       }
       const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
       if (!escrow) throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Base escrow address is not configured");
@@ -65,7 +73,7 @@ export async function runAutomationBatch(limit = 20) {
           const request = await executeBaseRelayAction("requestVerification", String(intent.jobId), { appeal: Boolean(intent.appeal) });
           await db.collection("relay_intents").updateOne(
             { _id: intent._id },
-            { $set: { baseRequestTransactionHash: request.transactionHash, baseRequestedAt: new Date(), updatedAt: new Date() } },
+            { $set: { lifecycle: "VERDICT_IMPORT_PENDING", baseRequestTransactionHash: request.transactionHash, baseRequestedAt: new Date(), updatedAt: new Date() } },
           );
         } catch (error) {
           await db.collection("relay_intents").updateOne(
@@ -145,6 +153,7 @@ export async function runAutomationBatch(limit = 20) {
         { _id: intent._id },
         { $set: {
           status: "CONFIRMED",
+          lifecycle: "CONFIRMED",
           transactionHash: transaction.transactionHash,
           signerAddress: transaction.signerAddress,
           blockNumber: transaction.blockNumber.toString(),
@@ -155,15 +164,20 @@ export async function runAutomationBatch(limit = 20) {
       );
       processed += 1;
     } catch (error) {
-      const attempts = Number(intent.attempts || 0);
+      const infrastructureFailures = Number(intent.infrastructureFailures || 0) + 1;
       const terminal = error instanceof WorkifyError && ["ATTESTATION_INVALID", "DUPLICATE_SUBMISSION", "USER_INPUT"].includes(error.code);
+      const delayMs = Math.min(15_000 * (2 ** Math.min(infrastructureFailures - 1, 5)), 300_000);
       await db.collection("relay_intents").updateOne(
         { _id: intent._id },
         { $set: {
-          status: !terminal && attempts < 3 ? "PENDING" : "FAILED",
+          status: terminal ? "FAILED" : "PENDING",
+          lifecycle: terminal ? "FAILED" : String(intent.lifecycle || "RPC_RETRY_PENDING"),
           failureReason: error instanceof Error ? error.message : "Unknown error",
+          retryable: !terminal,
+          nextRetryAt: terminal ? null : new Date(Date.now() + delayMs),
+          lastCheckedAt: new Date(),
           updatedAt: new Date(),
-        }, $inc: { attempts: 1 } },
+        }, $inc: { infrastructureFailures: 1 } },
       );
     }
   }

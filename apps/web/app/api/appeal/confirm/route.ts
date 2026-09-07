@@ -9,6 +9,7 @@ const inputSchema = z.object({
   jobId: z.string().regex(/^0x[a-fA-F0-9]{64}$/u),
   appellant: z.string().regex(/^0x[a-fA-F0-9]{40}$/u),
   genlayerPaymentTxHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/u),
+  network: z.enum(["bradbury", "studionet"]).default("bradbury"),
 });
 
 const jobAbi = [{ type: "function", name: "getJob", stateMutability: "view", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [{ type: "tuple", components: [
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
       appellant: input.appellant,
       genlayerTxHash: input.genlayerPaymentTxHash,
       nonce,
+      genlayerNetwork: input.network,
     });
     return NextResponse.json({ queued: true, nonce });
   } catch (error) {

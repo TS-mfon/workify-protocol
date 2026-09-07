@@ -56,14 +56,14 @@ export async function submitVerification(input: {
   if (!expectedStatus) throw new WorkifyError("DUPLICATE_SUBMISSION", status === 3 ? "This job is already being reviewed by GenLayer" : "This job is not ready for verification");
   if (!input.appeal && input.attempt !== currentAttempts + 1) throw new WorkifyError("DUPLICATE_SUBMISSION", `Verification attempt ${input.attempt} is not the next contract attempt`);
   const db = await getDatabase();
-  const intentId = `${input.jobId}:${input.appeal ? "appeal" : "initial"}:${input.attempt}`;
+  const intentId = `${input.jobId}:${selectedNetwork}:${input.appeal ? "appeal" : "initial"}:${input.attempt}`;
   const existing = await db.collection("relay_intents").findOne({ _id: intentId as never });
   if (existing?.genlayerTxHash) return { transactionHash: String(existing.genlayerTxHash), resumed: true };
   if (existing && ["STARTING", "PENDING", "SUBMITTED", "CONFIRMED"].includes(String(existing.status))) {
     if (String(existing.status) !== "PENDING_PAYMENT") throw new WorkifyError("DUPLICATE_SUBMISSION", "This verification attempt has already been submitted or is still being processed");
   }
   try {
-    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $setOnInsert: { _id: intentId as never, action: "importVerdict", jobId: input.jobId, attempt: input.attempt, appeal: input.appeal, verifierAddress: input.verifierAddress, specificationUrl: input.specificationUrl, specificationHash: input.specificationHash, evidenceUrl: input.evidenceUrl, evidenceHash: input.evidenceHash, policyVersion: input.policyVersion, feePayer: input.feePayer, genlayerNetwork: selectedNetwork, status: "STARTING", createdAt: new Date() } }, { upsert: true });
+    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $setOnInsert: { _id: intentId as never, action: "importVerdict", jobId: input.jobId, attempt: input.attempt, appeal: input.appeal, verifierAddress: input.verifierAddress, specificationUrl: input.specificationUrl, specificationHash: input.specificationHash, evidenceUrl: input.evidenceUrl, evidenceHash: input.evidenceHash, policyVersion: input.policyVersion, feePayer: input.feePayer, genlayerNetwork: selectedNetwork, status: "STARTING", lifecycle: "PAYMENT_ACCEPTED", infrastructureFailures: 0, createdAt: new Date() } }, { upsert: true });
   } catch (error: unknown) {
     if ((error as { code?: number })?.code === 11000) throw new WorkifyError("DUPLICATE_SUBMISSION", "This verification attempt is already being processed");
     throw error;
@@ -86,26 +86,31 @@ export async function submitVerification(input: {
   try {
     payment = await client.readContract({ address: treasury, functionName: "get_payment", args: [paymentKey], jsonSafeReturn: true });
   } catch (error) {
-    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "PENDING_PAYMENT", failureReason: "GenLayer payment visibility is temporarily unavailable; the operator will retry automatically.", retryable: true, updatedAt: new Date() } });
+    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "PENDING_PAYMENT", lifecycle: "PAYMENT_PENDING", failureReason: "GenLayer payment visibility is temporarily unavailable; the operator will retry automatically.", retryable: true, nextRetryAt: new Date(Date.now() + 15_000), updatedAt: new Date() } });
     return { transactionHash: null, pending: true };
   }
-  let paymentRecord: { payer?: string; amount?: string | number | bigint };
+  let paymentRecord: { payer?: string; amount?: string | number | bigint; funded?: boolean };
   try {
     paymentRecord = typeof payment === "string"
-      ? JSON.parse(payment) as { payer?: string; amount?: string | number | bigint }
-      : payment as { payer?: string; amount?: string | number | bigint };
+      ? JSON.parse(payment) as { payer?: string; amount?: string | number | bigint; funded?: boolean }
+      : payment as { payer?: string; amount?: string | number | bigint; funded?: boolean };
   } catch (error) {
     const parseError = new WorkifyError("GENLAYER_EXECUTION_ERROR", "The GenLayer treasury returned an invalid payment record");
     await failReservation(error);
     throw parseError;
   }
   if (!paymentRecord.payer || /^0x0{40}$/iu.test(paymentRecord.payer)) {
-    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "PENDING_PAYMENT", failureReason: "The GenLayer payment is not visible yet; the operator will retry automatically.", retryable: true, updatedAt: new Date() } });
+    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "PENDING_PAYMENT", lifecycle: "PAYMENT_PENDING", failureReason: "The GenLayer payment is not visible yet; the operator will retry automatically.", retryable: true, nextRetryAt: new Date(Date.now() + 15_000), updatedAt: new Date() } });
     return { transactionHash: null, pending: true };
   }
-  const expectedFee = input.appeal ? 1_000_000_000_000_000_000n : 100_000_000_000_000_000n;
+  const expectedFee = input.appeal ? genlayer.appealFee : genlayer.verificationFee;
+  const funded = paymentRecord.funded ?? Boolean(paymentRecord.payer && !/^0x0{40}$/iu.test(paymentRecord.payer));
+  if (!funded) {
+    await db.collection("relay_intents").updateOne({ _id: intentId as never }, { $set: { status: "PENDING_PAYMENT", lifecycle: "PAYMENT_PENDING", failureReason: "The GenLayer payment record is not finalized yet; Workify will retry automatically.", retryable: true, updatedAt: new Date() } });
+    return { transactionHash: null, pending: true };
+  }
   if (BigInt(String(paymentRecord.amount ?? 0)) !== expectedFee) {
-    const error = new WorkifyError("INSUFFICIENT_GEN", `The treasury payment must equal exactly ${input.appeal ? "1" : "0.1"} GEN`);
+    const error = new WorkifyError("INSUFFICIENT_GEN", `The treasury payment must equal exactly ${Number(expectedFee) / 1e18} GEN`);
     await failReservation(error);
     throw error;
   }
@@ -138,7 +143,10 @@ export async function submitVerification(input: {
       genlayerNetwork: selectedNetwork,
       nonce,
       status: "PENDING",
+      lifecycle: "VERIFIER_SUBMITTED",
       attempts: 0,
+      infrastructureFailures: 0,
+      nextRetryAt: new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
     } },

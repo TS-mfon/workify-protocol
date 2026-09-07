@@ -11,6 +11,8 @@ export type GenLayerNetworkConfig = {
   verifiers: Record<string, `0x${string}`>;
   explorer: string;
   gasless: boolean;
+  verificationFee: bigint;
+  appealFee: bigint;
 };
 
 const bradburyVerifiers = {
@@ -41,6 +43,8 @@ export function getGenLayerNetworkConfig(network: GenLayerNetwork = "bradbury"):
       },
       explorer: process.env.STUDIO_NET_EXPLORER_URL || "https://explorer-studio.genlayer.com",
       gasless: true,
+      verificationFee: 0n,
+      appealFee: 0n,
     };
   }
   return {
@@ -51,6 +55,8 @@ export function getGenLayerNetworkConfig(network: GenLayerNetwork = "bradbury"):
     verifiers: bradburyVerifiers,
     explorer: process.env.NEXT_PUBLIC_GENLAYER_EXPLORER_URL || "https://explorer-bradbury.genlayer.com",
     gasless: false,
+    verificationFee: 100_000_000_000_000_000n,
+    appealFee: 1_000_000_000_000_000_000n,
   };
 }
 
