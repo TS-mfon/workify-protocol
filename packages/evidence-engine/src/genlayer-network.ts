@@ -5,10 +5,13 @@ export type GenLayerNetwork = "bradbury" | "studionet";
 
 export type GenLayerNetworkConfig = {
   network: GenLayerNetwork;
+  version: 10 | 11;
+  configured: boolean;
   endpoint: string;
   chain: never;
   treasury: `0x${string}`;
   verifiers: Record<string, `0x${string}`>;
+  legacyVerifiers: Record<string, `0x${string}`>;
   explorer: string;
   gasless: boolean;
   verificationFee: bigint;
@@ -31,6 +34,25 @@ const studioNetV10Verifiers = {
   DESIGN_CREATIVE: "0x3C8aF1eea102E6958E28441Bf97Ae225Ff2b29ff",
 } as Record<string, `0x${string}`>;
 
+const emptyVerifiers = {
+  GITHUB_SOFTWARE: "",
+  WEB_APPLICATION: "",
+  RESEARCH_DATA: "",
+  CONTENT_DOCUMENT: "",
+  DESIGN_CREATIVE: "",
+} as unknown as Record<string, `0x${string}`>;
+
+function v11Verifiers(prefix: "STUDIO_NET" | "BRADBURY") {
+  const values = {
+    GITHUB_SOFTWARE: envAddress(`${prefix}_V11_GITHUB_VERIFIER_ADDRESS`),
+    WEB_APPLICATION: envAddress(`${prefix}_V11_WEB_VERIFIER_ADDRESS`),
+    RESEARCH_DATA: envAddress(`${prefix}_V11_RESEARCH_VERIFIER_ADDRESS`),
+    CONTENT_DOCUMENT: envAddress(`${prefix}_V11_DOCUMENT_VERIFIER_ADDRESS`),
+    DESIGN_CREATIVE: envAddress(`${prefix}_V11_DESIGN_VERIFIER_ADDRESS`),
+  } as Record<string, `0x${string}`>;
+  return Object.values(values).every(Boolean) ? values : emptyVerifiers;
+}
+
 function verifierAddress(name: string, fallback?: string) {
   return envAddress(name, fallback);
 }
@@ -41,40 +63,50 @@ function envAddress(name: string, fallback = "") {
 
 export function getGenLayerNetworkConfig(network: GenLayerNetwork = "bradbury"): GenLayerNetworkConfig {
   if (network === "studionet") {
+    const v11 = v11Verifiers("STUDIO_NET");
+    const useV11 = Object.values(v11).every(Boolean);
     return {
       network,
+      version: useV11 ? 11 : 10,
+      configured: useV11 || Object.values(studioNetV10Verifiers).every(Boolean),
       endpoint: process.env.STUDIO_NET_GENLAYER_RPC_URL || "https://studio.genlayer.com/api",
       chain: chains.studionet as never,
-      treasury: envAddress("STUDIO_NET_GEN_TREASURY_ADDRESS", process.env.NEXT_PUBLIC_STUDIO_NET_GEN_TREASURY_ADDRESS),
-      verifiers: {
+      treasury: envAddress("STUDIO_NET_GEN_TREASURY_ADDRESS", process.env.NEXT_PUBLIC_STUDIO_NET_GEN_TREASURY_ADDRESS || "0x0000000000000000000000000000000000000000"),
+      verifiers: useV11 ? v11 : {
         GITHUB_SOFTWARE: verifierAddress("STUDIO_NET_V10_GITHUB_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_STUDIO_NET_V10_GITHUB_VERIFIER_ADDRESS || studioNetV10Verifiers.GITHUB_SOFTWARE),
         WEB_APPLICATION: verifierAddress("STUDIO_NET_V10_WEB_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_STUDIO_NET_V10_WEB_VERIFIER_ADDRESS || studioNetV10Verifiers.WEB_APPLICATION),
         RESEARCH_DATA: verifierAddress("STUDIO_NET_V10_RESEARCH_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_STUDIO_NET_V10_RESEARCH_VERIFIER_ADDRESS || studioNetV10Verifiers.RESEARCH_DATA),
         CONTENT_DOCUMENT: verifierAddress("STUDIO_NET_V10_DOCUMENT_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_STUDIO_NET_V10_DOCUMENT_VERIFIER_ADDRESS || studioNetV10Verifiers.CONTENT_DOCUMENT),
         DESIGN_CREATIVE: verifierAddress("STUDIO_NET_V10_DESIGN_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_STUDIO_NET_V10_DESIGN_VERIFIER_ADDRESS || studioNetV10Verifiers.DESIGN_CREATIVE),
       },
+      legacyVerifiers: studioNetV10Verifiers,
       explorer: process.env.STUDIO_NET_EXPLORER_URL || "https://explorer-studio.genlayer.com",
       gasless: true,
       verificationFee: 0n,
       appealFee: 0n,
     };
   }
+  const v11 = v11Verifiers("BRADBURY");
+  const useV11 = Object.values(v11).every(Boolean);
   return {
     network,
+    version: useV11 ? 11 : 10,
+    configured: useV11 || Object.values(legacyBradburyVerifiers).every(Boolean),
     endpoint: process.env.NEXT_PUBLIC_GENLAYER_RPC_URL || "https://rpc-bradbury.genlayer.com",
     chain: chains.testnetBradbury as never,
     treasury: envAddress("NEXT_PUBLIC_GEN_TREASURY_ADDRESS", "0x46E31E4161AC0F4EeC33c585F752DAd13646Ee05"),
-    verifiers: {
+    verifiers: useV11 ? v11 : {
       GITHUB_SOFTWARE: verifierAddress("BRADBURY_V10_GITHUB_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_BRADBURY_V10_GITHUB_VERIFIER_ADDRESS || legacyBradburyVerifiers.GITHUB_SOFTWARE),
       WEB_APPLICATION: verifierAddress("BRADBURY_V10_WEB_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_BRADBURY_V10_WEB_VERIFIER_ADDRESS || legacyBradburyVerifiers.WEB_APPLICATION),
       RESEARCH_DATA: verifierAddress("BRADBURY_V10_RESEARCH_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_BRADBURY_V10_RESEARCH_VERIFIER_ADDRESS || legacyBradburyVerifiers.RESEARCH_DATA),
       CONTENT_DOCUMENT: verifierAddress("BRADBURY_V10_DOCUMENT_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_BRADBURY_V10_DOCUMENT_VERIFIER_ADDRESS || legacyBradburyVerifiers.CONTENT_DOCUMENT),
       DESIGN_CREATIVE: verifierAddress("BRADBURY_V10_DESIGN_VERIFIER_ADDRESS", process.env.NEXT_PUBLIC_BRADBURY_V10_DESIGN_VERIFIER_ADDRESS || legacyBradburyVerifiers.DESIGN_CREATIVE),
     },
+    legacyVerifiers: legacyBradburyVerifiers,
     explorer: process.env.NEXT_PUBLIC_GENLAYER_EXPLORER_URL || "https://explorer-bradbury.genlayer.com",
     gasless: false,
-    verificationFee: 100_000_000_000_000_000n,
-    appealFee: 1_000_000_000_000_000_000n,
+    verificationFee: useV11 ? 0n : 100_000_000_000_000_000n,
+    appealFee: useV11 ? 0n : 1_000_000_000_000_000_000n,
   };
 }
 

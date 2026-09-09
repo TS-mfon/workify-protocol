@@ -56,10 +56,15 @@ async function loadVerificationPayload(request: Request, input: { jobId: string;
   const evidence = await db.collection("evidence_manifests").findOne({ _id: evidenceHash as never });
   const workType = String((specification?.document as { workType?: string } | undefined)?.workType || "");
   const policyVersion = String((specification?.document as { policyVersion?: string } | undefined)?.policyVersion || "");
-  const verifierAddress = getGenLayerNetworkConfig(input.network).verifiers[workType];
+  const genlayer = getGenLayerNetworkConfig(input.network);
+  const useLegacyPolicy = /(?:^|-)v(?:1|2|3|4|5|6|7|8|9|10)(?:\.|-|$)/iu.test(policyVersion);
+  const verifierAddress = (useLegacyPolicy ? genlayer.legacyVerifiers : genlayer.verifiers)[workType];
+  const applicationFee = useLegacyPolicy && input.network === "bradbury"
+    ? (input.appeal ? 1_000_000_000_000_000_000n : 100_000_000_000_000_000n)
+    : (input.appeal ? genlayer.appealFee : genlayer.verificationFee);
   if (!specification || !evidence || !verifierAddress || !policyVersion) throw new Error("The locked specification or evidence manifest is unavailable for verification.");
   const origin = publicOrigin(request);
-  return { verifierAddress, specificationHash: `0x${specificationHash}`, evidenceHash: `0x${evidenceHash}`, specificationUrl: `${origin}/api/specifications/${specificationHash}`, evidenceUrl: `${origin}/api/evidence/${evidenceHash}`, policyVersion, ...(input.appealContextUrl ? { appealContextUrl: input.appealContextUrl } : {}) };
+  return { verifierAddress, specificationHash: `0x${specificationHash}`, evidenceHash: `0x${evidenceHash}`, specificationUrl: `${origin}/api/specifications/${specificationHash}`, evidenceUrl: `${origin}/api/evidence/${evidenceHash}`, policyVersion, verifierVersion: useLegacyPolicy ? 10 : genlayer.version, applicationFeeWei: applicationFee.toString(), gasless: genlayer.gasless, ...(input.appealContextUrl ? { appealContextUrl: input.appealContextUrl } : {}) };
 }
 
 export async function GET(request: Request) {

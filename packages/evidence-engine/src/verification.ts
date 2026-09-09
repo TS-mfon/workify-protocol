@@ -44,7 +44,11 @@ async function validateDirectTransaction(input: {
   const recipient = transaction.to_address || transaction.recipient;
   if (sender && !equalAddress(sender, input.payer)) throw new WorkifyError("ATTESTATION_INVALID", "The GenLayer transaction sender does not match the connected wallet");
   if (recipient && !equalAddress(recipient, input.verifierAddress)) throw new WorkifyError("ATTESTATION_INVALID", "The GenLayer transaction targeted a different verifier");
-  const configuredFee = input.network === "studionet" ? 0n : input.appeal ? parseEther("1") : parseEther("0.1");
+  const networkConfig = getGenLayerNetworkConfig(input.network);
+  const isLegacyVerifier = Object.values(networkConfig.legacyVerifiers).some((address) => equalAddress(address, input.verifierAddress));
+  const configuredFee = isLegacyVerifier
+    ? (input.network === "bradbury" ? (input.appeal ? parseEther("1") : parseEther("0.1")) : 0n)
+    : (input.appeal ? networkConfig.appealFee : networkConfig.verificationFee);
   if (transaction.value !== undefined && BigInt(String(transaction.value)) !== configuredFee) throw new WorkifyError("INSUFFICIENT_GEN", `The verifier transaction must attach exactly ${configuredFee === 0n ? "0" : input.appeal ? "1" : "0.1"} GEN`);
   const rawData = typeof transaction.txData === "string" ? transaction.txData : "";
   if (!rawData.startsWith("0x")) throw new WorkifyError("ATTESTATION_INVALID", "The GenLayer transaction calldata is not available for verification yet");
