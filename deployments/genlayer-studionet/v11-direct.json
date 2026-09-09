@@ -1,0 +1,39 @@
+{
+  "network": "studionet",
+  "version": 11,
+  "endpoint": "https://studio.genlayer.com/api",
+  "operator": "0xEd9EDd8586b20524CafA4F568413C504C9B03172",
+  "feePolicy": {
+    "verificationWei": "0",
+    "appealWei": "0",
+    "gasless": true
+  },
+  "verifiers": {
+    "github": {
+      "hash": "0x77a06c50c9281a434d65044eca6bf05bab243dc878a08f34e1eab1feeb446ef6",
+      "address": "0xd58Bcd6Ef9CE3703B1F604F450eF545d86763b87",
+      "policyVersion": "github-software-v11.0"
+    },
+    "web": {
+      "hash": "0xcb9ce7ddb82abf08614d2adf93e0283d3e93a115ee86e808dcdb464d60599578",
+      "address": "0xc9c3d95B584f626A468A948882e606A5Bea306fD",
+      "policyVersion": "web-application-v11.0"
+    },
+    "research": {
+      "hash": "0x79e990cc8231b161e020222fa807f73fb38eddc58a90ac12dba702e7626e74f5",
+      "address": "0x8076A06bF06fFF18145bA040bAc098066d3Ab01E",
+      "policyVersion": "research-data-v11.0"
+    },
+    "document": {
+      "hash": "0xb598e497e60b50871ad241c2afb6a4937bce8cfd68ef1cf0f91dfc3c63820043",
+      "address": "0x3ee2a4637E973889911a128A76772938c38b0DE9",
+      "policyVersion": "content-document-v11.0"
+    },
+    "design": {
+      "hash": "0x24eadb6ec988b4cf2caf5653a75972cf4acab305c4c3d38865738e6ca79818fc",
+      "address": "0xB54D277F4f8275AFA017E22616b07f0B0D530498",
+      "policyVersion": "design-creative-v11.0"
+    }
+  },
+  "status": "DEPLOYED_AND_VALIDATED"
+}
