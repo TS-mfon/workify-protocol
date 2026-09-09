@@ -18,13 +18,28 @@ if (!key) throw new Error("GENLAYER_OPERATOR_PRIVATE_KEY is required");
 const network = process.env.GENLAYER_DEPLOY_NETWORK === "studionet" ? "studionet" : "bradbury";
 const chain = network === "studionet" ? chains.studionet : chains.testnetBradbury;
 const account = createAccount(key);
-const client = createClient({ chain, account });
+const endpoint = process.env.GENLAYER_DEPLOY_RPC_URL || (network === "studionet" ? "https://studio.genlayer.com/api" : "https://rpc-bradbury.genlayer.com");
+const client = createClient({ chain, endpoint, account });
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const fees = network === "studionet" ? [0n, 0n] : [100000000000000000n, 1000000000000000000n];
+const outputPath = `/home/sudodave/workify-protocol/deployments/genlayer-${network}/v10-direct.json`;
+
+async function checkpoint(manifest) {
+  await mkdir(`/home/sudodave/workify-protocol/deployments/genlayer-${network}`, { recursive: true });
+  await writeFile(outputPath, `${JSON.stringify(manifest, null, 2)}\n`);
+}
 
 async function waitForDeployment(hash) {
+  console.log(`submitted ${hash}`);
   for (let attempt = 0; attempt < 180; attempt += 1) {
-    const receipt = await client.getTransaction({ hash });
+    let receipt;
+    try {
+      receipt = await client.getTransaction({ hash });
+    } catch (error) {
+      console.warn(`poll ${attempt + 1}/180 failed for ${hash}: ${error instanceof Error ? error.message : String(error)}`);
+      await sleep(Math.min(5000 + attempt * 250, 15000));
+      continue;
+    }
     const status = String(receipt.statusName || receipt.status_name || receipt.status || "");
     if (["CANCELED", "UNDETERMINED"].includes(status)) throw new Error(`Deployment ${status}: ${hash}`);
     if (status === "FINALIZED") {
@@ -32,7 +47,15 @@ async function waitForDeployment(hash) {
       if (/error|failed|invalid_contract/iu.test(result)) throw new Error(`Deployment execution failed (${result}): ${hash}`);
       const address = receipt.txDataDecoded?.contractAddress || receipt.data?.contract_address;
       if (!address) throw new Error(`Deployment returned no contract address: ${hash}`);
-      await client.getContractSchema(address);
+      for (let schemaAttempt = 0; schemaAttempt < 12; schemaAttempt += 1) {
+        try {
+          await client.getContractSchema(address);
+          return { hash, address };
+        } catch (error) {
+          if (schemaAttempt === 11) throw error;
+          await sleep(5000);
+        }
+      }
       return { hash, address };
     }
     await sleep(5000);
@@ -45,11 +68,23 @@ async function deploy(code, args) {
 }
 
 const verifierCode = await readFile("/home/sudodave/workify-protocol/contracts/genlayer/v10/WorkVerifierV10.py");
-const manifest = { network, version: 10, endpoint: network === "studionet" ? "https://studio.genlayer.com/api" : "https://rpc-bradbury.genlayer.com", operator: account.address, feePolicy: { verificationWei: String(fees[0]), appealWei: String(fees[1]), gasless: network === "studionet" }, verifiers: {} };
+let manifest;
+try {
+  const existing = JSON.parse(await readFile(outputPath, "utf8"));
+  manifest = existing.version === 10 && existing.operator?.toLowerCase() === account.address.toLowerCase() ? existing : undefined;
+} catch { }
+manifest ||= { network, version: 10, endpoint, operator: account.address, feePolicy: { verificationWei: String(fees[0]), appealWei: String(fees[1]), gasless: network === "studionet" }, verifiers: {}, status: "DEPLOYING" };
+manifest.endpoint = endpoint;
+await checkpoint(manifest);
 for (const [name, type, policyVersion] of [["github", "GITHUB_SOFTWARE", "github-software-v10.0"], ["web", "WEB_APPLICATION", "web-application-v10.0"], ["research", "RESEARCH_DATA", "research-data-v10.0"], ["document", "CONTENT_DOCUMENT", "content-document-v10.0"], ["design", "DESIGN_CREATIVE", "design-creative-v10.0"]]) {
+  if (manifest.verifiers[name]?.address) {
+    await client.getContractSchema(manifest.verifiers[name].address);
+    console.log(`reusing ${name} ${manifest.verifiers[name].address}`);
+    continue;
+  }
   manifest.verifiers[name] = { ...(await deploy(verifierCode, [account.address, account.address, type, policyVersion, fees[0], fees[1]])), policyVersion };
+  await checkpoint(manifest);
 }
 manifest.status = "DEPLOYED_AND_VALIDATED";
-await mkdir(`/home/sudodave/workify-protocol/deployments/genlayer-${network}`, { recursive: true });
-await writeFile(`/home/sudodave/workify-protocol/deployments/genlayer-${network}/v10-direct.json`, `${JSON.stringify(manifest, null, 2)}\n`);
+await checkpoint(manifest);
 console.log(JSON.stringify(manifest));
