@@ -32,10 +32,10 @@ function equalAddress(left: unknown, right: string) {
   return typeof left === "string" && left.toLowerCase() === right.toLowerCase();
 }
 
-async function validateDirectTransaction(input: {
+export async function validateDirectTransaction(input: {
   transactionHash: Hex; payer: `0x${string}`; verifierAddress: `0x${string}`; jobId: Hex; attempt: number; appeal: boolean;
   specificationHash: string; evidenceHash: string; network: GenLayerNetwork;
-}) {
+}): Promise<{ calldataAvailable: boolean }> {
   const key = process.env.GENLAYER_OPERATOR_PRIVATE_KEY as Hex | undefined;
   if (!key) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer transaction inspection is not configured", true);
   const client = createServerGenLayerClient(input.network, key);
@@ -50,8 +50,13 @@ async function validateDirectTransaction(input: {
     ? (input.network === "bradbury" ? (input.appeal ? parseEther("1") : parseEther("0.1")) : 0n)
     : (input.appeal ? networkConfig.appealFee : networkConfig.verificationFee);
   if (transaction.value !== undefined && BigInt(String(transaction.value)) !== configuredFee) throw new WorkifyError("INSUFFICIENT_GEN", `The verifier transaction must attach exactly ${configuredFee === 0n ? "0" : input.appeal ? "1" : "0.1"} GEN`);
-  const rawData = typeof transaction.txData === "string" ? transaction.txData : "";
-  if (!rawData.startsWith("0x")) throw new WorkifyError("ATTESTATION_INVALID", "The GenLayer transaction calldata is not available for verification yet");
+  const rawData = [transaction.txData, transaction.data, transaction.input, transaction.calldata]
+    .find((value): value is string => typeof value === "string" && value.startsWith("0x")) || "";
+  if (!rawData.startsWith("0x")) {
+    const status = String(transaction.statusName || transaction.status_name || transaction.status || "").toUpperCase();
+    if (["CANCELED", "CANCELLED"].includes(status)) throw new WorkifyError("GENLAYER_EXECUTION_ERROR", "The GenLayer review transaction was canceled");
+    return { calldataAvailable: false };
+  }
   if (rawData.startsWith("0x")) {
     try {
       const decoded = decodeFunctionData({ abi: verifierAbi, data: rawData as Hex });
@@ -66,6 +71,7 @@ async function validateDirectTransaction(input: {
   }
   const status = String(transaction.statusName || transaction.status_name || transaction.status || "").toUpperCase();
   if (["CANCELED", "CANCELLED"].includes(status)) throw new WorkifyError("GENLAYER_EXECUTION_ERROR", "The GenLayer review transaction was canceled");
+  return { calldataAvailable: true };
 }
 
 export async function registerDirectVerification(input: {
@@ -97,7 +103,7 @@ export async function registerDirectVerification(input: {
   if (!expectedStatus) throw new WorkifyError("DUPLICATE_SUBMISSION", status === 3 ? "This job is already being reviewed by GenLayer" : "This job is not ready for verification");
   if (!input.appeal && input.attempt !== Number(current.attempts) + 1) throw new WorkifyError("DUPLICATE_SUBMISSION", "This verification attempt is not the next contract attempt");
   if (input.appeal && String(current.appellant).toLowerCase() !== input.payer.toLowerCase()) throw new WorkifyError("DUPLICATE_SUBMISSION", "Appeal payer must be the wallet that opened the Base appeal");
-  await validateDirectTransaction({ ...input, network: selectedNetwork });
+  const transactionValidation = await validateDirectTransaction({ ...input, network: selectedNetwork });
   const db = await getDatabase();
   const intentId = `${input.jobId}:${selectedNetwork}:${input.appeal ? "appeal" : "initial"}:${input.attempt}`;
   const existing = await db.collection("relay_intents").findOne({ _id: intentId as never });
@@ -140,7 +146,7 @@ export async function registerDirectVerification(input: {
     { $set: { jobId: input.jobId, attempt: input.attempt, appeal: input.appeal, verifierAddress: input.verifierAddress, genlayerTxHash: input.transactionHash, payer: input.payer, submissionMode: "direct_user_transaction", status: "SUBMITTED", createdAt: new Date(), updatedAt: new Date() } },
     { upsert: true },
   );
-  return { transactionHash: input.transactionHash };
+  return { transactionHash: input.transactionHash, calldataPending: !transactionValidation.calldataAvailable };
 }
 
 function baseJobClient() {

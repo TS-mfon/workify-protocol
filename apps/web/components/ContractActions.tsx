@@ -195,6 +195,7 @@ function progressText(progress: VerificationProgress | null) {
   if (progress.lifecycle === "BASE_RETRY_WINDOW") return "The review execution failed safely; Base opened a retry window. Fix the public evidence source before requesting another attempt.";
   if (progress.lifecycle === "PAYMENT_PENDING") return "Review request recorded. Workify is waiting for GenLayer finality; do not submit again.";
   if (progress.lifecycle === "VERIFIER_SUBMITTED" || progress.lifecycle === "VERIFIER_PENDING" || progress.lifecycle === "VERIFIER_ACCEPTED") return "GenLayer validators are reviewing the locked evidence.";
+  if (progress.lifecycle === "VERIFIER_METADATA_PENDING") return "StudioNet accepted the review. Its transaction metadata is still propagating; Workify will continue tracking it without another wallet request.";
   if (progress.lifecycle === "VERIFIER_FINALIZED") return "Validator agreement was reached. Workify is preparing the Base verdict import.";
   if (progress.lifecycle === "VERDICT_IMPORT_PENDING") return "The verdict is finalized and is being imported into the Base escrow.";
   if (progress.rpcError) return "A temporary GenLayer RPC outage occurred. Background automation will retry automatically.";

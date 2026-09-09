@@ -5,7 +5,7 @@ import { classifyGenLayerReceipt } from "./receipts";
 import { executeBaseRelayAction, type BaseRelayAction, type BaseRelayParameters } from "./base-relay";
 import { WorkifyError } from "./errors";
 import { signAppealFundingAttestation, signOutcomeAttestation, signVerdictAttestation } from "./attestation";
-import { submitVerification } from "./verification";
+import { submitVerification, validateDirectTransaction } from "./verification";
 
 const decisionCode: Record<string, number> = { PASS: 1, FAIL: 2, PARTIAL: 3, UNVERIFIABLE: 4 };
 const bytes32 = (value: string) => (value.startsWith("0x") ? value : `0x${value}`) as Hex;
@@ -53,6 +53,26 @@ export async function runAutomationBatch(limit = 20) {
       let classification: "ACCEPTED" | "FINALIZED" | "UNDETERMINED" | "PENDING" | undefined;
       if (intent.genlayerTxHash) {
         if (!genlayerClient) throw new WorkifyError("GENLAYER_PREFLIGHT", `${selectedNetwork} GenLayer RPC is not configured`, true);
+        if (intent.submissionMode === "direct_user_transaction" && intent.verifierAddress && intent.specificationHash && intent.evidenceHash && intent.feePayer) {
+          const validation = await validateDirectTransaction({
+            transactionHash: intent.genlayerTxHash as Hex,
+            payer: intent.feePayer as `0x${string}`,
+            verifierAddress: intent.verifierAddress as `0x${string}`,
+            jobId: intent.jobId as Hex,
+            attempt: Number(intent.attempt),
+            appeal: Boolean(intent.appeal),
+            specificationHash: String(intent.specificationHash),
+            evidenceHash: String(intent.evidenceHash),
+            network: selectedNetwork,
+          });
+          if (!validation.calldataAvailable) {
+            await db.collection("relay_intents").updateOne(
+              { _id: intent._id },
+              { $set: { lifecycle: "VERIFIER_METADATA_PENDING", lastCheckedAt: new Date(), updatedAt: new Date() } },
+            );
+            continue;
+          }
+        }
         const receipt = await genlayerClient.getTransaction({ hash: intent.genlayerTxHash as never });
         classification = classifyGenLayerReceipt(receipt as never);
         if (classification === "PENDING" || classification === "ACCEPTED") {
