@@ -19,8 +19,12 @@ function htmlOrSdkError(error: unknown) {
 function normalizeStatus(transaction: Record<string, unknown> | null) {
   if (!transaction) return { status: "NOT_FOUND", statusName: null, consensus: null, execution: null };
   const statusName = String(transaction.statusName || transaction.status || "PENDING").toUpperCase();
-  const resultName = transaction.resultName ? String(transaction.resultName).toUpperCase() : null;
-  const executionName = transaction.txExecutionResultName ? String(transaction.txExecutionResultName).toUpperCase() : null;
+  const resultNames = ["IDLE", "AGREE", "DISAGREE", "TIMEOUT", "DETERMINISTIC_VIOLATION", "NO_MAJORITY", "MAJORITY_AGREE", "MAJORITY_DISAGREE"];
+  const executionNames = ["NOT_VOTED", "FINISHED_WITH_RETURN", "FINISHED_WITH_ERROR"];
+  const numericResult = Number(transaction.result);
+  const numericExecution = Number(transaction.txExecutionResult ?? transaction.executionResult);
+  const resultName = transaction.resultName ? String(transaction.resultName).toUpperCase() : Number.isInteger(numericResult) && resultNames[numericResult] ? resultNames[numericResult] : null;
+  const executionName = transaction.txExecutionResultName ? String(transaction.txExecutionResultName).toUpperCase() : Number.isInteger(numericExecution) && executionNames[numericExecution] ? executionNames[numericExecution] : null;
   const terminal = ["FINALIZED", "CANCELED", "UNDETERMINED", "VALIDATORS_TIMEOUT", "LEADER_TIMEOUT"].includes(statusName);
   const normalizedStatus = ["VALIDATORS_TIMEOUT", "LEADER_TIMEOUT"].includes(statusName) ? "UNDETERMINED" : statusName;
   return {
