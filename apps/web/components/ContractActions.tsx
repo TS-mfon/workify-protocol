@@ -309,7 +309,7 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
     }
   }
 
-  const explorer = selectedNetwork === "studionet" ? "https://genlayer-explorer.vercel.app" : "https://explorer-bradbury.genlayer.com";
+  const explorer = selectedNetwork === "studionet" ? "https://explorer-studio.genlayer.com" : "https://explorer-bradbury.genlayer.com";
   return <div className="glass card" style={{ marginTop: 28 }}>
     <WalletButton onAccount={setAccount} />
     <span className="status"><span className="pulse" /> Attempt {attempt} of 3</span>

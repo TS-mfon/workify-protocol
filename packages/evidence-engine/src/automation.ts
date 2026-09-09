@@ -15,8 +15,11 @@ export async function runAutomationBatch(limit = 20) {
   const db = await getDatabase();
   const now = new Date();
   const intents = await db.collection("relay_intents").find({
-    status: { $in: ["PENDING", "PENDING_PAYMENT"] },
-    $or: [{ nextRetryAt: { $lte: now } }, { nextRetryAt: { $exists: false } }],
+    $or: [
+      { status: { $in: ["PENDING", "PENDING_PAYMENT"] } },
+      { status: "SUBMITTED", genlayerTxHash: { $exists: true } },
+    ],
+    $and: [{ $or: [{ nextRetryAt: { $lte: now } }, { nextRetryAt: { $exists: false } }] }],
   }).sort({ createdAt: 1 }).limit(limit).toArray();
   let processed = 0;
   for (const intent of intents) {

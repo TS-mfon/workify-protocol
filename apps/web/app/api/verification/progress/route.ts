@@ -15,7 +15,10 @@ export async function GET(request: Request) {
       attempt: new URL(request.url).searchParams.get("attempt"),
       network: new URL(request.url).searchParams.get("network") || "bradbury",
     });
-    await runAutomationBatch(1);
+    await Promise.race([
+      runAutomationBatch(1),
+      new Promise((resolve) => setTimeout(resolve, 4_000)),
+    ]);
     const db = await getDatabase();
     const intent = await db.collection("relay_intents").findOne({ _id: `${input.jobId}:${input.network}:initial:${input.attempt}` as never })
       || await db.collection("relay_intents").findOne({ _id: `${input.jobId}:initial:${input.attempt}` as never });
