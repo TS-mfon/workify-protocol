@@ -41,8 +41,7 @@ const jobAbi = [{
 function publicOrigin(request: Request) {
   const configured = process.env.PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL;
   if (configured) return configured.replace(/\/$/u, "");
-  const vercelUrl = process.env.VERCEL_URL;
-  if (vercelUrl) return `https://${vercelUrl}`;
+  if (process.env.VERCEL_ENV === "production") return "https://workify-protocol.vercel.app";
   return new URL(request.url).origin;
 }
 

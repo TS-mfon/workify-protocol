@@ -181,6 +181,7 @@ type VerificationProgress = {
   verifierTransactionHash?: string | null;
   baseRequestTransactionHash?: string | null;
   verdictImportTransactionHash?: string | null;
+  outcomeTransactionHash?: string | null;
   failureReason?: string | null;
   rpcError?: string | null;
   nextRetryAt?: string | null;
@@ -197,6 +198,7 @@ function progressText(progress: VerificationProgress | null) {
   if (!progress || progress.status === "NOT_STARTED") return "No review has been queued for this attempt.";
   if (progress.status === "CONFIRMED") return "Review finalized and the verdict was imported to Base Sepolia.";
   if (progress.status === "FAILED") return progress.failureReason || "The review failed and requires operator attention.";
+  if (progress.lifecycle === "BASE_RETRY_WINDOW") return "The review execution failed safely; Base opened a retry window. Fix the public evidence source before requesting another attempt.";
   if (progress.lifecycle === "PAYMENT_PENDING") return "Review request recorded. Workify is waiting for GenLayer finality; do not submit again.";
   if (progress.lifecycle === "VERIFIER_SUBMITTED" || progress.lifecycle === "VERIFIER_PENDING" || progress.lifecycle === "VERIFIER_ACCEPTED") return "GenLayer validators are reviewing the locked evidence.";
   if (progress.lifecycle === "VERIFIER_FINALIZED") return "Validator agreement was reached. Workify is preparing the Base verdict import.";
@@ -277,6 +279,7 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
       const pendingKey = `workify:verify:${jobId}:${selectedNetwork}:${attempt}`;
       const previous = window.sessionStorage.getItem(pendingKey);
       if (previous) {
+        if (previous === "STARTING") throw new Error("A review request is already being submitted. Wait for the wallet prompt to finish before retrying.");
         setStatus("This review transaction is already submitted. Resuming registration without another payment…");
         const resumed = await fetch("/api/verification/queue", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId, attempt, payer: account, transactionHash: previous, network: selectedNetwork }) });
         const resumedBody = await resumed.json().catch(() => ({}));
@@ -285,6 +288,7 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
         await refreshProgress();
         return;
       }
+      window.sessionStorage.setItem(pendingKey, "STARTING");
       setStatus(selectedNetwork === "studionet" ? "Submitting the free StudioNet review…" : "Submitting the verifier call with exactly 0.1 GEN…");
       const transactionHash = await client.writeContract({ address: payload.verifierAddress, functionName: "verify", args: [jobId, payload.specificationUrl, payload.specificationHash.replace(/^0x/u, ""), payload.evidenceUrl, payload.evidenceHash.replace(/^0x/u, ""), attempt, false, ""] as never[], value: fee });
       window.sessionStorage.setItem(pendingKey, transactionHash);
@@ -296,6 +300,8 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
       setStatus("Review is live. GenLayer validators are processing the locked evidence.");
       await refreshProgress();
     } catch (error) {
+      const pendingKey = `workify:verify:${jobId}:${selectedNetwork}:${attempt}`;
+      if (window.sessionStorage.getItem(pendingKey) === "STARTING") window.sessionStorage.removeItem(pendingKey);
       setStatus(errorText(error) || "Verification could not be started. No duplicate payment was sent.");
     } finally {
       busy.current = false;
@@ -321,6 +327,7 @@ export function AppealAction({ jobId }: { jobId: `0x${string}` }) {
   async function appeal() {
     if (busy.current) return;
     busy.current = true; setSubmitting(true);
+    let activePendingKey = "";
     try {
       if (!account || !window.ethereum) throw new Error("Connect a wallet first.");
       if (statement.trim().length < 1) throw new Error("Explain which criterion or evidence should be reconsidered.");
@@ -341,7 +348,10 @@ export function AppealAction({ jobId }: { jobId: `0x${string}` }) {
       const payload = await payloadResponse.json().catch(() => ({})) as { verifierAddress?: `0x${string}`; specificationUrl?: string; specificationHash?: string; evidenceUrl?: string; evidenceHash?: string; error?: string };
       if (!payloadResponse.ok || !payload.verifierAddress || !payload.specificationUrl || !payload.specificationHash || !payload.evidenceUrl || !payload.evidenceHash) throw new Error(payload.error || "The locked appeal evidence could not be prepared.");
       const pendingKey = `workify:appeal:${jobId}:${selectedNetwork}:${attempt}`;
-      if (window.sessionStorage.getItem(pendingKey)) { setStatus("This appeal transaction is already pending. Refresh status instead of paying again."); return; }
+      activePendingKey = pendingKey;
+      const previous = window.sessionStorage.getItem(pendingKey);
+      if (previous) { setStatus(previous === "STARTING" ? "This appeal request is already being submitted. Wait for the wallet prompt to finish." : "This appeal transaction is already pending. Refresh status instead of paying again."); return; }
+      window.sessionStorage.setItem(pendingKey, "STARTING");
       setStatus(selectedNetwork === "studionet" ? "Submitting the free StudioNet appeal review…" : "Submitting the appeal verifier call with exactly 1 GEN…");
       const transactionHash = await client.writeContract({ address: payload.verifierAddress, functionName: "verify", args: [jobId, payload.specificationUrl, payload.specificationHash.replace(/^0x/u, ""), payload.evidenceUrl, payload.evidenceHash.replace(/^0x/u, ""), attempt, true, contextUrl] as never[], value: fee });
       window.sessionStorage.setItem(pendingKey, transactionHash);
@@ -350,7 +360,7 @@ export function AppealAction({ jobId }: { jobId: `0x${string}` }) {
       if (!queuedResponse.ok && queuedResponse.status !== 409) throw new Error(queued.error || "The appeal could not be queued. Do not submit another payment.");
       window.sessionStorage.removeItem(pendingKey);
       setStatus("Appeal review is live. GenLayer validators are processing the locked evidence.");
-    } catch (error) { setStatus(errorText(error) || "Appeal failed. No duplicate payment was sent."); }
+    } catch (error) { if (activePendingKey && window.sessionStorage.getItem(activePendingKey) === "STARTING") window.sessionStorage.removeItem(activePendingKey); setStatus(errorText(error) || "Appeal failed. No duplicate payment was sent."); }
     finally { busy.current = false; setSubmitting(false); }
   }
   return <div className="glass card form" style={{ marginTop: 28 }}><WalletButton onAccount={setAccount} /><div className="field"><label htmlFor={`appeal-statement-${jobId}`}>Appeal statement</label><textarea id={`appeal-statement-${jobId}`} rows={6} value={statement} onChange={(event) => setStatement(event.target.value)} placeholder="Identify the criterion or evidence that was misinterpreted" /></div><p className="muted">Appeals begin within five minutes. StudioNet appeals are free; Bradbury appeals cost exactly 1 GEN. Your appeal transaction directly starts the GenLayer review.</p><button className="button" type="button" onClick={() => void appeal()} disabled={submitting}>{submitting ? "Submitting appeal review…" : "Open appeal and request review"}</button>{status && <p className="muted">{status}</p>}</div>;

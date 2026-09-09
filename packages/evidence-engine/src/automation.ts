@@ -185,6 +185,35 @@ export async function runAutomationBatch(limit = 20) {
       );
       processed += 1;
     } catch (error) {
+      if (error instanceof WorkifyError && error.code === "GENLAYER_EXECUTION_ERROR" && intent.action === "importVerdict" && intent.genlayerTxHash && intent.verifierAddress && intent.evidenceHash && intent.policyVersion) {
+        try {
+          const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
+          if (!escrow) throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Base escrow address is not configured");
+          const outcome = {
+            jobId: intent.jobId as Hex,
+            chainId: 84532n,
+            escrow,
+            verifierId: keccak256(stringToHex(String(intent.verifierAddress).toLowerCase())),
+            genlayerTxHash: intent.genlayerTxHash as Hex,
+            attempt: Number(intent.attempt),
+            evidenceHash: bytes32(String(intent.evidenceHash)),
+            policyHash: keccak256(stringToHex(String(intent.policyVersion))),
+            outcome: 1,
+            nonce: BigInt(String(intent.nonce)),
+            appeal: Boolean(intent.appeal),
+          };
+          const signature = await signOutcomeAttestation(outcome, escrow);
+          const transaction = await executeBaseRelayAction("recordAttemptOutcome", String(intent.jobId), { outcome, signature });
+          await db.collection("relay_intents").updateOne(
+            { _id: intent._id },
+            { $set: { status: "CONFIRMED", lifecycle: "BASE_RETRY_WINDOW", outcomeTransactionHash: transaction.transactionHash, signerAddress: transaction.signerAddress, blockNumber: transaction.blockNumber.toString(), confirmedAt: new Date(), updatedAt: new Date() }, $inc: { attempts: 1 } },
+          );
+          processed += 1;
+          continue;
+        } catch (recoveryError) {
+          error = recoveryError;
+        }
+      }
       const infrastructureFailures = Number(intent.infrastructureFailures || 0) + 1;
       const terminal = error instanceof WorkifyError && ["ATTESTATION_INVALID", "DUPLICATE_SUBMISSION", "USER_INPUT"].includes(error.code);
       const delayMs = Math.min(15_000 * (2 ** Math.min(infrastructureFailures - 1, 5)), 300_000);

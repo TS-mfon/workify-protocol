@@ -31,6 +31,7 @@ export async function GET(request: Request) {
       verifierTransactionHash: intent.genlayerTxHash || null,
       baseRequestTransactionHash: intent.baseRequestTransactionHash || null,
       verdictImportTransactionHash: intent.transactionHash || null,
+      outcomeTransactionHash: intent.outcomeTransactionHash || null,
       failureReason: intent.failureReason || intent.baseRequestFailure || null,
       lifecycle: intent.lifecycle || (intent.status === "PENDING_PAYMENT" ? "PAYMENT_PENDING" : intent.genlayerTxHash ? "VERIFIER_SUBMITTED" : "QUEUED"),
       retryable: Boolean(intent.retryable),
