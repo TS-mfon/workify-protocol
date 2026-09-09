@@ -22,7 +22,7 @@ export async function runAutomationBatch(limit = 20) {
   for (const intent of intents) {
     try {
       const selectedNetwork = (String(intent.genlayerNetwork || "bradbury") === "studionet" ? "studionet" : "bradbury") as GenLayerNetwork;
-      if (!intent.genlayerTxHash && intent.verifierAddress && intent.specificationUrl && intent.evidenceUrl && intent.policyVersion) {
+      if (intent.submissionMode !== "direct_user_transaction" && !intent.genlayerTxHash && intent.verifierAddress && intent.specificationUrl && intent.evidenceUrl && intent.policyVersion) {
         const submission = await submitVerification({
           jobId: intent.jobId as Hex,
           verifierAddress: intent.verifierAddress as `0x${string}`,
@@ -69,6 +69,26 @@ export async function runAutomationBatch(limit = 20) {
       let action = String(intent.action) as BaseRelayAction;
       let params: BaseRelayParameters;
       if (action === "importVerdict" && !intent.baseRequestTransactionHash) {
+        if (Boolean(intent.appeal)) {
+          const message = {
+            jobId: intent.jobId as Hex,
+            chainId: 84532n,
+            escrow,
+            appellant: intent.feePayer as `0x${string}`,
+            genlayerPaymentTxHash: intent.genlayerTxHash as Hex,
+            nonce: BigInt(String(intent.nonce)),
+          };
+          const signature = await signAppealFundingAttestation(message, escrow);
+          const funded = await executeBaseRelayAction("confirmAppealFunded", String(intent.jobId), {
+            genlayerPaymentTxHash: message.genlayerPaymentTxHash,
+            nonce: message.nonce,
+            signature,
+          });
+          await db.collection("relay_intents").updateOne(
+            { _id: intent._id },
+            { $set: { appealFundTransactionHash: funded.transactionHash, appealFundedAt: new Date(), updatedAt: new Date() } },
+          );
+        }
         try {
           const request = await executeBaseRelayAction("requestVerification", String(intent.jobId), { appeal: Boolean(intent.appeal) });
           await db.collection("relay_intents").updateOne(
@@ -81,6 +101,7 @@ export async function runAutomationBatch(limit = 20) {
             { $set: { baseRequestFailure: error instanceof Error ? error.message : "Base verification request status is unknown", updatedAt: new Date() } },
           );
         }
+        continue;
       }
       if (action === "confirmAppealFunded") {
         if (!classification || classification === "PENDING") continue;

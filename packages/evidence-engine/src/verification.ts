@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { getGenLayerNetworkConfig, createServerGenLayerClient, type GenLayerNetwork } from "./genlayer-network";
-import { createPublicClient, fallback, http, type Hex } from "viem";
+import { createPublicClient, decodeFunctionData, fallback, http, parseEther, type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
 import { getDatabase } from "./mongodb";
 import { WorkifyError } from "./errors";
@@ -21,6 +21,123 @@ const jobAbi = [{
     { name: "verdictAppeal", type: "bool" }, { name: "appealFunded", type: "bool" },
   ] },],
 }] as const;
+
+const verifierAbi = [{ type: "function", name: "verify", stateMutability: "payable", inputs: [
+  { name: "job_id", type: "string" }, { name: "specification_url", type: "string" }, { name: "specification_hash", type: "string" },
+  { name: "evidence_url", type: "string" }, { name: "evidence_hash", type: "string" }, { name: "attempt", type: "uint32" },
+  { name: "appeal", type: "bool" }, { name: "appeal_context_url", type: "string" },
+], outputs: [{ name: "", type: "string" }] }] as const;
+
+function equalAddress(left: unknown, right: string) {
+  return typeof left === "string" && left.toLowerCase() === right.toLowerCase();
+}
+
+async function validateDirectTransaction(input: {
+  transactionHash: Hex; payer: `0x${string}`; verifierAddress: `0x${string}`; jobId: Hex; attempt: number; appeal: boolean;
+  specificationHash: string; evidenceHash: string; network: GenLayerNetwork;
+}) {
+  const key = process.env.GENLAYER_OPERATOR_PRIVATE_KEY as Hex | undefined;
+  if (!key) throw new WorkifyError("GENLAYER_PREFLIGHT", "GenLayer transaction inspection is not configured", true);
+  const client = createServerGenLayerClient(input.network, key);
+  const transaction = await client.getTransaction({ hash: input.transactionHash as never }) as unknown as Record<string, unknown>;
+  const sender = transaction.from_address || transaction.sender;
+  const recipient = transaction.to_address || transaction.recipient;
+  if (sender && !equalAddress(sender, input.payer)) throw new WorkifyError("ATTESTATION_INVALID", "The GenLayer transaction sender does not match the connected wallet");
+  if (recipient && !equalAddress(recipient, input.verifierAddress)) throw new WorkifyError("ATTESTATION_INVALID", "The GenLayer transaction targeted a different verifier");
+  const configuredFee = input.network === "studionet" ? 0n : input.appeal ? parseEther("1") : parseEther("0.1");
+  if (transaction.value !== undefined && BigInt(String(transaction.value)) !== configuredFee) throw new WorkifyError("INSUFFICIENT_GEN", `The verifier transaction must attach exactly ${configuredFee === 0n ? "0" : input.appeal ? "1" : "0.1"} GEN`);
+  const rawData = typeof transaction.txData === "string" ? transaction.txData : "";
+  if (!rawData.startsWith("0x")) throw new WorkifyError("ATTESTATION_INVALID", "The GenLayer transaction calldata is not available for verification yet");
+  if (rawData.startsWith("0x")) {
+    try {
+      const decoded = decodeFunctionData({ abi: verifierAbi, data: rawData as Hex });
+      const args = decoded.args as readonly [string, string, string, string, string, number | bigint, boolean, string];
+      if (args[0].toLowerCase() !== input.jobId.toLowerCase() || Number(args[5]) !== input.attempt || args[6] !== input.appeal || args[2].toLowerCase() !== input.specificationHash.replace(/^0x/u, "").toLowerCase() || args[4].toLowerCase() !== input.evidenceHash.replace(/^0x/u, "").toLowerCase()) {
+        throw new WorkifyError("ATTESTATION_INVALID", "The GenLayer transaction calldata does not match the locked review payload");
+      }
+    } catch (error) {
+      if (error instanceof WorkifyError) throw error;
+      throw new WorkifyError("ATTESTATION_INVALID", "The GenLayer transaction calldata could not be verified");
+    }
+  }
+  const status = String(transaction.statusName || transaction.status_name || transaction.status || "").toUpperCase();
+  if (["CANCELED", "CANCELLED"].includes(status)) throw new WorkifyError("GENLAYER_EXECUTION_ERROR", "The GenLayer review transaction was canceled");
+}
+
+export async function registerDirectVerification(input: {
+  jobId: Hex;
+  verifierAddress: `0x${string}`;
+  specificationUrl: string;
+  specificationHash: string;
+  evidenceUrl: string;
+  evidenceHash: string;
+  attempt: number;
+  appeal: boolean;
+  policyVersion: string;
+  appealContextUrl?: string;
+  transactionHash: Hex;
+  payer: `0x${string}`;
+  network?: GenLayerNetwork;
+}) {
+  const selectedNetwork = input.network || "bradbury";
+  const genlayer = getGenLayerNetworkConfig(selectedNetwork);
+  if (!genlayer.endpoint) throw new WorkifyError("GENLAYER_PREFLIGHT", `${selectedNetwork} GenLayer is not configured`);
+  if (input.attempt < 1 || input.attempt > 3) throw new WorkifyError("USER_INPUT", "Attempt must be 1-3");
+  if (!/^0x[a-fA-F0-9]{64}$/u.test(input.transactionHash)) throw new WorkifyError("USER_INPUT", "Invalid GenLayer transaction hash");
+  if (!/^0x[a-fA-F0-9]{40}$/u.test(input.payer)) throw new WorkifyError("USER_INPUT", "Invalid verification payer");
+  const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
+  if (!escrow) throw new WorkifyError("GENLAYER_PREFLIGHT", "Base escrow is not configured");
+  const current = await baseJobClient().readContract({ address: escrow, abi: jobAbi, functionName: "getJob", args: [input.jobId] });
+  const status = Number(current.status);
+  const expectedStatus = input.appeal ? 6 : (status === 2 || status === 4 ? status : 0);
+  if (!expectedStatus) throw new WorkifyError("DUPLICATE_SUBMISSION", status === 3 ? "This job is already being reviewed by GenLayer" : "This job is not ready for verification");
+  if (!input.appeal && input.attempt !== Number(current.attempts) + 1) throw new WorkifyError("DUPLICATE_SUBMISSION", "This verification attempt is not the next contract attempt");
+  if (input.appeal && String(current.appellant).toLowerCase() !== input.payer.toLowerCase()) throw new WorkifyError("DUPLICATE_SUBMISSION", "Appeal payer must be the wallet that opened the Base appeal");
+  await validateDirectTransaction({ ...input, network: selectedNetwork });
+  const db = await getDatabase();
+  const intentId = `${input.jobId}:${selectedNetwork}:${input.appeal ? "appeal" : "initial"}:${input.attempt}`;
+  const existing = await db.collection("relay_intents").findOne({ _id: intentId as never });
+  if (existing?.genlayerTxHash && String(existing.genlayerTxHash).toLowerCase() !== input.transactionHash.toLowerCase()) {
+    throw new WorkifyError("DUPLICATE_SUBMISSION", "This verification attempt already has a different GenLayer transaction");
+  }
+  if (existing?.genlayerTxHash) return { transactionHash: String(existing.genlayerTxHash), resumed: true };
+  const nonce = BigInt(`0x${randomBytes(16).toString("hex")}`).toString();
+  await db.collection("relay_intents").updateOne(
+    { _id: intentId as never },
+    { $setOnInsert: {
+      _id: intentId as never,
+      action: "importVerdict",
+      submissionMode: "direct_user_transaction",
+      jobId: input.jobId,
+      attempt: input.attempt,
+      appeal: input.appeal,
+      verifierAddress: input.verifierAddress,
+      specificationUrl: input.specificationUrl,
+      specificationHash: input.specificationHash,
+      evidenceUrl: input.evidenceUrl,
+      evidenceHash: input.evidenceHash,
+      ...(input.appealContextUrl ? { appealContextUrl: input.appealContextUrl } : {}),
+      policyVersion: input.policyVersion,
+      feePayer: input.payer,
+      genlayerNetwork: selectedNetwork,
+      genlayerTxHash: input.transactionHash,
+      nonce,
+      status: "PENDING",
+      lifecycle: "VERIFIER_SUBMITTED",
+      attempts: 0,
+      infrastructureFailures: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } },
+    { upsert: true },
+  );
+  await db.collection("verification_attempts").updateOne(
+    { jobId: input.jobId, attempt: input.attempt, appeal: input.appeal },
+    { $set: { jobId: input.jobId, attempt: input.attempt, appeal: input.appeal, verifierAddress: input.verifierAddress, genlayerTxHash: input.transactionHash, payer: input.payer, submissionMode: "direct_user_transaction", status: "SUBMITTED", createdAt: new Date(), updatedAt: new Date() } },
+    { upsert: true },
+  );
+  return { transactionHash: input.transactionHash };
+}
 
 function baseJobClient() {
   const primary = process.env.BASE_SEPOLIA_RPC_URL || process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org";

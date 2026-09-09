@@ -1,4 +1,4 @@
-import { getGenLayerNetworkConfig, submitVerification } from "@workify/evidence-engine";
+import { getGenLayerNetworkConfig, registerDirectVerification } from "@workify/evidence-engine";
 import { getDatabase } from "@workify/evidence-engine";
 import { NextResponse } from "next/server";
 import { createBasePublicClient, publicNetworkConfig } from "@/lib/network";
@@ -8,8 +8,18 @@ import type { Hex } from "viem";
 const inputSchema = z.object({
   jobId: z.string().regex(/^0x[a-fA-F0-9]{64}$/u),
   attempt: z.number().int().min(1).max(3),
-  feePayer: z.string().regex(/^0x[a-fA-F0-9]{40}$/u),
+  payer: z.string().regex(/^0x[a-fA-F0-9]{40}$/u),
+  transactionHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/u),
+  appeal: z.boolean().default(false),
+  appealContextUrl: z.string().url().optional(),
   network: z.enum(["bradbury", "studionet"]).optional(),
+});
+
+const prepareSchema = z.object({
+  jobId: z.string().regex(/^0x[a-fA-F0-9]{64}$/u),
+  attempt: z.coerce.number().int().min(1).max(3),
+  network: z.enum(["bradbury", "studionet"]).default("bradbury"),
+  appeal: z.enum(["true", "false"]).optional().transform((value) => value === "true"),
 });
 
 const jobAbi = [{
@@ -36,36 +46,47 @@ function publicOrigin(request: Request) {
   return new URL(request.url).origin;
 }
 
+async function loadVerificationPayload(request: Request, input: { jobId: string; network: "bradbury" | "studionet"; appeal?: boolean; appealContextUrl?: string }) {
+  const network = publicNetworkConfig();
+  const base = createBasePublicClient(network.baseRpc);
+  const job = await base.readContract({ address: network.escrow, abi: jobAbi, functionName: "getJob", args: [input.jobId as Hex] });
+  const db = await getDatabase();
+  const specificationHash = String(job.specificationHash).replace(/^0x/u, "").toLowerCase();
+  const evidenceHash = String(job.evidenceHash).replace(/^0x/u, "").toLowerCase();
+  const specification = await db.collection("specifications").findOne({ _id: specificationHash as never });
+  const evidence = await db.collection("evidence_manifests").findOne({ _id: evidenceHash as never });
+  const workType = String((specification?.document as { workType?: string } | undefined)?.workType || "");
+  const policyVersion = String((specification?.document as { policyVersion?: string } | undefined)?.policyVersion || "");
+  const verifierAddress = getGenLayerNetworkConfig(input.network).verifiers[workType];
+  if (!specification || !evidence || !verifierAddress || !policyVersion) throw new Error("The locked specification or evidence manifest is unavailable for verification.");
+  const origin = publicOrigin(request);
+  return { verifierAddress, specificationHash: `0x${specificationHash}`, evidenceHash: `0x${evidenceHash}`, specificationUrl: `${origin}/api/specifications/${specificationHash}`, evidenceUrl: `${origin}/api/evidence/${evidenceHash}`, policyVersion, ...(input.appealContextUrl ? { appealContextUrl: input.appealContextUrl } : {}) };
+}
+
+export async function GET(request: Request) {
+  try {
+    const params = new URL(request.url).searchParams;
+    const input = prepareSchema.parse({ jobId: params.get("jobId"), attempt: params.get("attempt"), network: params.get("network") || "bradbury" });
+    const payload = await loadVerificationPayload(request, input);
+    return NextResponse.json({ ...input, ...payload }, { headers: { "cache-control": "no-store" } });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Verification payload is unavailable" }, { status: 400 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const input = inputSchema.parse(await request.json());
     const selectedNetwork = input.network || (request.headers.get("cookie") || "").match(/(?:^|;\s*)workify-genlayer-network=(studionet|bradbury)/u)?.[1] || "bradbury";
-    const network = publicNetworkConfig();
-    const base = createBasePublicClient(network.baseRpc);
-    const job = await base.readContract({ address: network.escrow, abi: jobAbi, functionName: "getJob", args: [input.jobId as Hex] });
-    const db = await getDatabase();
-    const specificationHash = String(job.specificationHash).replace(/^0x/u, "").toLowerCase();
-    const evidenceHash = String(job.evidenceHash).replace(/^0x/u, "").toLowerCase();
-    const specification = await db.collection("specifications").findOne({ _id: specificationHash as never });
-    const evidence = await db.collection("evidence_manifests").findOne({ _id: evidenceHash as never });
-    const workType = String((specification?.document as { workType?: string } | undefined)?.workType || "");
-    const policyVersion = String((specification?.document as { policyVersion?: string } | undefined)?.policyVersion || "");
-    const verifierAddress = getGenLayerNetworkConfig(selectedNetwork as "bradbury" | "studionet").verifiers[workType];
-    if (!specification || !evidence || !verifierAddress || !policyVersion) {
-      return NextResponse.json({ error: "The locked specification or evidence manifest is unavailable for verification." }, { status: 409 });
-    }
-    const origin = publicOrigin(request);
-    const result = await submitVerification({
+    const payload = await loadVerificationPayload(request, { jobId: input.jobId, network: selectedNetwork as "bradbury" | "studionet", ...(input.appeal ? { appeal: true } : {}), ...(input.appealContextUrl ? { appealContextUrl: input.appealContextUrl } : {}) });
+    const result = await registerDirectVerification({
       jobId: input.jobId as Hex,
-      verifierAddress,
-      specificationUrl: `${origin}/api/specifications/${specificationHash}`,
-      specificationHash,
-      evidenceUrl: `${origin}/api/evidence/${evidenceHash}`,
-      evidenceHash,
+      ...payload,
       attempt: input.attempt,
-      appeal: false,
-      policyVersion,
-      feePayer: input.feePayer as `0x${string}`,
+      appeal: input.appeal,
+      ...(input.appealContextUrl ? { appealContextUrl: input.appealContextUrl } : {}),
+      payer: input.payer as `0x${string}`,
+      transactionHash: input.transactionHash as Hex,
       network: selectedNetwork as "bradbury" | "studionet",
     });
     return NextResponse.json({ queued: true, ...result });

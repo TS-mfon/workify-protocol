@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { decodeErrorResult, encodeFunctionData, parseEther, type Hash } from "viem";
+import { decodeErrorResult, encodeFunctionData, parseEther } from "viem";
 import { chains, createClient } from "genlayer-js";
-import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
 import { WalletButton } from "./WalletButton";
 import { publicNetworkConfig } from "@/lib/network";
 import { switchToBaseSepolia } from "@/lib/wallet-network";
@@ -12,19 +11,10 @@ import { switchToBaseSepolia } from "@/lib/wallet-network";
 type Provider = { request(args: { method: string; params?: unknown[] }): Promise<unknown> };
 declare global { interface Window { ethereum?: Provider } }
 
-type JobState = { status?: string; job?: { worker?: string; attempts?: string | number; appealAttempts?: string | number } };
-type GenReceipt = { status?: string | number; statusName?: string; status_name?: string; result?: string | number; resultName?: string; txExecutionResult?: string | number; txExecutionResultName?: string; executionResultName?: string; message?: string };
+type JobState = { status?: string; job?: { worker?: string; client?: string; appellant?: string; attempts?: string | number; appealAttempts?: string | number } };
 
 const network = publicNetworkConfig();
 const escrow = network.escrow;
-function genLayerTreasury(selectedNetwork: GenLayerNetwork): `0x${string}` {
-  if (selectedNetwork === "studionet") {
-    const address = process.env.NEXT_PUBLIC_STUDIO_NET_GEN_TREASURY_ADDRESS;
-    if (!address) throw new Error("StudioNet is not configured yet. Select Bradbury or contact the operator.");
-    return address as `0x${string}`;
-  }
-  return network.genTreasury;
-}
 const base = [
   { type: "function", name: "submitOrReplaceDelivery", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }, { name: "evidenceHash", type: "bytes32" }], outputs: [] },
   { type: "function", name: "lockDelivery", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }], outputs: [] },
@@ -184,33 +174,6 @@ async function readJobState(jobId: string): Promise<JobState> {
   return body;
 }
 
-function parsePayment(value: unknown) {
-  if (typeof value === "string") {
-    try { return JSON.parse(value) as { payer?: string; amount?: string | number; funded?: boolean }; } catch { return { payer: "", amount: "0", funded: false }; }
-  }
-  return (value || {}) as { payer?: string; amount?: string | number; funded?: boolean };
-}
-
-function paymentIsFunded(payment: { payer?: string; amount?: string | number; funded?: boolean }) {
-  const payer = String(payment.payer || "");
-  const amount = BigInt(String(payment.amount || 0));
-  return Boolean(payer && !/^0x0{40}$/iu.test(payer) && (payment.funded ?? amount > 0n));
-}
-
-async function recordPayment(jobId: string, kind: "verification" | "appeal", payer: string, transactionHash: string, networkName: GenLayerNetwork, attempt?: number) {
-  const response = await fetch("/api/payments/record", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId, kind, payer, transactionHash, network: networkName, ...(attempt ? { attempt } : {}) }) });
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(body.error || "Payment record could not be saved. Do not pay again.");
-}
-
-async function recoverPayment(jobId: string, kind: "verification" | "appeal", networkName: GenLayerNetwork, attempt?: number) {
-  const query = new URLSearchParams({ jobId, kind, network: networkName, ...(attempt ? { attempt: String(attempt) } : {}) });
-  const response = await fetch(`/api/payments/record?${query}`, { cache: "no-store" });
-  if (!response.ok) return "";
-  const body = await response.json().catch(() => ({})) as { transactionHash?: string | null };
-  return body.transactionHash || "";
-}
-
 type VerificationProgress = {
   status: string;
   lifecycle?: string;
@@ -234,33 +197,13 @@ function progressText(progress: VerificationProgress | null) {
   if (!progress || progress.status === "NOT_STARTED") return "No review has been queued for this attempt.";
   if (progress.status === "CONFIRMED") return "Review finalized and the verdict was imported to Base Sepolia.";
   if (progress.status === "FAILED") return progress.failureReason || "The review failed and requires operator attention.";
-  if (progress.lifecycle === "PAYMENT_PENDING") return "Review request recorded. Workify is confirming the treasury record; do not submit again.";
+  if (progress.lifecycle === "PAYMENT_PENDING") return "Review request recorded. Workify is waiting for GenLayer finality; do not submit again.";
   if (progress.lifecycle === "VERIFIER_SUBMITTED" || progress.lifecycle === "VERIFIER_PENDING" || progress.lifecycle === "VERIFIER_ACCEPTED") return "GenLayer validators are reviewing the locked evidence.";
   if (progress.lifecycle === "VERIFIER_FINALIZED") return "Validator agreement was reached. Workify is preparing the Base verdict import.";
   if (progress.lifecycle === "VERDICT_IMPORT_PENDING") return "The verdict is finalized and is being imported into the Base escrow.";
   if (progress.rpcError) return "A temporary GenLayer RPC outage occurred. Background automation will retry automatically.";
   return "The review is processing in the background. You may leave this page safely.";
 }
-
-async function waitForGenLayerDecision(client: { waitForTransactionReceipt(input: { hash: Hash; status?: TransactionStatus; interval?: number; retries?: number }): Promise<unknown> }, hash: Hash, label: string) {
-  let receipt: GenReceipt;
-  try {
-    receipt = await client.waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED, interval: 5_000, retries: 180 }) as GenReceipt;
-  } catch (error) {
-    throw new Error(formatWalletError(error, `${label} was submitted but GenLayer did not reach finality. Do not pay again until this transaction is inspected.`));
-  }
-  const execution = receipt.txExecutionResultName || receipt.executionResultName || (String(receipt.txExecutionResult) === "1" ? ExecutionResult.FINISHED_WITH_RETURN : "");
-  const rawStatus = receipt.statusName || receipt.status_name || receipt.status;
-  const status = rawStatus === 5 || rawStatus === "5" ? "ACCEPTED" : rawStatus === 6 || rawStatus === "6" ? "UNDETERMINED" : rawStatus === 7 || rawStatus === "7" ? "FINALIZED" : String(rawStatus || "").toUpperCase();
-  const result = receipt.resultName || (String(receipt.result) === "1" ? "AGREE" : "");
-  if (status.includes("UNDETERMINED")) throw new Error(`${label} is undetermined. No duplicate payment was sent; inspect the transaction before retrying.`);
-  if (!status.includes("FINALIZED") || result !== "AGREE" || execution !== ExecutionResult.FINISHED_WITH_RETURN) {
-    throw new Error(`${label} did not reach validator agreement. No duplicate payment was sent.`);
-  }
-  return receipt;
-}
-
-
 
 export function DeliveryAction({ jobId }: { jobId: `0x${string}` }) {
   const router = useRouter(); const busy = useRef(false); const [submitting, setSubmitting] = useState(false); const [account, setAccount] = useState<`0x${string}`>(); const [status, setStatus] = useState("");
@@ -326,29 +269,31 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
       const expectedAttempt = Number(current.job?.attempts || 0) + 1;
       if (attempt !== expectedAttempt) throw new Error(`Attempt ${expectedAttempt} is next; this page requested attempt ${attempt}.`);
       const client = await genLayerClient(account, selectedNetwork);
-      const activeTreasury = genLayerTreasury(selectedNetwork);
       const fee = selectedNetwork === "studionet" ? 0n : parseEther("0.1");
-      setStatus("Checking the selected GenLayer treasury…");
-      const existing = parsePayment(await client.readContract({ address: activeTreasury, functionName: "get_payment", args: [`${jobId}:verification:${attempt}`], jsonSafeReturn: true }));
-      const payer = String(existing.payer || "");
-      const amount = BigInt(String(existing.amount || 0));
-      const hasPayment = paymentIsFunded(existing);
-      if (hasPayment && payer.toLowerCase() !== account.toLowerCase()) throw new Error("This review was funded by a different wallet. Duplicate submission blocked.");
-      if (hasPayment && amount !== fee) throw new Error("The existing review payment has an invalid amount. Do not submit again; contact the operator.");
-      let transactionHash = hasPayment ? await recoverPayment(jobId, "verification", selectedNetwork, attempt) : "";
-      if (!hasPayment) {
-        if (selectedNetwork === "bradbury") await ensureGenLayerBalance(account);
-        setStatus(selectedNetwork === "studionet" ? "Recording a free StudioNet review…" : "Requesting exactly 0.1 GEN…");
-        transactionHash = await client.writeContract({ address: activeTreasury, functionName: "fund_verification", args: [jobId, attempt], value: fee });
-        await recordPayment(jobId, "verification", account, transactionHash, selectedNetwork, attempt);
-      } else if (!transactionHash) {
-        throw new Error("This review already exists, but its transaction is not recoverable. Do not submit again; contact support.");
+      if (selectedNetwork === "bradbury") await ensureGenLayerBalance(account);
+      const payloadResponse = await fetch(`/api/verification/queue?jobId=${jobId}&attempt=${attempt}&network=${selectedNetwork}`, { cache: "no-store" });
+      const payload = await payloadResponse.json().catch(() => ({})) as { verifierAddress?: `0x${string}`; specificationUrl?: string; specificationHash?: string; evidenceUrl?: string; evidenceHash?: string; policyVersion?: string; error?: string };
+      if (!payloadResponse.ok || !payload.verifierAddress || !payload.specificationUrl || !payload.specificationHash || !payload.evidenceUrl || !payload.evidenceHash || !payload.policyVersion) throw new Error(payload.error || "The locked evidence payload could not be prepared.");
+      const pendingKey = `workify:verify:${jobId}:${selectedNetwork}:${attempt}`;
+      const previous = window.sessionStorage.getItem(pendingKey);
+      if (previous) {
+        setStatus("This review transaction is already submitted. Resuming registration without another payment…");
+        const resumed = await fetch("/api/verification/queue", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId, attempt, payer: account, transactionHash: previous, network: selectedNetwork }) });
+        const resumedBody = await resumed.json().catch(() => ({}));
+        if (!resumed.ok && resumed.status !== 409) throw new Error(resumedBody.error || "The existing review transaction is not indexed yet. Retry status shortly; do not pay again.");
+        window.sessionStorage.removeItem(pendingKey);
+        await refreshProgress();
+        return;
       }
-      setStatus("Review request recorded. Queueing the GenLayer verifier…");
-      const queuedResponse = await fetch("/api/verification/queue", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId, attempt, feePayer: account, network: selectedNetwork }) });
+      setStatus(selectedNetwork === "studionet" ? "Submitting the free StudioNet review…" : "Submitting the verifier call with exactly 0.1 GEN…");
+      const transactionHash = await client.writeContract({ address: payload.verifierAddress, functionName: "verify", args: [jobId, payload.specificationUrl, payload.specificationHash.replace(/^0x/u, ""), payload.evidenceUrl, payload.evidenceHash.replace(/^0x/u, ""), attempt, false, ""] as never[], value: fee });
+      window.sessionStorage.setItem(pendingKey, transactionHash);
+      setStatus("Review transaction submitted. Registering it for background finality tracking…");
+      const queuedResponse = await fetch("/api/verification/queue", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId, attempt, payer: account, transactionHash, network: selectedNetwork }) });
       const queued = await queuedResponse.json().catch(() => ({}));
       if (!queuedResponse.ok && queuedResponse.status !== 409) throw new Error(queued.error || "The review could not be queued. Do not submit another payment; use Refresh status.");
-      setStatus("Review queued. Background automation will continue even if you leave this page.");
+      window.sessionStorage.removeItem(pendingKey);
+      setStatus("Review is live. GenLayer validators are processing the locked evidence.");
       await refreshProgress();
     } catch (error) {
       setStatus(errorText(error) || "Verification could not be started. No duplicate payment was sent.");
@@ -372,9 +317,43 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
 }
 
 export function AppealAction({ jobId }: { jobId: `0x${string}` }) {
-  const busy = useRef(false); const [submitting, setSubmitting] = useState(false); const [account, setAccount] = useState<`0x${string}`>(); const [status, setStatus] = useState("");
-  async function appeal() { if (busy.current) return; busy.current = true; setSubmitting(true); try { if (!account || !window.ethereum) throw new Error("Connect a wallet first."); const current = await readJobState(jobId); if (!['APPEAL_WINDOW', 'APPEAL_FUNDING'].includes(current.status || "")) throw new Error(`Appeal is unavailable while this job is ${current.status?.replaceAll("_", " ") || "processing"}.`); if (current.status === "APPEAL_WINDOW") { setStatus("Opening appeal intent on Base Sepolia…"); await sendBaseTransaction(account, encodeFunctionData({ abi: base, functionName: "openAppealIntent", args: [jobId] }), "Appeal intent"); } const selectedNetwork = (typeof window !== "undefined" && window.localStorage.getItem("workify-genlayer-network") === "studionet" ? "studionet" : "bradbury") as GenLayerNetwork; const client = await genLayerClient(account, selectedNetwork); const activeTreasury = genLayerTreasury(selectedNetwork); const fee = selectedNetwork === "studionet" ? 0n : parseEther("1"); setStatus("Checking the GenLayer appeal payment…"); const existing = parsePayment(await client.readContract({ address: activeTreasury, functionName: "get_payment", args: [`${jobId}:appeal`], jsonSafeReturn: true })); const payer = String(existing.payer || ""); const amount = BigInt(String(existing.amount || 0)); const hasPayment = paymentIsFunded(existing); if (hasPayment && payer.toLowerCase() !== account.toLowerCase()) throw new Error("This appeal fee was funded by a different wallet. Duplicate payment blocked."); if (hasPayment && amount !== fee) throw new Error("The existing appeal payment has an invalid amount. Do not pay again; contact the operator."); let tx = hasPayment ? await recoverPayment(jobId, "appeal", selectedNetwork) : ""; if (hasPayment && !tx) throw new Error("This appeal payment already exists, but its transaction is not recoverable. Do not pay again; contact support."); if (!hasPayment) { setStatus(selectedNetwork === "studionet" ? "Recording a free StudioNet appeal…" : "Requesting your signature for exactly 1 GEN…"); tx = await client.writeContract({ address: activeTreasury, functionName: "fund_appeal", args: [jobId], value: fee }); await recordPayment(jobId, "appeal", account, tx, selectedNetwork); await waitForGenLayerDecision(client, tx as Hash, "Appeal funding"); } else { setStatus("Appeal payment already accepted. Resuming confirmation without another payment…"); } setStatus("Queueing appeal confirmation…"); const queued = await fetch("/api/appeal/confirm", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId, appellant: account, genlayerPaymentTxHash: tx, network: selectedNetwork }) }); const body = await queued.json().catch(() => ({})); if (!queued.ok) throw new Error(body.error || "Appeal confirmation could not be queued. Do not pay again; retry confirmation."); await switchToBase(); setStatus(`Appeal fee accepted and confirmation queued (${tx.slice(0, 10)}…).`); } catch (error) { setStatus(errorText(error) || "Appeal failed. No duplicate payment was sent."); } finally { busy.current = false; setSubmitting(false); } }
-  return <div className="glass card form" style={{ marginTop: 28 }}><WalletButton onAccount={setAccount} /><div className="field"><label>Appeal statement</label><textarea rows={6} placeholder="Identify the criterion or evidence that was misinterpreted" /></div><p className="muted">Appeals must begin within five minutes. StudioNet appeals are free; Bradbury appeals cost 1 GEN. The original evidence remains immutable.</p><button className="button" type="button" onClick={() => void appeal()} disabled={submitting}>{submitting ? "Processing appeal…" : "Open appeal and fund 1 GEN"}</button>{status && <p className="muted">{status}</p>}</div>;
+  const busy = useRef(false); const [submitting, setSubmitting] = useState(false); const [account, setAccount] = useState<`0x${string}`>(); const [status, setStatus] = useState(""); const [statement, setStatement] = useState("");
+  async function appeal() {
+    if (busy.current) return;
+    busy.current = true; setSubmitting(true);
+    try {
+      if (!account || !window.ethereum) throw new Error("Connect a wallet first.");
+      if (statement.trim().length < 1) throw new Error("Explain which criterion or evidence should be reconsidered.");
+      let current = await readJobState(jobId);
+      if (!["APPEAL_WINDOW", "APPEAL_FUNDING"].includes(current.status || "")) throw new Error(`Appeal is unavailable while this job is ${current.status?.replaceAll("_", " ") || "processing"}.`);
+      if (current.status === "APPEAL_WINDOW") {
+        setStatus("Opening the appeal window on Base Sepolia…");
+        await sendBaseTransaction(account, encodeFunctionData({ abi: base, functionName: "openAppealIntent", args: [jobId] }), "Appeal intent", `workify:appeal:${jobId}`);
+        current = await readJobState(jobId);
+      }
+      const selectedNetwork = (window.localStorage.getItem("workify-genlayer-network") === "studionet" ? "studionet" : "bradbury") as GenLayerNetwork;
+      const attempt = Number(current.job?.appealAttempts || 0) + 1;
+      if (attempt > 3) throw new Error("This job has reached the maximum of three appeal attempts.");
+      const contextUrl = `${window.location.origin}/api/appeal/context?jobId=${encodeURIComponent(jobId)}&statement=${encodeURIComponent(statement.trim())}`;
+      const client = await genLayerClient(account, selectedNetwork);
+      const fee = selectedNetwork === "studionet" ? 0n : parseEther("1");
+      const payloadResponse = await fetch(`/api/verification/queue?jobId=${jobId}&attempt=${attempt}&network=${selectedNetwork}&appeal=true&appealContextUrl=${encodeURIComponent(contextUrl)}`, { cache: "no-store" });
+      const payload = await payloadResponse.json().catch(() => ({})) as { verifierAddress?: `0x${string}`; specificationUrl?: string; specificationHash?: string; evidenceUrl?: string; evidenceHash?: string; error?: string };
+      if (!payloadResponse.ok || !payload.verifierAddress || !payload.specificationUrl || !payload.specificationHash || !payload.evidenceUrl || !payload.evidenceHash) throw new Error(payload.error || "The locked appeal evidence could not be prepared.");
+      const pendingKey = `workify:appeal:${jobId}:${selectedNetwork}:${attempt}`;
+      if (window.sessionStorage.getItem(pendingKey)) { setStatus("This appeal transaction is already pending. Refresh status instead of paying again."); return; }
+      setStatus(selectedNetwork === "studionet" ? "Submitting the free StudioNet appeal review…" : "Submitting the appeal verifier call with exactly 1 GEN…");
+      const transactionHash = await client.writeContract({ address: payload.verifierAddress, functionName: "verify", args: [jobId, payload.specificationUrl, payload.specificationHash.replace(/^0x/u, ""), payload.evidenceUrl, payload.evidenceHash.replace(/^0x/u, ""), attempt, true, contextUrl] as never[], value: fee });
+      window.sessionStorage.setItem(pendingKey, transactionHash);
+      const queuedResponse = await fetch("/api/verification/queue", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobId, attempt, payer: account, transactionHash, network: selectedNetwork, appeal: true, appealContextUrl: contextUrl }) });
+      const queued = await queuedResponse.json().catch(() => ({}));
+      if (!queuedResponse.ok && queuedResponse.status !== 409) throw new Error(queued.error || "The appeal could not be queued. Do not submit another payment.");
+      window.sessionStorage.removeItem(pendingKey);
+      setStatus("Appeal review is live. GenLayer validators are processing the locked evidence.");
+    } catch (error) { setStatus(errorText(error) || "Appeal failed. No duplicate payment was sent."); }
+    finally { busy.current = false; setSubmitting(false); }
+  }
+  return <div className="glass card form" style={{ marginTop: 28 }}><WalletButton onAccount={setAccount} /><div className="field"><label htmlFor={`appeal-statement-${jobId}`}>Appeal statement</label><textarea id={`appeal-statement-${jobId}`} rows={6} value={statement} onChange={(event) => setStatement(event.target.value)} placeholder="Identify the criterion or evidence that was misinterpreted" /></div><p className="muted">Appeals begin within five minutes. StudioNet appeals are free; Bradbury appeals cost exactly 1 GEN. Your appeal transaction directly starts the GenLayer review.</p><button className="button" type="button" onClick={() => void appeal()} disabled={submitting}>{submitting ? "Submitting appeal review…" : "Open appeal and request review"}</button>{status && <p className="muted">{status}</p>}</div>;
 }
 
 export function SettleAction({ jobId }: { jobId: `0x${string}` }) { const busy = useRef(false); const [submitting, setSubmitting] = useState(false); const [status, setStatus] = useState(""); return <button className="button secondary" type="button" disabled={submitting} onClick={async () => { if (busy.current) return; busy.current = true; setSubmitting(true); try { if (!window.ethereum) throw new Error("Connect a Base Sepolia wallet first."); const accounts = await window.ethereum.request({ method: "eth_requestAccounts" }) as `0x${string}`[]; if (!accounts[0]) throw new Error("Connect a Base Sepolia wallet first."); const tx = await sendBaseTransaction(accounts[0], encodeFunctionData({ abi: base, functionName: "settle", args: [jobId] }), "Settlement"); setStatus(`Settlement confirmed: ${tx.slice(0, 10)}…`); } catch (error) { setStatus(errorText(error) || "Settlement failed. No duplicate transaction was sent."); } finally { busy.current = false; setSubmitting(false); } }}>{submitting ? "Confirming settlement…" : status || "Settle when eligible"}</button>; }
