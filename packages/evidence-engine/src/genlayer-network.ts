@@ -112,12 +112,26 @@ export function getGenLayerNetworkConfig(network: GenLayerNetwork = "bradbury"):
 
 export function createServerGenLayerClient(network: GenLayerNetwork, key: Hex) {
   const config = getGenLayerNetworkConfig(network);
-  return network === "studionet"
-    ? createClient({ chain: config.chain, account: createAccount(key) })
-    : createClient({ chain: config.chain, endpoint: config.endpoint, account: createAccount(key) });
+  return createClient({ chain: configuredChain(config), account: createAccount(key) });
+}
+
+export function createReadOnlyGenLayerClient(network: GenLayerNetwork) {
+  const config = getGenLayerNetworkConfig(network);
+  return createClient({ chain: configuredChain(config) });
 }
 
 export function createWalletGenLayerClient(network: GenLayerNetwork, account: Account, provider: unknown) {
   const config = getGenLayerNetworkConfig(network);
-  return createClient({ chain: config.chain, account, provider: provider as never });
+  return createClient({ chain: configuredChain(config), account, provider: provider as never });
+}
+
+function configuredChain(config: GenLayerNetworkConfig) {
+  const source = config.chain as { rpcUrls: { default: { http: readonly string[] } } };
+  return {
+    ...source,
+    rpcUrls: {
+      ...source.rpcUrls,
+      default: { ...source.rpcUrls.default, http: [config.endpoint] },
+    },
+  } as never;
 }
