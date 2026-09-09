@@ -18,7 +18,7 @@ const inputSchema = z.object({
 const prepareSchema = z.object({
   jobId: z.string().regex(/^0x[a-fA-F0-9]{64}$/u),
   attempt: z.coerce.number().int().min(1).max(3),
-  network: z.enum(["bradbury", "studionet"]).default("bradbury"),
+  network: z.enum(["bradbury", "studionet"]).default("studionet"),
   appeal: z.enum(["true", "false"]).optional().transform((value) => value === "true"),
 });
 
@@ -70,7 +70,7 @@ async function loadVerificationPayload(request: Request, input: { jobId: string;
 export async function GET(request: Request) {
   try {
     const params = new URL(request.url).searchParams;
-    const input = prepareSchema.parse({ jobId: params.get("jobId"), attempt: params.get("attempt"), network: params.get("network") || "bradbury" });
+    const input = prepareSchema.parse({ jobId: params.get("jobId"), attempt: params.get("attempt"), network: params.get("network") || "studionet" });
     const payload = await loadVerificationPayload(request, input);
     return NextResponse.json({ ...input, ...payload }, { headers: { "cache-control": "no-store" } });
   } catch (error) {
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const input = inputSchema.parse(await request.json());
-    const selectedNetwork = input.network || (request.headers.get("cookie") || "").match(/(?:^|;\s*)workify-genlayer-network=(studionet|bradbury)/u)?.[1] || "bradbury";
+    const selectedNetwork = input.network || "studionet";
     const payload = await loadVerificationPayload(request, { jobId: input.jobId, network: selectedNetwork as "bradbury" | "studionet", ...(input.appeal ? { appeal: true } : {}), ...(input.appealContextUrl ? { appealContextUrl: input.appealContextUrl } : {}) });
     const result = await registerDirectVerification({
       jobId: input.jobId as Hex,

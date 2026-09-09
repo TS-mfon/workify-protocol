@@ -212,13 +212,13 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
   const [account, setAccount] = useState<`0x${string}`>();
   const [status, setStatus] = useState("");
   const [progress, setProgress] = useState<VerificationProgress | null>(null);
-  const [selectedNetwork, setSelectedNetwork] = useState<GenLayerNetwork>(() => typeof window !== "undefined" && window.localStorage.getItem("workify-genlayer-network") === "studionet" ? "studionet" : "bradbury");
+  const [selectedNetwork, setSelectedNetwork] = useState<GenLayerNetwork>("studionet");
   const [studioReady, setStudioReady] = useState(false);
 
   useEffect(() => {
     const onChange = (event: Event) => {
       const value = (event as CustomEvent<GenLayerNetwork>).detail;
-      if (value === "bradbury" || value === "studionet") setSelectedNetwork(value);
+      if (value === "studionet") setSelectedNetwork(value);
     };
     window.addEventListener("workify-genlayer-network-change", onChange);
     return () => window.removeEventListener("workify-genlayer-network-change", onChange);
@@ -306,10 +306,10 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
   return <div className="glass card" style={{ marginTop: 28 }}>
     <WalletButton onAccount={setAccount} />
     <span className="status"><span className="pulse" /> Attempt {attempt} of 3</span>
-    <h2>{selectedNetwork === "studionet" ? "Free review" : "0.1 GEN"}</h2>
-    <div className="field"><label htmlFor={`genlayer-network-${jobId}`}>Adjudication network</label><select id={`genlayer-network-${jobId}`} value={selectedNetwork} onChange={(event) => { const value = event.target.value as GenLayerNetwork; setSelectedNetwork(value); window.localStorage.setItem("workify-genlayer-network", value); document.cookie = `workify-genlayer-network=${value}; Path=/; SameSite=Lax`; }} disabled={submitting}><option value="bradbury">Bradbury · 0.1 GEN</option><option value="studionet" disabled={!studioReady}>StudioNet · free{studioReady ? "" : " · unavailable"}</option></select></div>
-    <p className="muted">Workify does not add an application fee. The selected verifier and network may still require protocol-level execution resources. The network is locked to this review attempt.</p>
-    <button className="button" type="button" onClick={() => void fund()} disabled={submitting || (selectedNetwork === "studionet" && !studioReady)}>{submitting ? "Queueing review…" : selectedNetwork === "studionet" ? "Request free verification" : "Fund and request verification"}</button>
+    <h2>Zero-fee review</h2>
+    <div className="field"><label htmlFor={`genlayer-network-${jobId}`}>Adjudication network</label><select id={`genlayer-network-${jobId}`} value="studionet" disabled><option value="studionet">StudioNet V11 · zero application fee</option></select></div>
+    <p className="muted">Your connected wallet submits one direct StudioNet transaction. Workify does not collect GEN for verification or appeals.</p>
+    <button className="button" type="button" onClick={() => void fund()} disabled={submitting || !studioReady}>{submitting ? "Requesting review…" : "Request verification"}</button>
     <button className="button secondary" type="button" onClick={() => void refreshProgress()} disabled={submitting}>Refresh status</button>
     {(status || progress) && <div className={`transaction-state ${progress?.status === "FAILED" ? "error" : progress?.status === "CONFIRMED" ? "success" : ""}`}><div><b>{String(progress?.lifecycle || progress?.status || "REVIEW_STATUS").replaceAll("_", " ")}</b><span>{status || progressText(progress)}</span>{progress?.rpcError && <small>Temporary RPC issue: {progress.rpcError}</small>}<div className="transaction-links">{progress?.verifierTransactionHash && <a href={`${explorer}/tx/${progress.verifierTransactionHash}`} target="_blank" rel="noreferrer">Open GenLayer transaction</a>}{progress?.baseRequestTransactionHash && <a href={`https://sepolia.basescan.org/tx/${progress.baseRequestTransactionHash}`} target="_blank" rel="noreferrer">Open Base request</a>}{progress?.verdictImportTransactionHash && <a href={`https://sepolia.basescan.org/tx/${progress.verdictImportTransactionHash}`} target="_blank" rel="noreferrer">Open verdict import</a>}</div></div></div>}
   </div>;
@@ -331,7 +331,7 @@ export function AppealAction({ jobId }: { jobId: `0x${string}` }) {
         await sendBaseTransaction(account, encodeFunctionData({ abi: base, functionName: "openAppealIntent", args: [jobId] }), "Appeal intent", `workify:appeal:${jobId}`);
         current = await readJobState(jobId);
       }
-      const selectedNetwork = (window.localStorage.getItem("workify-genlayer-network") === "studionet" ? "studionet" : "bradbury") as GenLayerNetwork;
+      const selectedNetwork = "studionet" as GenLayerNetwork;
       const attempt = Number(current.job?.appealAttempts || 0) + 1;
       if (attempt > 3) throw new Error("This job has reached the maximum of three appeal attempts.");
       const contextUrl = `${window.location.origin}/api/appeal/context?jobId=${encodeURIComponent(jobId)}&statement=${encodeURIComponent(statement.trim())}`;
@@ -356,7 +356,7 @@ export function AppealAction({ jobId }: { jobId: `0x${string}` }) {
     } catch (error) { if (activePendingKey && window.sessionStorage.getItem(activePendingKey) === "STARTING") window.sessionStorage.removeItem(activePendingKey); setStatus(errorText(error) || "Appeal failed. No duplicate payment was sent."); }
     finally { busy.current = false; setSubmitting(false); }
   }
-  return <div className="glass card form" style={{ marginTop: 28 }}><WalletButton onAccount={setAccount} /><div className="field"><label htmlFor={`appeal-statement-${jobId}`}>Appeal statement</label><textarea id={`appeal-statement-${jobId}`} rows={6} value={statement} onChange={(event) => setStatement(event.target.value)} placeholder="Identify the criterion or evidence that was misinterpreted" /></div><p className="muted">Appeals begin within five minutes. StudioNet appeals are free; Bradbury appeals cost exactly 1 GEN. Your appeal transaction directly starts the GenLayer review.</p><button className="button" type="button" onClick={() => void appeal()} disabled={submitting}>{submitting ? "Submitting appeal review…" : "Open appeal and request review"}</button>{status && <p className="muted">{status}</p>}</div>;
+  return <div className="glass card form" style={{ marginTop: 28 }}><WalletButton onAccount={setAccount} /><div className="field"><label htmlFor={`appeal-statement-${jobId}`}>Appeal statement</label><textarea id={`appeal-statement-${jobId}`} rows={6} value={statement} onChange={(event) => setStatement(event.target.value)} placeholder="Identify the criterion or evidence that was misinterpreted" /></div><p className="muted">Appeals begin within five minutes and use the zero-fee StudioNet V11 verifier. Your wallet directly starts the review.</p><button className="button" type="button" onClick={() => void appeal()} disabled={submitting}>{submitting ? "Submitting appeal review…" : "Open appeal and request review"}</button>{status && <p className="muted">{status}</p>}</div>;
 }
 
 export function SettleAction({ jobId }: { jobId: `0x${string}` }) { const busy = useRef(false); const [submitting, setSubmitting] = useState(false); const [status, setStatus] = useState(""); return <button className="button secondary" type="button" disabled={submitting} onClick={async () => { if (busy.current) return; busy.current = true; setSubmitting(true); try { if (!window.ethereum) throw new Error("Connect a Base Sepolia wallet first."); const accounts = await window.ethereum.request({ method: "eth_requestAccounts" }) as `0x${string}`[]; if (!accounts[0]) throw new Error("Connect a Base Sepolia wallet first."); const tx = await sendBaseTransaction(accounts[0], encodeFunctionData({ abi: base, functionName: "settle", args: [jobId] }), "Settlement"); setStatus(`Settlement confirmed: ${tx.slice(0, 10)}…`); } catch (error) { setStatus(errorText(error) || "Settlement failed. No duplicate transaction was sent."); } finally { busy.current = false; setSubmitting(false); } }}>{submitting ? "Confirming settlement…" : status || "Settle when eligible"}</button>; }

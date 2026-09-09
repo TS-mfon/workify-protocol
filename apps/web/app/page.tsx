@@ -37,7 +37,7 @@ export default async function Home() {
     <section className="mechanism-list shell">
       <article><span><CircleDollarSign size={19}/></span><div><h3>Atomic escrow</h3><p>The Base contract transfers USDC before persisting a job. An unfunded job cannot exist.</p></div><code>BASE</code></article>
       <article><span><Fingerprint size={19}/></span><div><h3>Evidence-bound adjudication</h3><p>Specifications and manifests are canonicalized and hashed. Validators fetch the same public sources.</p></div><code>GENLAYER</code></article>
-      <article><span><Gavel size={19}/></span><div><h3>Appealable verdicts</h3><p>Either party has five minutes to challenge a result by funding exactly 1 GEN.</p></div><code>5 MIN</code></article>
+      <article><span><Gavel size={19}/></span><div><h3>Appealable verdicts</h3><p>Either party has five minutes to challenge a result with a direct zero-fee StudioNet V11 appeal.</p></div><code>5 MIN</code></article>
       <article><span><ShieldCheck size={19}/></span><div><h3>Recipient-safe settlement</h3><p>Automation can trigger settlement, but it cannot redirect worker, client, or treasury funds.</p></div><code>FIXED</code></article>
     </section>
 

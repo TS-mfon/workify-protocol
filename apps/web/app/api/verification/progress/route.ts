@@ -5,7 +5,7 @@ import { z } from "zod";
 const schema = z.object({
   jobId: z.string().regex(/^0x[a-fA-F0-9]{64}$/u),
   attempt: z.coerce.number().int().min(1).max(3),
-  network: z.enum(["bradbury", "studionet"]).default("bradbury"),
+  network: z.enum(["bradbury", "studionet"]).default("studionet"),
 });
 
 export async function GET(request: Request) {
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const input = schema.parse({
       jobId: new URL(request.url).searchParams.get("jobId"),
       attempt: new URL(request.url).searchParams.get("attempt"),
-      network: new URL(request.url).searchParams.get("network") || "bradbury",
+      network: new URL(request.url).searchParams.get("network") || "studionet",
     });
     await Promise.race([
       runAutomationBatch(1),
