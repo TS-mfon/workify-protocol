@@ -1,4 +1,4 @@
-import { getDatabase, publicError } from "@workify/evidence-engine";
+import { getDatabase, publicError, runAutomationBatch } from "@workify/evidence-engine";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     const payment = await db.collection("genlayer_payments").findOne({ _id: `${input.jobId.toLowerCase()}:${input.network}:verification:${input.attempt}` as never })
       || await db.collection("genlayer_payments").findOne({ _id: `${input.jobId.toLowerCase()}:verification:${input.attempt}` as never });
     if (!intent) return NextResponse.json({ status: "NOT_STARTED", jobId: input.jobId, attempt: input.attempt });
+    void runAutomationBatch(1).catch(() => undefined);
     return NextResponse.json({
       status: String(intent.status || "PENDING"),
       jobId: input.jobId,

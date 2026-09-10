@@ -246,6 +246,33 @@ type VerificationProgress = {
   nextRetryAt?: string | null;
 };
 
+type LiveVerdict = {
+  decision?: string;
+  score?: number;
+  confidence?: number;
+  payout_bps?: number;
+  final_rationale?: string;
+  critical_failures?: string[];
+  missing_evidence?: string[];
+  criteria?: Array<{ id?: string; severity?: string; decision?: string; rationale?: string; evidence_ids?: string[] }>;
+};
+
+function VerdictCard({ verdict }: { verdict: unknown }) {
+  if (!verdict || typeof verdict !== "object") return null;
+  const value = verdict as LiveVerdict;
+  const score = Math.max(0, Math.min(100, Number(value.score || 0)));
+  const confidence = Math.max(0, Math.min(100, Number(value.confidence || 0)));
+  const criteria = Array.isArray(value.criteria) ? value.criteria : [];
+  const decision = String(value.decision || "UNVERIFIABLE");
+  return <section className="verdict-card" aria-label="GenLayer verdict">
+    <div className="verdict-card-header"><div><span className="eyebrow">GenLayer adjudication</span><h3>Evidence-backed result</h3></div><strong className={`decision-${decision.toLowerCase()}`}>{decision}</strong></div>
+    <div className="verdict-rings"><div className="verdict-ring" style={{ "--progress": `${score * 3.6}deg` } as React.CSSProperties}><strong>{score}</strong><span>score</span></div><div className="verdict-ring confidence" style={{ "--progress": `${confidence * 3.6}deg` } as React.CSSProperties}><strong>{confidence}%</strong><span>confidence</span></div><div className="verdict-payout"><span>Worker payout</span><strong>{(Number(value.payout_bps || 0) / 100).toFixed(2)}%</strong><small>after the appeal window</small></div></div>
+    <p className="verdict-rationale">{value.final_rationale || "The verifier finalized a structured result. Criterion evidence is shown below."}</p>
+    {criteria.length > 0 && <div className="verdict-criteria">{criteria.map((criterion, index) => { const criterionScore = criterion.decision === "PASS" ? 100 : criterion.decision === "PARTIAL" ? 50 : 0; return <article key={`${criterion.id || "criterion"}-${index}`}><div className="criterion-line"><b>{criterion.id || `C${index + 1}`}</b><span>{criterion.severity || "REQUIREMENT"}</span><strong className={`decision-${String(criterion.decision || "UNVERIFIABLE").toLowerCase()}`}>{criterion.decision || "UNVERIFIABLE"}</strong></div><div className="criterion-bar"><i style={{ width: `${criterionScore}%` }} /></div><p>{criterion.rationale || "No public rationale was returned for this criterion."}</p></article>; })}</div>}
+    {(value.critical_failures?.length || value.missing_evidence?.length) ? <div className="verdict-alert">{value.critical_failures?.length ? <p><b>Critical failures:</b> {value.critical_failures.join(" · ")}</p> : null}{value.missing_evidence?.length ? <p><b>Missing evidence:</b> {value.missing_evidence.join(" · ")}</p> : null}</div> : null}
+  </section>;
+}
+
 async function fetchVerificationProgress(jobId: string, attempt: number, networkName: GenLayerNetwork): Promise<VerificationProgress> {
   const response = await fetch(`/api/verification/progress?jobId=${jobId}&attempt=${attempt}&network=${networkName}`, { cache: "no-store" });
   const progress = await response.json().catch(() => ({}));
@@ -377,7 +404,6 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
   }
 
   const explorer = selectedNetwork === "studionet" ? "https://explorer-studio.genlayer.com" : "https://explorer-bradbury.genlayer.com";
-  const verdictText = progress?.verdict == null ? "" : JSON.stringify(progress.verdict, null, 2);
   return <div className="glass card" style={{ marginTop: 28 }}>
     <WalletButton onAccount={setAccount} />
     <span className="status"><span className="pulse" /> Attempt {attempt} of 3</span>
@@ -386,7 +412,7 @@ export function VerificationAction({ jobId, attempt = 1 }: { jobId: `0x${string}
     <p className="muted">Your connected wallet submits one direct StudioNet transaction. Workify does not collect GEN for verification or appeals.</p>
     <button className="button" type="button" onClick={() => void fund()} disabled={submitting || !studioReady}>{submitting ? "Requesting review…" : "Request verification"}</button>
     <button className="button secondary" type="button" onClick={() => void refreshProgress()} disabled={submitting}>Refresh status</button>
-    {(status || progress) && <div className={`transaction-state ${["FAILED", "UNDETERMINED", "CANCELED"].includes(progress?.status || "") ? "error" : ["CONFIRMED", "FINALIZED"].includes(progress?.status || "") ? "success" : ""}`}><div><b>{String(progress?.lifecycle || progress?.status || "REVIEW_STATUS").replaceAll("_", " ")}</b><span>{status || progressText(progress)}</span>{progress?.rpcError && <small>Temporary StudioNet issue: {progress.rpcError}</small>}{progress?.verdictError && <small>Verdict is finalized; its contract result is still propagating.</small>}{verdictText && <pre className="verdict-preview">{verdictText}</pre>}<div className="transaction-links">{progress?.verifierTransactionHash && <a href={`${explorer}/tx/${progress.verifierTransactionHash}`} target="_blank" rel="noreferrer">Open GenLayer transaction</a>}{progress?.baseRequestTransactionHash && <a href={`https://sepolia.basescan.org/tx/${progress.baseRequestTransactionHash}`} target="_blank" rel="noreferrer">Open Base request</a>}{progress?.verdictImportTransactionHash && <a href={`https://sepolia.basescan.org/tx/${progress.verdictImportTransactionHash}`} target="_blank" rel="noreferrer">Open verdict import</a>}</div></div></div>}
+    {(status || progress) && <div className={`transaction-state ${["FAILED", "UNDETERMINED", "CANCELED"].includes(progress?.status || "") ? "error" : ["CONFIRMED", "FINALIZED"].includes(progress?.status || "") ? "success" : ""}`}><div><b>{String(progress?.lifecycle || progress?.status || "REVIEW_STATUS").replaceAll("_", " ")}</b><span>{status || progressText(progress)}</span>{progress?.rpcError && <small>Temporary StudioNet issue: {progress.rpcError}</small>}{progress?.verdictError && <small>Consensus is final; the public verdict is still propagating.</small>}{progress?.verdict != null ? <VerdictCard verdict={progress.verdict} /> : null}<div className="transaction-links">{progress?.verifierTransactionHash && <a href={`${explorer}/tx/${progress.verifierTransactionHash}`} target="_blank" rel="noreferrer">Open GenLayer transaction</a>}{progress?.baseRequestTransactionHash && <a href={`https://sepolia.basescan.org/tx/${progress.baseRequestTransactionHash}`} target="_blank" rel="noreferrer">Open Base request</a>}{progress?.verdictImportTransactionHash && <a href={`https://sepolia.basescan.org/tx/${progress.verdictImportTransactionHash}`} target="_blank" rel="noreferrer">Open verdict import</a>}</div></div></div>}
   </div>;
 }
 

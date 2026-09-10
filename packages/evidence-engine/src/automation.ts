@@ -89,7 +89,8 @@ export async function runAutomationBatch(limit = 20) {
       }
       const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
       if (!escrow) throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Base escrow address is not configured");
-      let action = String(intent.action) as BaseRelayAction;
+      const originalAction = String(intent.action) as BaseRelayAction;
+      let action = originalAction;
       let params: BaseRelayParameters;
       if (action === "importVerdict" && !intent.baseRequestTransactionHash) {
         if (Boolean(intent.appeal)) {
@@ -206,6 +207,24 @@ export async function runAutomationBatch(limit = 20) {
           updatedAt: new Date(),
         }, $inc: { attempts: 1 } },
       );
+      if (originalAction === "importVerdict") {
+        await db.collection("relay_intents").updateOne(
+          { _id: `${String(intent.jobId)}:settle` as never },
+          { $setOnInsert: {
+            _id: `${String(intent.jobId)}:settle` as never,
+            action: "settle",
+            jobId: intent.jobId,
+            status: "PENDING",
+            lifecycle: "SETTLEMENT_PENDING",
+            nextRetryAt: new Date(Date.now() + (Boolean(intent.appeal) ? 0 : 6 * 60 * 1000)),
+            attempts: 0,
+            infrastructureFailures: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } },
+          { upsert: true },
+        );
+      }
       processed += 1;
     } catch (error) {
       if (error instanceof WorkifyError && error.code === "GENLAYER_EXECUTION_ERROR" && intent.action === "importVerdict" && intent.genlayerTxHash && intent.verifierAddress && intent.evidenceHash && intent.policyVersion) {

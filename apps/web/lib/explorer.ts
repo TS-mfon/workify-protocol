@@ -1,8 +1,6 @@
 import "server-only";
-
-import { chains, createClient as createGenLayerClient } from "genlayer-js";
 import { keccak256, parseAbiItem, stringToHex, type Hex } from "viem";
-import { getDatabase } from "@workify/evidence-engine";
+import { createReadOnlyGenLayerClient, getDatabase, getGenLayerNetworkConfig } from "@workify/evidence-engine";
 import { createBasePublicClient, getLogsInChunks, publicNetworkConfig } from "./network";
 
 export type ExplorerDecision = "PASS" | "FAIL" | "PARTIAL" | "UNVERIFIABLE";
@@ -61,14 +59,8 @@ const policyLabels: Record<string, string> = {
 
 function config() {
   const network = publicNetworkConfig();
-  const verifiers = [
-    ["GITHUB_SOFTWARE", network.verifiers.GITHUB_SOFTWARE],
-    ["WEB_APPLICATION", network.verifiers.WEB_APPLICATION],
-    ["RESEARCH_DATA", network.verifiers.RESEARCH_DATA],
-    ["CONTENT_DOCUMENT", network.verifiers.CONTENT_DOCUMENT],
-    ["DESIGN_CREATIVE", network.verifiers.DESIGN_CREATIVE],
-  ] as Array<[string, string]>;
-  return { escrow: network.escrow, fromBlock: network.fromBlock, baseRpc: network.baseRpc, genlayerRpc: network.genlayerRpc, verifiers };
+  const genlayer = getGenLayerNetworkConfig("studionet");
+  return { escrow: network.escrow, fromBlock: network.fromBlock, baseRpc: network.baseRpc, genlayerRpc: genlayer.endpoint, verifiers: Object.entries(genlayer.verifiers) as Array<[string, string]> };
 }
 
 function verifierForId(verifiers: Array<[string, string]>, verifierId: Hex) {
@@ -108,7 +100,7 @@ async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumb
   ]);
   if (!specificationRecord?.document || !evidenceRecord?.document) return null;
 
-  const genlayer = createGenLayerClient({ chain: chains.testnetBradbury as never, endpoint: settings.genlayerRpc });
+  const genlayer = createReadOnlyGenLayerClient("studionet");
   const rawVerdict = await genlayer.readContract({
     address: verifier[1] as `0x${string}`,
     functionName: "get_verdict",
@@ -116,14 +108,15 @@ async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumb
     jsonSafeReturn: true,
   });
   if (!rawVerdict) return null;
-  const verdict = JSON.parse(String(rawVerdict)) as ExplorerVerdict;
+  const verdict = (typeof rawVerdict === "string" ? JSON.parse(rawVerdict) : rawVerdict) as ExplorerVerdict;
   const genlayerReceipt = await genlayer.getTransaction({ hash: job.genlayerTxHash as never });
   const receiptRecord = genlayerReceipt as unknown as Record<string, unknown>;
   const rawStatus = receiptField(receiptRecord, "statusName", "status_name", "status");
   const rawConsensus = receiptField(receiptRecord, "resultName", "result");
   const rawExecution = receiptField(receiptRecord, "txExecutionResultName", "executionResultName", "txExecutionResult");
   const genlayerStatus = rawStatus === 7 || rawStatus === "7" ? "FINALIZED" : String(rawStatus || "UNKNOWN").toUpperCase();
-  const genlayerConsensus = rawConsensus === 1 || rawConsensus === "1" ? "AGREE" : String(rawConsensus || "UNKNOWN").toUpperCase();
+  const consensusNames = ["IDLE", "AGREE", "DISAGREE", "TIMEOUT", "DETERMINISTIC_VIOLATION", "NO_MAJORITY", "MAJORITY_AGREE", "MAJORITY_DISAGREE"];
+  const genlayerConsensus = rawConsensus === 1 || rawConsensus === "1" ? "AGREE" : Number.isInteger(Number(rawConsensus)) && consensusNames[Number(rawConsensus)] ? consensusNames[Number(rawConsensus)] : String(rawConsensus || "UNKNOWN").toUpperCase();
   const genlayerExecution = rawExecution === 1 || rawExecution === "1" ? "FINISHED_WITH_RETURN" : String(rawExecution || "UNKNOWN").toUpperCase();
   const settlement = settlementLogs.at(-1);
   const createdBlock = creation?.blockNumber ?? 0n;

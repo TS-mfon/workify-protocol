@@ -35,6 +35,21 @@ function normalizeStatus(transaction: Record<string, unknown> | null) {
   };
 }
 
+async function readRawTransaction(endpoint: string, hash: string) {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: Date.now(), method: "eth_getTransactionByHash", params: [hash] }),
+    cache: "no-store",
+  });
+  const contentType = response.headers.get("content-type") || "";
+  const text = await response.text();
+  if (!contentType.includes("json") || /^\s*</u.test(text)) throw new Error("GenLayer RPC returned an HTML error page");
+  const body = JSON.parse(text) as { result?: Record<string, unknown> | null; error?: { message?: string } };
+  if (!response.ok || body.error) throw new Error(body.error?.message || "GenLayer RPC request failed");
+  return body.result || null;
+}
+
 export async function GET(request: Request, context: { params: Promise<{ txHash: string }> }) {
   try {
     const { txHash } = await context.params;
@@ -46,14 +61,15 @@ export async function GET(request: Request, context: { params: Promise<{ txHash:
     const appeal = params.get("appeal") === "true";
     const config = getGenLayerNetworkConfig(network);
     const client = createReadOnlyGenLayerClient(network);
-    const transaction = await client.getTransaction({ hash: hash as never }) as unknown as Record<string, unknown> | null;
+    const transaction = await readRawTransaction(config.endpoint, hash);
     const normalized = normalizeStatus(transaction);
+    const verifierAddress = transaction?.recipient || transaction?.to_address || transaction?.to || null;
     let verdict: unknown = null;
     let verdictError: string | null = null;
-    if (normalized.status === "FINALIZED" && jobId && /^0x[a-fA-F0-9]{64}$/u.test(jobId) && attempt >= 1 && attempt <= 3 && transaction?.recipient) {
+    if (normalized.status === "FINALIZED" && jobId && /^0x[a-fA-F0-9]{64}$/u.test(jobId) && attempt >= 1 && attempt <= 3 && verifierAddress) {
       try {
         verdict = await client.readContract({
-          address: String(transaction.recipient) as `0x${string}`,
+          address: String(verifierAddress) as `0x${string}`,
           functionName: "get_verdict",
           args: [jobId, attempt, appeal] as never[],
           jsonSafeReturn: true,
@@ -65,7 +81,7 @@ export async function GET(request: Request, context: { params: Promise<{ txHash:
     return NextResponse.json({
       transactionHash: hash,
       network,
-      verifierAddress: transaction?.recipient || null,
+      verifierAddress,
       ...normalized,
       verdict,
       verdictError,
