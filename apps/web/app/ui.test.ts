@@ -17,7 +17,9 @@ describe("app protocol presentation", () => {
     const walletNetwork = readFileSync(new URL("../lib/wallet-network.ts", import.meta.url), "utf8");
     expect(form).toContain("Work details");
     expect(form).toContain("Review & fund");
-    expect(form).toContain("Approve USDC & fund job");
+    expect(form).toContain("Check, approve & fund job");
+    expect(form).toContain("maximum 1 USDC");
+    expect(form).toContain("allowance");
     expect(css).toContain("--green: #35f184");
     expect(css).toContain("--radius-control: 999px");
     expect(css).toContain("border-radius: 42px 42px 14px 42px");
