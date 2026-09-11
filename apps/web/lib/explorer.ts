@@ -88,17 +88,28 @@ async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumb
   const verifier = verifierForId(settings.verifiers, job.verifierId);
   if (!verifier || !verifier[1]) return null;
 
-  const db = await getDatabase();
+  const db = await getDatabase().catch(() => null);
   const [specificationRecord, evidenceRecord, settlementLogs, verdictLogs, appealLogs, appealFundingLogs, requestLogs] = await Promise.all([
-    db.collection("specifications").findOne({ _id: normalizeHash(job.specificationHash) as never }),
-    db.collection("evidence_manifests").findOne({ _id: normalizeHash(job.evidenceHash) as never }),
+    db ? db.collection("specifications").findOne({ _id: normalizeHash(job.specificationHash) as never }) : Promise.resolve(null),
+    db ? db.collection("evidence_manifests").findOne({ _id: normalizeHash(job.evidenceHash) as never }) : Promise.resolve(null),
     getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: jobSettledEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
     getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: verdictImportedEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
     getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: appealOpenedEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
     getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: appealFundedEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
     getLogsInChunks(settings.fromBlock, (fromBlock, toBlock) => base.getLogs({ address: settings.escrow, event: verificationRequestedEvent, args: { jobId }, fromBlock, toBlock }), () => base.getBlockNumber()),
   ]);
-  if (!specificationRecord?.document || !evidenceRecord?.document) return null;
+  const specification = specificationRecord?.document || {
+    workType: "ONCHAIN_RECORD",
+    title: "Settled Workify contract",
+    description: "The original off-chain specification is unavailable; the hashes below remain authoritative.",
+    deliverables: [],
+    criteria: [],
+  };
+  const evidence = evidenceRecord?.document || {
+    artifacts: [],
+    evidenceHash: job.evidenceHash,
+    unavailable: true,
+  };
 
   const genlayer = createReadOnlyGenLayerClient("studionet");
   const rawVerdict = await genlayer.readContract({
@@ -125,11 +136,11 @@ async function loadCase(jobId: Hex, creation?: { transactionHash: Hex; blockNumb
   return {
     jobId,
     escrowAddress: settings.escrow,
-    policy: policyLabels[String(specificationRecord.document.workType)] || String(specificationRecord.document.workType),
-    workType: String(specificationRecord.document.workType),
+    policy: policyLabels[String(specification.workType)] || String(specification.workType),
+    workType: String(specification.workType),
     verifierAddress: verifier[1],
-    specification: specificationRecord.document,
-    evidence: evidenceRecord.document,
+    specification,
+    evidence,
     verdict,
     base: {
       status: statusNames[Number(job.status)] || "UNKNOWN",

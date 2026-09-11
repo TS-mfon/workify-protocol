@@ -291,7 +291,11 @@ async function fetchGenLayerTransaction(hash: string, jobId: string, attempt: nu
 function progressText(progress: VerificationProgress | null) {
   if (!progress || progress.status === "NOT_STARTED") return "No review has been queued for this attempt.";
   if (progress.status === "CONFIRMED") return "Review finalized and the verdict was imported to Base Sepolia.";
-  if (progress.status === "FINALIZED") return progress.consensus === "AGREE" ? "GenLayer reached consensus. Loading the finalized verdict." : "GenLayer finalized this review without validator agreement.";
+  if (progress.status === "FINALIZED") {
+    if (progress.consensus === "NO_MAJORITY" || progress.consensus === "DISAGREE" || progress.consensus === "TIMEOUT") return "GenLayer finalized the transaction without validator agreement. No verdict was produced; do not treat this as a successful review.";
+    if (progress.consensus === "AGREE" && progress.verdict == null) return "GenLayer reached validator agreement. Workify is reading the finalized verdict from the verifier contract.";
+    return "GenLayer finalized the transaction. Workify is validating the execution result before showing a verdict.";
+  }
   if (progress.status === "CANCELED") return "The GenLayer review was canceled. No duplicate transaction was sent.";
   if (progress.status === "UNDETERMINED") return "GenLayer could not reach agreement. The review is complete and may be retried under the attempt limit.";
   if (progress.status === "FAILED") return progress.failureReason || "The review failed and requires operator attention.";
