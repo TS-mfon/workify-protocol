@@ -17,14 +17,14 @@ export default async function Explorer() {
     <section className="explorer-hero">
       <span className="eyebrow"><Radar size={14} /> Public settlement ledger</span>
       <h1>Evidence in. <span>Verdict out.</span></h1>
-      <p>Every record below is a settled Base escrow joined to its finalized GenLayer V8 adjudication. No fixture data, editorial overrides, or simulated outcomes.</p>
+      <p>Every record below is a settled Base escrow joined to its finalized GenLayer V12 adjudication. No fixture data, editorial overrides, or simulated outcomes.</p>
       <div className="explorer-summary">
         <div><FileCheck2 size={18}/><strong>{cases.length}</strong><span>resolved cases</span></div>
         <div><CircleDollarSign size={18}/><strong>{Number(settledValue) / 1e6}</strong><span>USDC adjudicated</span></div>
         <div><ShieldCheck size={18}/><strong>{new Set(cases.map((item) => item.policy)).size}</strong><span>active policies</span></div>
       </div>
     </section>
-    {degraded ? <section className="explorer-empty"><Radar size={25}/><h2>Live ledger temporarily unavailable</h2><p>Base Sepolia did not return the settlement records. Nothing was deleted; reload in a few seconds.</p></section> : cases.length === 0 ? <section className="explorer-empty"><Radar size={25}/><h2>No settled V8 cases yet</h2><p>The explorer publishes only complete on-chain lifecycles. Cases appear after Base settlement and GenLayer finality.</p></section> :
+    {degraded ? <section className="explorer-empty"><Radar size={25}/><h2>Live ledger temporarily unavailable</h2><p>Base Sepolia did not return the settlement records. Nothing was deleted; reload in a few seconds.</p></section> : cases.length === 0 ? <section className="explorer-empty"><Radar size={25}/><h2>No settled V12 cases yet</h2><p>The explorer publishes only complete on-chain lifecycles. Cases appear after Base settlement and GenLayer finality.</p></section> :
     <section className="case-list">{cases.map((item) => <Link className="case-row" href={`/explorer/${item.jobId}`} key={item.jobId}>
       <div className="case-primary"><span className="case-policy">{item.policy}</span><h2>{item.specification.title}</h2><p>{item.specification.description}</p></div>
       <div className="case-metric"><span>Verdict</span><strong className={`decision-${item.verdict.decision.toLowerCase()}`}><CheckCircle2 size={15}/>{item.verdict.decision}</strong></div>

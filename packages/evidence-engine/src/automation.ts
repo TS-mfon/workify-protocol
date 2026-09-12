@@ -50,6 +50,25 @@ export async function runAutomationBatch(limit = 20) {
       const genlayerClient = networkConfig.endpoint
         ? createServerGenLayerClient(selectedNetwork, process.env.GENLAYER_OPERATOR_PRIVATE_KEY as `0x${string}`)
         : undefined;
+      const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
+      if (!escrow) throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Base escrow address is not configured");
+
+      if (intent.submissionMode === "direct_user_transaction" && !intent.baseRequestTransactionHash && !Boolean(intent.appeal)) {
+        try {
+          const request = await executeBaseRelayAction("requestVerification", String(intent.jobId), { appeal: false });
+          await db.collection("relay_intents").updateOne(
+            { _id: intent._id, baseRequestTransactionHash: { $exists: false } },
+            { $set: { lifecycle: "VERIFIER_SUBMITTED", baseRequestTransactionHash: request.transactionHash, baseRequestedAt: new Date(), updatedAt: new Date() } },
+          );
+          intent.baseRequestTransactionHash = request.transactionHash;
+        } catch (error) {
+          await db.collection("relay_intents").updateOne(
+            { _id: intent._id },
+            { $set: { lifecycle: "BASE_REQUEST_FAILED", baseRequestFailure: error instanceof Error ? error.message : "Base verification request failed", retryable: true, nextRetryAt: new Date(Date.now() + 15_000), updatedAt: new Date() } },
+          );
+          continue;
+        }
+      }
       let classification: "ACCEPTED" | "FINALIZED" | "UNDETERMINED" | "PENDING" | undefined;
       if (intent.genlayerTxHash) {
         if (!genlayerClient) throw new WorkifyError("GENLAYER_PREFLIGHT", `${selectedNetwork} GenLayer RPC is not configured`, true);
@@ -87,8 +106,6 @@ export async function runAutomationBatch(limit = 20) {
           { $set: { lifecycle: classification === "UNDETERMINED" ? "UNDETERMINED" : "VERIFIER_FINALIZED", lastCheckedAt: new Date(), updatedAt: new Date() } },
         );
       }
-      const escrow = process.env.NEXT_PUBLIC_WORK_ESCROW_ADDRESS as `0x${string}` | undefined;
-      if (!escrow) throw new WorkifyError("RELAY_SUBMISSION_FAILED", "Base escrow address is not configured");
       const originalAction = String(intent.action) as BaseRelayAction;
       let action = originalAction;
       let params: BaseRelayParameters;

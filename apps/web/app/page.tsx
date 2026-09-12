@@ -37,17 +37,17 @@ export default async function Home() {
     <section className="mechanism-list shell">
       <article><span><CircleDollarSign size={19}/></span><div><h3>Atomic escrow</h3><p>The Base contract transfers USDC before persisting a job. An unfunded job cannot exist.</p></div><code>BASE</code></article>
       <article><span><Fingerprint size={19}/></span><div><h3>Evidence-bound adjudication</h3><p>Specifications and manifests are canonicalized and hashed. Validators fetch the same public sources.</p></div><code>GENLAYER</code></article>
-      <article><span><Gavel size={19}/></span><div><h3>Appealable verdicts</h3><p>Either party has five minutes to challenge a result with a direct zero-fee StudioNet V11 appeal.</p></div><code>5 MIN</code></article>
+      <article><span><Gavel size={19}/></span><div><h3>Appealable verdicts</h3><p>Either party has five minutes to challenge a result with a direct zero-fee StudioNet V12 appeal.</p></div><code>5 MIN</code></article>
       <article><span><ShieldCheck size={19}/></span><div><h3>Recipient-safe settlement</h3><p>Automation can trigger settlement, but it cannot redirect worker, client, or treasury funds.</p></div><code>FIXED</code></article>
     </section>
 
     <section className="proof-ledger shell" id="economics">
       <div className="proof-copy"><span>PUBLIC PROOF</span><h2>The explorer shows the work, not a marketing summary.</h2><p>Open any resolved case to inspect the locked specification, evidence IDs, criterion decisions, public rationale, GenLayer finality, and Base settlement amounts.</p><Link className="button secondary" href="/explorer">Open verdict explorer <ArrowRight size={15}/></Link></div>
       <div className="proof-record">
-        <div><FileCheck2 size={17}/><span>Resolved V8 cases</span><strong>{resolved}</strong></div>
+        <div><FileCheck2 size={17}/><span>Resolved V12 cases</span><strong>{resolved}</strong></div>
         <div><Scale size={17}/><span>USDC adjudicated</span><strong>{Number(adjudicated) / 1e6}</strong></div>
         <div><GitPullRequest size={17}/><span>Policy classes</span><strong>5</strong></div>
-        <p>Live values are read from the configured WorkEscrow V3 deployment. No fixture counts are displayed.</p>
+        <p>Live values are read from the configured WorkEscrow V4 deployment. No fixture counts are displayed.</p>
       </div>
     </section>
 

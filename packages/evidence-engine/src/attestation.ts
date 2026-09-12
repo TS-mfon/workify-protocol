@@ -3,7 +3,7 @@ import type { Hex } from "viem";
 
 function domain(escrow: `0x${string}`) {
   const version = process.env.WORKIFY_EIP712_VERSION;
-  if (version !== "2") throw new Error("WORKIFY_EIP712_VERSION must be configured as 2 for WorkEscrowV3");
+  if (version !== "3") throw new Error("WORKIFY_EIP712_VERSION must be configured as 3 for WorkEscrowV4");
   return {
     name: "Workify",
     version,

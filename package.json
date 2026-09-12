@@ -13,11 +13,12 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "test:contracts": "forge test --root contracts/base",
-    "test:genlayer": "genvm-lint check contracts/genlayer/v1/WorkVerifierV1.py && genvm-lint check contracts/genlayer/v2/WorkVerifierV2.py && genvm-lint check contracts/genlayer/v3/WorkVerifierV3.py && genvm-lint check contracts/genlayer/v4/WorkVerifierV4.py && genvm-lint check contracts/genlayer/v5/WorkVerifierV5.py && genvm-lint check contracts/genlayer/v6/WorkVerifierV6.py && genvm-lint check contracts/genlayer/v7/WorkVerifierV7.py && genvm-lint check contracts/genlayer/v8/WorkVerifierV8.py && genvm-lint check contracts/genlayer/v9/WorkVerifierV9.py && genvm-lint check contracts/genlayer/v10/WorkVerifierV10.py && genvm-lint check contracts/genlayer/v11/WorkVerifierV11.py && genvm-lint check contracts/genlayer/v1/GenTreasuryV1.py && genvm-lint check contracts/genlayer/v2/GenTreasuryV2.py && uv run --with genlayer-test==0.29.2 pytest tests/direct -q",
+    "test:genlayer": "genvm-lint check contracts/genlayer/v12/WorkVerifierV12.py && genvm-lint check contracts/genlayer/v1/GenTreasuryV1.py && genvm-lint check contracts/genlayer/v2/GenTreasuryV2.py && uv run --with genlayer-test==0.29.2 pytest tests/direct -q",
     "fixtures:generate": "node scripts/generate-live-fixtures.mjs",
     "deploy:genlayer:v8": "node scripts/deploy-genlayer-v8.mjs",
     "deploy:genlayer:v10": "node apps/web/scripts/deploy-genlayer-v10.mjs",
     "deploy:genlayer:v11": "node apps/web/scripts/deploy-genlayer-v11.mjs",
+    "deploy:genlayer:v12": "node apps/web/scripts/deploy-genlayer-v12.mjs",
     "gate:live": "node scripts/run-live-gate.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:contracts && pnpm test:genlayer && pnpm build"
   },

@@ -15,7 +15,7 @@ const erc20Abi = [
   { type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ name: "account", type: "address" }], outputs: [{ type: "uint256" }] },
 ] as const;
 const escrowAbi = [{ type: "function", name: "createFundedJob", stateMutability: "nonpayable", inputs: [{ name: "jobId", type: "bytes32" }, { name: "worker", type: "address" }, { name: "reward", type: "uint128" }, { name: "deliveryDeadline", type: "uint64" }, { name: "specificationHash", type: "bytes32" }, { name: "policyHash", type: "bytes32" }], outputs: [] }] as const;
-const policies: Record<string, string> = { GITHUB_SOFTWARE: "github-software-v11.0", WEB_APPLICATION: "web-application-v11.0", RESEARCH_DATA: "research-data-v11.0", CONTENT_DOCUMENT: "content-document-v11.0", DESIGN_CREATIVE: "design-creative-v11.0" };
+const policies: Record<string, string> = { GITHUB_SOFTWARE: "github-software-v12.0", WEB_APPLICATION: "web-application-v12.0", RESEARCH_DATA: "research-data-v12.0", CONTENT_DOCUMENT: "content-document-v12.0", DESIGN_CREATIVE: "design-creative-v12.0" };
 const workTypes = [{ value: "GITHUB_SOFTWARE", label: "GitHub software", hint: "Issue, pull request, source and CI evidence" }, { value: "WEB_APPLICATION", label: "Web application", hint: "Public deployment, interface and behavior" }, { value: "RESEARCH_DATA", label: "Research & data", hint: "Report, dataset, claims and citations" }, { value: "CONTENT_DOCUMENT", label: "Content document", hint: "Technical or editorial deliverable" }, { value: "DESIGN_CREATIVE", label: "Design creative", hint: "Public images and structured visual criteria" }];
 const steps = ["Work details", "Payment & deadline", "Acceptance criteria", "Review & fund"];
 
@@ -138,7 +138,7 @@ export function NewJobForm() {
       const activeAccounts = await window.ethereum.request({ method: "eth_accounts" }) as string[];
       if (!activeAccounts[0] || activeAccounts[0].toLowerCase() !== account.toLowerCase()) throw new Error("The connected wallet changed during job creation. Reconnect the original funding wallet and try again.");
       const { escrow, baseUsdc } = publicNetworkConfig();
-      if (!escrow) throw new Error("WorkEscrowV3 is not configured");
+      if (!escrow) throw new Error("WorkEscrowV4 is not configured");
       const reward = parseUnits(draft.reward, 6);
       const maxDemoReward = parseUnits("1", 6);
       if (reward <= 0n || reward > maxDemoReward) throw new Error("Demo jobs are limited to a maximum reward of 1 USDC.");

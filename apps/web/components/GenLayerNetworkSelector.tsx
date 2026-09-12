@@ -33,5 +33,5 @@ export function GenLayerNetworkSelector() {
     window.dispatchEvent(new CustomEvent("workify-genlayer-network-change", { detail: value }));
   }
 
-  return <label className="network-selector"><span>Adjudication</span><select aria-label="GenLayer adjudication network" value={network} onChange={(event) => change(event.target.value as Network)} disabled={!studioReady}><option value="studionet">StudioNet V11{studioReady ? " · zero fee" : " · checking"}</option></select></label>;
+  return <label className="network-selector"><span>Adjudication</span><select aria-label="GenLayer adjudication network" value={network} onChange={(event) => change(event.target.value as Network)} disabled={!studioReady}><option value="studionet">StudioNet V12{studioReady ? " · zero fee" : " · checking"}</option></select></label>;
 }
